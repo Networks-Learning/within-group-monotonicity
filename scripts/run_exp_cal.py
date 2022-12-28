@@ -17,5 +17,5 @@ if __name__ == "__main__":
     commands = generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_test, k, alpha, classifier_type,
                                  umb_num_bins, train_cal_raw_path, test_raw_path, noise_ratios,generate_data,train_LR, train_umb)
     # print(len(commands))
-    if submit:
-        submit_commands(exp_token, exp_dir, split_size, commands, submit)
+    # if submit:
+    #     submit_commands(exp_token, exp_dir, split_size, commands, submit)
