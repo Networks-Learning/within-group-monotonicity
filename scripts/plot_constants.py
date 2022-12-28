@@ -8,13 +8,13 @@ params = {'legend.fontsize': 16,#28,
 
 
 line_width = 3.0
-transparency = 0.2
-font_size = 28
+transparency = 0.1
+font_size = 35
 capthick = 3.0
 dpi = 100
 
 
-def collect_results_normal_exp(result_path, exp_parameter, algorithm, results):
+def collect_results_normal_exp(result_path, exp_parameter, algorithm, results, metric):
     with open(result_path, 'rb') as f:
         result = pickle.load(f)
     # print(result)
@@ -29,8 +29,18 @@ def collect_results_normal_exp(result_path, exp_parameter, algorithm, results):
     # results[exp_parameter][algorithm]["num_positives_in_bin"]["values"].append(result["num_positives_in_bin"])
     # results[exp_parameter][algorithm]["num_in_bin"]["values"].append(result["num_in_bin"])
     # results[exp_parameter][algorithm]["bin_value"]["values"].append(result["bin_value"][exp_parameter])
-    results[exp_parameter][algorithm]["group_bin_values"]["values"].append(result["group_bin_values"][exp_parameter])
-    results[exp_parameter][algorithm]["group_rho"]["values"].append(result["group_rho"][exp_parameter])
+    # results[exp_parameter][algorithm]["group_bin_values"]["values"].append(result["group_bin_values"][exp_parameter])
+    # results[exp_parameter][algorithm]["group_rho"]["values"].append(result["group_rho"][exp_parameter])
+    results[exp_parameter][algorithm][metric]["values"].append(result[metric][exp_parameter])
+
+
+
+def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, results, metric):
+    with open(result_path, 'rb') as f:
+        result = pickle.load(f)
+
+    results[exp_parameter][algorithm][metric]["values"].append(result[metric])
+
 
 
 def collect_results_diversity_exp(result_path, exp_parameter, algorithm, results):

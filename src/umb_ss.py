@@ -11,34 +11,38 @@ from sklearn.metrics import mean_squared_error,accuracy_score
 
 
 class UMBSelect(object):
-    def __init__(self, n_bins, alpha, Z_indices, groups, Z_map):
+    def __init__(self, n_bins, Z_indices, groups, Z_map):
         # Hyper-parameters
         self.n_bins = n_bins
         self.delta = 0#1e-10
-        self.alpha = alpha
+        # self.alpha = alpha
         self.groups = groups
         self.Z_indices = Z_indices
         self.Z_map = Z_map
+        self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[0]  # grouping based on values of the chosen feature, see Z_map
 
         # Parameters to be learned
         self.bin_upper_edges = None
+        self.bin_lower_edges = None
         self.num_positives_in_bin = None
         self.num_in_bin = None
         self.bin_values = None
+        self.bin_rho = None
         self.num_examples = None
         self.epsilon = None
         self.b = None
         self.theta = None
-        self.num_groups = None
+        # self.num_groups = None
         self.group_num_positives_in_bin = None
         self.group_num_in_bin = None
         self.group_rho = None
         self.group_bin_values = None
+        # self.sorted = None
         # Internal variables
         self.fitted = False
 
 
-    def _get_uniform_mass_bins(self, scores):
+    def _get_uniform_mass_bins(self, scores, y):
         assert (scores.size >= 2 * self.n_bins), "Fewer points than 2 * number of bins"
 
         scores_sorted = np.sort(scores)
@@ -46,27 +50,73 @@ class UMBSelect(object):
         # split scores into groups of approx equal size
         groups = np.array_split(scores_sorted, self.n_bins)
         bin_upper_edges = list()
-
-        for cur_group in range(self.n_bins - 1):
+        bin_lower_edges = list()
+        bin_upper_edges += [max(groups[0])]
+        bin_lower_edges += [-np.inf]
+        # bin_upper_edges.append(-np.inf)
+        for cur_group in range(1,self.n_bins - 1):
             bin_upper_edges += [max(groups[cur_group])]
-        bin_upper_edges.append(np.inf)
-
-        return np.array(bin_upper_edges)
-
-    def _bin_points(self, scores):
-        assert (self.bin_upper_edges is not None), "Bins have not been defined"
+            bin_lower_edges += [max(groups[cur_group-1])]
+            # bin_lower_edges += [min(groups[cur_group])]
+        bin_upper_edges += [np.inf]
+        bin_lower_edges += [max(groups[self.n_bins - 2])]
         scores = scores.squeeze()
         assert (np.size(scores.shape) < 2), "scores should be a 1D vector or singleton"
-        scores = np.reshape(scores, (scores.size, 1))
-        bin_edges = np.reshape(self.bin_upper_edges, (1, self.bin_upper_edges.size))
-        return np.sum(scores > bin_edges, axis=1)
+        num_positives_in_bin = np.empty(self.n_bins)
+        num_in_bin = np.empty(self.n_bins)
+        in_bin = np.empty(shape=(self.n_bins,scores.size))
+        for i in range(self.n_bins):
+            lower_edge = np.repeat(bin_lower_edges[i],scores.size)
+            upper_edge = np.repeat(bin_upper_edges[i],scores.size)
+            in_bin[i] = (np.logical_and(scores > lower_edge,scores <= upper_edge))
+            num_in_bin[i] = np.sum(in_bin[i])
+            num_positives_in_bin[i] = np.sum(np.logical_and(in_bin[i], y))
 
-    def _group_points(self, X_est):
+        assert(np.sum(in_bin)==scores.size), f"{np.sum(in_bin), scores.size}"
+        # bin_upper_edges = bin_upper_edges[1:]
+        sorted = np.argsort(num_positives_in_bin/num_in_bin)
+        assert(len(bin_upper_edges)==len(sorted))
+        num_positives_in_bin = num_positives_in_bin[sorted]
+        num_in_bin = num_in_bin[sorted]
+        for i in range(self.n_bins-1):
+            assert(num_positives_in_bin[i]/num_in_bin[i]<=num_positives_in_bin[i+1]/num_in_bin[i+1])
+        bin_upper_edges = np.array(bin_upper_edges)
+        bin_upper_edges = bin_upper_edges[sorted]
+
+        bin_lower_edges = np.array(bin_lower_edges)
+        bin_lower_edges = bin_lower_edges[sorted]
+        return bin_upper_edges, bin_lower_edges
+
+    def _bin_points(self, scores):
+        assert (self.bin_upper_edges is not None and self.bin_lower_edges is not None), "Bins have not been defined"
+        scores = scores.squeeze()
+        assert (np.size(scores.shape) < 2), "scores should be a 1D vector or singleton"
+        bin_assignment = np.empty(shape=scores.size)
+        # bin_upper_edges = [-np.inf] + [upper_edge for upper_edge in self.bin_upper_edges]
+        # bin_lower_edges = [-np.inf] + [upper_edge for upper_edge in self.bin_upper_edges]
+        in_bin = np.empty(shape=(self.n_bins, scores.size))
+
+        for i in range(self.n_bins):
+            lower_edge = np.repeat(self.bin_lower_edges[i], scores.size)
+            upper_edge = np.repeat(self.bin_upper_edges[i], scores.size)
+            in_bin[i] = (np.logical_and(scores > lower_edge,scores <= upper_edge))
+            bin_assignment[in_bin[i].astype(bool)] = i
+        assert(np.sum(in_bin) == scores.size), f"{np.sum(in_bin), scores.size}"
+        assert(bin_assignment>=0).all()
+        # print(bin_assignment[bin_assignment.size-1])
+        # for ba in bin_assignment:
+        #     if not (ba>=0 or ba<self.n_bins):
+                # print(f"{ba = }")
+        assert (bin_assignment < self.n_bins).all(), f"{bin_assignment}"
+        return bin_assignment
+
+    def group_points(self, X_est):
         assert (self.num_groups is not None), "Group number not set"
-        group_index = np.empty(shape=(self.num_groups, X_est.shape[0]))
+        group_index = np.zeros(shape=(self.num_groups, X_est.shape[0]))
         for i, group in enumerate(self.groups):
+            # print(group)
             group = np.repeat(group, X_est.shape[0]).reshape(X_est.shape[0], 1)
-            group_index[Z_map[Z_indices[0]][i]] = np.logical_or(group_index[Z_map[Z_indices[0]][i]],
+            group_index[self.Z_map[self.Z_indices[0]][i]] = np.logical_or(group_index[self.Z_map[self.Z_indices[0]][i]],
                                                                 np.equal(X_est[:, self.Z_indices], group).squeeze())
 
         return group_index
@@ -82,29 +132,9 @@ class UMBSelect(object):
             positives_in_bin[i] = np.sum(np.logical_and(bin_idx, y))
         return num_in_bin, positives_in_bin
 
-    # def get_positives_in_bin(self,y_score,y):
-    #     bin_assignment = self._bin_points(y_score)
-    #     # compute statistics of each bin
-    #     positives_in_bin = np.empty(self.n_bins)
-    #     for i in range(self.n_bins):
-    #         bin_idx = (bin_assignment == i)
-    #         positives_in_bin[i] = np.sum(np.logical_and(bin_idx, y))
-    #     return positives_in_bin
-    #
-    # def get_num_in_bin(self,y_score):
-    #     bin_assignment = self._bin_points(y_score)
-    #     # compute statistics of each bin
-    #     num_in_bin = np.empty(self.n_bins)
-    #     for i in range(self.n_bins):
-    #         bin_idx = (bin_assignment == i)
-    #         num_in_bin[i] = np.sum(bin_idx)
-    #     return num_in_bin
-
-    # def get_bin_value(self):
-    #     return self.num_positives_in_bin/self.num_in_bin
 
     def get_group_statistics(self, X_est,y_score,y):
-        bin_assignment = self._bin_points(y_score)
+        bin_assignment = self._bin_points(y_score,y)
         group_assignment = self._group_points(X_est)
         assert (np.sum(group_assignment) == X_est.shape[0])
         num_in_bin = np.empty(self.n_bins)
@@ -124,11 +154,13 @@ class UMBSelect(object):
             assert (num_in_bin[i] == np.sum(group_num_in_bin[i]))
             assert (num_positives_in_bin[i] == np.sum(group_num_positives_in_bin[i]))
 
-        group_rho = group_num_in_bin / self.num_in_bin.reshape(self.num_in_bin.shape[0], 1)
 
         # smoothing for the case where there is no sample of a particular group in some bin
         smooth_alpha = np.ones(shape=group_num_positives_in_bin.shape)
         smooth_d = np.repeat(1.0 / self.bin_values, group_num_in_bin.shape[1]).reshape(group_num_in_bin.shape)
+        rho_smooth_d = np.repeat(self.num_groups, num_in_bin.shape[0]).reshape(num_in_bin.shape)
+
+        group_rho = (group_num_in_bin + smooth_alpha) / (num_in_bin + rho_smooth_d).reshape(num_in_bin.shape[0],1)
         group_bin_values = (group_num_positives_in_bin + smooth_alpha) / (group_num_in_bin + smooth_d)
 
         # sanity check
@@ -137,70 +169,6 @@ class UMBSelect(object):
             assert (np.sum(group_rho[i]) - 1.0 < 1e-4)
 
         return num_positives_in_bin, num_in_bin, group_num_positives_in_bin, group_num_in_bin, group_bin_values, group_rho
-
-    # def get_group_num_positives_in_bin(self, X_est, y_score,y):
-    #     assert(len(Z_map[Z_indices[0]])==groups.shape[0])
-    #     bin_assignment = self._bin_points(y_score)
-    #     group_num_positives_in_bin = np.empty(shape=(self.n_bins,self.num_groups))
-    #     bin_index = np.empty(shape=(self.n_bins, bin_assignment.shape[0]))
-    #     group_index = np.empty(shape=(self.num_groups, X_est.shape[0]))
-    #     for i in range(self.n_bins):
-    #         bin_index[i] = (bin_assignment == i)
-    #     for i, group in enumerate(groups):
-    #         group = np.repeat(group,X_est.shape[0]).reshape(X_est.shape[0],1)
-    #         group_index[Z_map[Z_indices[0]][i]] = np.logical_or(group_index[Z_map[Z_indices[0]][i]],np.equal(X_est[:, self.Z_indices], group).squeeze())
-    #     for i in range(self.n_bins):
-    #         for j in range(self.num_groups):
-    #             # bin_idx = (bin_assignment == i)
-    #             # group_idx = np.array([np.array_equal(X_est[_,self.Z_indices],group) for _ in range(X_est.shape[0])])
-    #             group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_index[i], y),group_index[j]))
-    #     # for i in range(self.n_bins):
-    #         assert(self.num_positives_in_bin[i]==np.sum(group_num_positives_in_bin[i]))
-    #     return group_num_positives_in_bin
-    #
-    # def get_group_num_in_bin(self,X_est, y_score):
-    #     bin_assignment = self._bin_points(y_score)
-    #     group_assignment = self._group_points(X_est)
-    #     group_num_in_bin = np.empty(shape=(self.n_bins,self.num_groups))
-    #
-    #     bin_index = np.empty(shape=(self.n_bins,bin_assignment.shape[0]))
-    #     # group_index = np.empty(shape=(self.groups.shape[0],X_est.shape[0]))
-    #     for i in range(self.n_bins):
-    #         bin_index[i] = (bin_assignment == i)
-    #     # for i,group in enumerate(groups):
-    #     #     group_index[i] = np.logical_or(group_index[Z_indices[0]],np.array([np.array_equal(X_est[_, self.Z_indices], group) for _ in range(X_est.shape[0])]))
-    #     for i in range(self.n_bins):
-    #         for j, group in range(self.num_groups):
-    #             # bin_idx = (bin_assignment == i)
-    #             # group_index = np.array([np.array_equal(X_est[_,self.Z_indices],group) for _ in range(X_est.shape[0])])
-    #             group_num_in_bin[i][j] = np.sum(np.logical_and(bin_index[i],group_assignment[j]))
-    #     # for i in range(self.n_bins):
-    #         assert self.num_in_bin[i] == np.sum(group_num_in_bin[i])
-    #     return group_num_in_bin
-
-
-    # def get_group_bin_value(self,y_score):
-    #     alpha = np.ones(shape=self.group_num_positives_in_bin.shape)
-    #     bin_value = self.get_bin_value()
-    #     bin_assignment = self._bin_points(y_score)
-    #     d = np.repeat(1.0/bin_value,self.group_num_in_bin.shape[1]).reshape(self.group_num_in_bin.shape)
-    #     print(d.shape)
-    #     group_bin_value = (self.group_num_positives_in_bin + alpha)/(self.group_num_in_bin + d)
-    #     #sanity check
-    #     group_rho = self.get_group_rho()
-    #     bin_value = self.get_bin_value()
-    #     for i in range(self.n_bins):
-    #         assert(np.sum(group_rho[i]*group_bin_value[i])-bin_value[i]<1e-2)
-    #
-    #     return group_bin_value
-
-    # def get_group_rho(self):
-    #     group_rho = self.group_num_in_bin/self.num_in_bin.reshape(self.num_in_bin.shape[0],1)
-    #     # sanity check
-    #     for i in range(self.n_bins):
-    #         assert (np.sum(group_rho[i]) - 1.0 < 1e-4)
-    #
-    #     return group_rho
 
     def _nudge(self, matrix):
         return ((matrix + np.random.uniform(low=0,
@@ -219,7 +187,7 @@ class UMBSelect(object):
         # Uniform-mass binning/histogram binning code starts below
         self.num_examples = y_score.size
         # grouping based on values of the chosen featue, see Z_map
-        self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[0]
+        # self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[0]
         # self.epsilon = np.sqrt(2 * np.log(2 / alpha) / n)
         self.epsilon = 0
 
@@ -227,12 +195,12 @@ class UMBSelect(object):
         y_score = self._nudge(y_score)
 
         # compute uniform-mass-bins using calibration data
-        self.bin_upper_edges = self._get_uniform_mass_bins(y_score)
+        self.bin_upper_edges, self.bin_lower_edges= self._get_uniform_mass_bins(y_score,y)
 
         # assign calibration data to bins
         bin_assignment = self._bin_points(y_score)
-        group_assignment = self._group_points(X_est)
-        assert(np.sum(group_assignment)==X_est.shape[0])
+        group_assignment = self.group_points(X_est)
+        assert(np.sum(group_assignment)==X_est.shape[0]), f"{np.sum(group_assignment),X_est.shape[0]}"
 
         # compute statistics of each bin
         self.num_in_bin = np.empty(self.n_bins)
@@ -242,29 +210,64 @@ class UMBSelect(object):
 
         for i in range(self.n_bins):
             bin_idx = (bin_assignment == i)
-            self.num_positives_in_bin[i] = np.sum(np.logical_and(bin_idx, y))
+            self.num_positives_in_bin[i] = np.sum(np.logical_and(bin_idx, y)) + self.num_groups
             self.num_in_bin[i] = np.sum(bin_idx)
             for j in range(self.num_groups):
-                self.group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_idx, y),group_assignment[j]))
-                self.group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j]))
+                self.group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_idx, y),group_assignment[j])) + 1
+                self.group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j])) + min(np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i]),1e4)
 
-            assert(self.num_in_bin[i]==np.sum(self.group_num_in_bin[i]))
-            assert(self.num_positives_in_bin[i]==np.sum(self.group_num_positives_in_bin[i]))
 
+            self.num_in_bin[i] += self.num_groups * min(np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i]),1e4)
+            # self.num_positives_in_bin[i] += self.num_groups
+            assert(self.num_positives_in_bin[i]==np.sum(self.group_num_positives_in_bin[i])),  f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
+            assert(self.num_in_bin[i]==np.sum(self.group_num_in_bin[i])), f"{self.num_in_bin[i],np.sum(self.group_num_in_bin[i])}"
+            assert(self.group_num_in_bin[i]>0).all(), f"{self.group_num_in_bin}"
+            assert(self.group_num_positives_in_bin[i]>0).all()
+            assert(self.num_positives_in_bin[i]>0).all()
+            assert(self.num_in_bin[i]>0).all()
+
+
+
+        self.bin_rho = self.num_in_bin / self.num_examples
         self.bin_values = self.num_positives_in_bin / self.num_in_bin
 
-        self.group_rho = self.group_num_in_bin / self.num_in_bin.reshape(umb_select.num_in_bin.shape[0], 1)
+        # self.sorted = np.argsort(self.bin_values)
+
+        # for i in range(self.n_bins-1):
+            # assert (self.bin_values[i]<=self.bin_values[i+1]), f"{self.bin_values[i], self.bin_values[i+1]}"
+            # assert (self.num_positives_in_bin[i] * self.num_in_bin[i+1]<= self.num_positives_in_bin[i+1] * self.num_in_bin[i]), \
+            #     f"{self.num_positives_in_bin[i], self.num_in_bin[i+1], self.num_positives_in_bin[i+1], self.num_in_bin[i]}"
+            # if (self.bin_values[i]<self.bin_values[i+1]):
+            #     print("--------------not monotone---------------------")
 
         # smoothing for the case where there is no sample of a particular group in some bin
         smooth_alpha = np.ones(shape=self.group_num_positives_in_bin.shape)
         smooth_d = np.repeat(1.0 / self.bin_values, self.group_num_in_bin.shape[1]).reshape(self.group_num_in_bin.shape)
-        self.group_bin_values = (self.group_num_positives_in_bin + smooth_alpha) / (self.group_num_in_bin + smooth_d)
+        rho_smooth_d = np.repeat(self.num_groups, self.num_in_bin.shape[0]).reshape(self.num_in_bin.shape)
 
+        # self.group_rho = (self.group_num_in_bin + smooth_alpha) / (self.num_in_bin + rho_smooth_d).reshape(self.num_in_bin.shape[0],1)
+        # self.group_bin_values = (self.group_num_positives_in_bin + smooth_alpha) / (self.group_num_in_bin + smooth_d)
+
+        self.group_rho = (self.group_num_in_bin) / (self.num_in_bin ).reshape(
+            self.num_in_bin.shape[0], 1)
+        self.group_bin_values = (self.group_num_positives_in_bin) / (self.group_num_in_bin)
 
         # sanity check
         for i in range(self.n_bins):
-            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-3)
+            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-1), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
             assert (np.sum(self.group_rho[i]) - 1.0 < 1e-4)
+            for j in range(self.num_groups):
+                # if self.group_num_in_bin[i][j] == 0:
+                #     assert (self.group_rho[i][j] - 1.0 / self.num_groups < 1e-3)
+                # else:
+                assert self.group_rho[i][j] - (
+                            self.group_num_in_bin[i][j] / self.num_in_bin[i]) < 1e-3
+
+                # if self.group_num_positives_in_bin[i][j] == 0:
+                #     assert self.group_bin_values[i][j] - self.bin_values[i] < 1e-2
+                # else:
+                assert self.group_bin_values[i][j] - (
+                            self.group_num_positives_in_bin[i][j] / self.group_num_in_bin[i][j]) < 1e-1
 
         # find threshold bin and theta
         sum_scores = 0
@@ -289,7 +292,6 @@ class UMBSelect(object):
     def select(self, scores):
         scores = scores.squeeze()
         size = scores.size
-        print(size)
 
         # delta-randomization
         scores = self._nudge(scores)
@@ -326,12 +328,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
     k = args.k
     m = args.m
-    alpha = args.alpha
+    # alpha = args.alpha
 
     args = parser.parse_args()
     Z_indices = [int(index) for index in args.Z_indices.split('_')]
+    def list_maker(val,n):
+        return [val]*n
     Z_map = {
-        15: [0, 1, 1, 2, 2, 2, 3, 3, 3]
+        15: [0] + [1] + list_maker(2,3) + list_maker(3,4),
+        1: list_maker(0,16)+list_maker(1,4)+list_maker(2,2)+list_maker(3,3),
+        0: list_maker(0,25) + list_maker(1,25) + list_maker(2,25) + list_maker(3,25),
+        14: [0,1],
+        4: [0,1],
+        6: [0,1,2,2,3],
+        2: [0,0,0,0,1]
     }
 
 
@@ -342,7 +352,7 @@ if __name__ == "__main__":
         # print(X_cal.shape,X_cal_est.shape)
 
     groups = np.unique(X_cal_est[:, Z_indices])
-    print(groups)
+    # print(f"{groups = }")
 
 
     with open(args.classifier_path, "rb") as f:
@@ -372,10 +382,18 @@ if __name__ == "__main__":
     n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    umb_select = UMBSelect(args.B, alpha,Z_indices,groups,Z_map)
+    umb_select = UMBSelect(args.B,Z_indices,groups,Z_map)
     umb_select.fit(X_cal_est,scores_cal, y_cal, m, k)
 
     s_test_raw = umb_select.select(scores_test_raw)
+    # num_positives_in_bin, num_in_bin, group_num_positives_in_bin, group_num_in_bin, group_bin_values, group_rho = umb_select.get_group_statistics(X_cal_est, scores_cal,y_cal)
+    # assert(umb_select.num_positives_in_bin == num_positives_in_bin).all()
+    # assert(umb_select.num_in_bin == num_in_bin).all()
+    # assert(umb_select.group_num_in_bin == group_num_in_bin).all()
+    # assert(umb_select.group_num_positives_in_bin==group_num_positives_in_bin).all()
+    # assert(umb_select.group_bin_values==group_bin_values).all()
+    # assert(umb_select.group_rho==group_rho).all()
+
     performance_metrics = {}
     performance_metrics["num_qualified"] = calculate_expected_qualified(s_test_raw, y_test_raw, m)
     performance_metrics["num_selected"] = calculate_expected_selected(s_test_raw, y_test_raw, m)
@@ -389,6 +407,7 @@ if __name__ == "__main__":
     performance_metrics["group_rho"] = umb_select.group_rho
     performance_metrics["groups"] = umb_select.groups
     performance_metrics["num_groups"] = umb_select.num_groups
+    performance_metrics["n_bins"] = umb_select.n_bins
     # print(performance_metrics["group_bin_value"])
     with open(args.result_path, 'wb') as f:
         pickle.dump(performance_metrics, f)

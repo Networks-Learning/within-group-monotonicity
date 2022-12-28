@@ -24,11 +24,11 @@ if __name__ == "__main__":
     n = n_train + n_cal
     with open(args.train_cal_raw_path, 'rb') as f:
         X, y = pickle.load(f)
-        print(X.shape)
+        # print(X.shape)
 
     X, y = shuffle(X, y)
     X, y = X[:n], y[:n]
-    print(X.shape,y.shape)
+    # print(X.shape,y.shape)
     scaler = StandardScaler()
     X_train, y_train = X[:n_train], y[:n_train]
     X_cal, y_cal = X[n_train:], y[n_train:]

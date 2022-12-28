@@ -10,8 +10,8 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    fig, axs = plt.subplots(1, 2)
-    fig.set_size_inches(28, 6)
+    fig, axs = plt.subplots(2, 7)
+    fig.set_size_inches(60, 9)
     from params_exp_noise import *
     algorithms = []
     algorithm_labels = {}
@@ -46,11 +46,15 @@ if __name__ == "__main__":
     #     "platt_scal_ss": 11
     # }
     Z_labels = {
-        2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
+        # 2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
+        2: {0:"Married or Separated", 1: "Never married"},
         4: {0: "With a disability", 1: "Without a disability"},
-        6: {0:"Born in US", 1:"Born in Puerto Rico", 2:"Born abroad", 3:"US citizen", 4:"Not a US citizen"},
+        6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen"},
         10: {0:"Native", 1:"Foreign born"},
-        14: {0: "Male", 1:"Female"}
+        14: {0: "Male", 1:"Female"},
+        15: {0: "White", 1:"Black or African American", 2:"American Indian or Alaska", 3:"Asian, Native Hawaiian or other"},
+        1: {0:"No diploma", 1:"diploma", 2:"Associate or Bachelor degree", 3: "Masters or Doctorate degree"},
+        0:{0:"0-25", 1:"26-50", 2:"51-75", 3:"76-99"}
     }
 
 
@@ -61,7 +65,7 @@ if __name__ == "__main__":
         # algorithm_df_guarantee["umb_" + str(umb_num_bin)] = True
         algorithm_markers["umb_" + str(umb_num_bin)] = umb_markers[umb_num_bin]
     # # algorithms.append("css")
-    metrics = ["group_bin_value","group_rho"] #["num_selected", "num_qualified", "num_unqualified", "constraint_satisfied","num_positives_in_bin","num_in_bin","bin_value"]
+    metrics = ["group_bin_values","group_rho"] #["num_selected", "num_qualified", "num_unqualified", "constraint_satisfied","num_positives_in_bin","num_in_bin","bin_value"]
     # results = {}
     # for Z_indices in Z:
     #     Z_str = "_".join([str(index) for index in Z_indices])
@@ -208,9 +212,9 @@ if __name__ == "__main__":
         #
         # # plotting the number of selected applicants
         for algorithm in algorithms:
-            mean_algorithm = np.array([results[bin][algorithm]["group_bin_value"]["mean"] for bin
+            mean_algorithm = np.array([results[bin][algorithm]["group_bin_values"]["mean"] for bin
                                                     in range(umb_num_bins[0])])
-            std_algorithm = np.array([results[bin][algorithm]["group_bin_value"]["std"] for bin
+            std_algorithm = np.array([results[bin][algorithm]["group_bin_values"]["std"] for bin
                                                    in range(umb_num_bins[0])])
             alpha_algorithm = np.array([results[bin][algorithm]["group_rho"]["mean"] for bin
                                                    in range(umb_num_bins[0])])
@@ -218,11 +222,15 @@ if __name__ == "__main__":
 
             num_groups = mean_algorithm.shape[1]
             import matplotlib.colors as mcolors
-
+            print(num_groups)
+            axs[1][j].imshow(alpha_algorithm.swapaxes(1,0))
+            axs[1][j].set_yticks(np.arange(alpha_algorithm.shape[1]),labels=Z_labels[Z_indices[0]].values(),fontsize=12)
+            axs[1][j].set_xticks(range(0, umb_num_bins[0], 1), range(1, umb_num_bins[0] + 1, 1))
             for i in range(num_groups):
                 mean = mean_algorithm[:,i]
                 std = std_algorithm[:,i]
                 alpha = alpha_algorithm[:,i]
+                print("alpha", np.sum(alpha))
                 rgba_colors = np.zeros(shape=(alpha.shape[0],4))
                 rgba_colors[:,:3] = mcolors.to_rgb(group_colors[i])
                 rgba_colors[:,3] = alpha
@@ -231,12 +239,16 @@ if __name__ == "__main__":
                 # np.where(mean >= 0, mean, np.empty(shape=mean.shape))
                 # axs[j].plot(range(umb_num_bins[0]),mean , linewidth=line_width)#, color=group_colors[i], marker=group_markers[i])
                 #          # , label=Z_labels[Z_indices[0]][i])
-                axs[j].bar(np.arange(umb_num_bins[0])-((i-1)*0.2), mean,align='edge',
+                axs[0][j].bar(np.arange(umb_num_bins[0])-((i-1)*0.2), mean,align='edge',
                             linewidth=line_width,width=0.1,color=group_colors[i],label=Z_labels[Z_indices[0]][i])  # , color=group_colors[i], marker=group_markers[i])
                 # , label=Z_labels[Z_indices[0]][i])
-                axs[j].legend(loc='upper center', bbox_to_anchor=(0.5, 1.2),ncol=3)
-                axs[j].set_yticks([])
-                axs[j].set_xticks(range(0,umb_num_bins[0],1),range(1,umb_num_bins[0]+1,1))
+                axs[0][j].legend(loc='upper center', bbox_to_anchor=(0.5, 1.15),ncol=2)
+                axs[0][j].set_xticks(range(0, umb_num_bins[0], 1), range(1, umb_num_bins[0] + 1, 1))
+                axs[0][j].set_yticks([])
+
+
+                # axs[1][j].set_yticks([])
+                # axs[1][j].set_xticks(range(0, umb_num_bins[0], 1), range(1, umb_num_bins[0] + 1, 1))
                 # axs[j].fill_between(range(umb_num_bins[0]), mean - std,
                 #                  mean + std, alpha=transparency,
                 #                  color=group_colors[i])
@@ -246,6 +258,7 @@ if __name__ == "__main__":
     # axs[3].set_ylim(bottom=5)
     #
     # fig.legend(handles=handles, bbox_to_anchor=(0.5, 1.02), loc="upper center", ncol=5)
-    axs[0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
+    axs[0][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
+    # axs[1][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
     plt.tight_layout(rect=[0, 0, 1, 1])
     fig.savefig("./plots/exp_normal.pdf", format="pdf")
