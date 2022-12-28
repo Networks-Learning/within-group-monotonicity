@@ -7,6 +7,8 @@ from params_exp_cal import *
 if __name__ == "__main__":
     if not os.path.isdir(exp_dir):
         os.mkdir(exp_dir)
+    if not os.path.isdir("./data"):
+        os.mkdir("./data")
     train_cal_raw_path = "./data/data_normal_train_cal_raw_q_ratio_{}_test_ratio_{}.pkl".format(q_ratio, test_ratio)
     test_raw_path = "./data/data_normal_test_raw_q_ratio_{}_test_ratio_{}.pkl".format(q_ratio, test_ratio)
     if prepare_data:
