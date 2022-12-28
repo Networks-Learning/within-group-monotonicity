@@ -21,7 +21,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                     for lbd in lbds:
                         for run in runs:
                             exp_identity_string = "_".join(["_".join([str(index) for index in Z_indices]), str(n_train), str(noise_ratio), str(n_cal), lbd, str(run)])
-                            print("Starting Experiment: " + exp_identity_string)
+                            print("adding Experiment: " + exp_identity_string)
                             train_data_path = os.path.join(exp_dir, exp_identity_string + "_train_data.pkl")
                             cal_data_path = os.path.join(exp_dir, exp_identity_string + "_cal_data.pkl")
                             scaler_path = os.path.join(exp_dir, exp_identity_string + "_scaler.pkl")
@@ -31,9 +31,10 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                                                              train_data_path, cal_data_path, scaler_path)
 
                             if generate_data:
-                                print("generating data...")
-                                if os.system(data_generation_command)==256:
-                                    return
+                                # print("generating data...")
+                                # if os.system(data_generation_command)==256:
+                                #     return
+                                commands.append(data_generation_command)
                             classifier_path = os.path.join(exp_dir, exp_identity_string + "_classifier.pkl")
                             if classifier_type == "LR":
                                 train_classifier_command = "python ./src/train_LR.py --Z_indices {} --train_data_path {} --cal_data_path {} --lbd {} " \
@@ -46,9 +47,10 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
 
 
                             if train_LR:
-                                print("training LR...")
-                                if os.system(train_classifier_command)==256:
-                                    return
+                                commands.append(train_classifier_command)
+                                # print("training LR...")
+                                # if os.system(train_classifier_command)==256:
+                                #     return
 
                             # css_result_path = os.path.join(exp_dir, exp_identity_string + "_css_result.pkl")
                             # css_command = "python ./src/css.py --cal_data_path {} --test_raw_path {}" \
@@ -90,9 +92,10 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                                                                    alpha, umb_num_bin, scaler_path)
 
                                 if train_umb:
-                                    print("training umb with {} bins".format(umb_num_bin))
-                                    if os.system(umb_prediction_command)==256:
-                                        return
+                                    commands.append(umb_prediction_command)
+                                    # print("training umb with {} bins".format(umb_num_bin))
+                                    # if os.system(umb_prediction_command)==256:
+                                    #     return
 
                                 wgm_path = os.path.join(exp_dir, exp_identity_string + "_wgm.pkl")
                                 wgm_result_path = os.path.join(exp_dir, exp_identity_string + "_wgm_{}_result.pkl".format(umb_num_bin))
@@ -100,9 +103,10 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                               " --wgm_path {} --result_path {} --k {} --m {} --alpha {} --B {} " \
                                               "--scaler_path {}".format("_".join([str(index) for index in Z_indices]),cal_data_path, test_raw_path, classifier_path, wgm_path,
                                                                         wgm_result_path, k, n_test, alpha,umb_num_bin, scaler_path)
-                                print("training wgm starting from umb with {} bins".format(umb_num_bin))
-                                if os.system(wgm_command)==256:
-                                    return
+                                commands.append(wgm_command)
+                                # print("training wgm starting from umb with {} bins".format(umb_num_bin))
+                                # if os.system(wgm_command)==256:
+                                #     return
 
                             #     exp_commands.append(umb_prediction_command)
                             # commands.append(exp_commands)

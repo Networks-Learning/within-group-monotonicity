@@ -214,10 +214,10 @@ class UMBSelect(object):
             self.num_in_bin[i] = np.sum(bin_idx)
             for j in range(self.num_groups):
                 self.group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_idx, y),group_assignment[j])) + 1
-                self.group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j])) + min(np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i]),1e4)
+                self.group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j])) + np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i])
 
 
-            self.num_in_bin[i] += self.num_groups * min(np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i]),1e4)
+            self.num_in_bin[i] += self.num_groups * np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i])
             # self.num_positives_in_bin[i] += self.num_groups
             assert(self.num_positives_in_bin[i]==np.sum(self.group_num_positives_in_bin[i])),  f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
             assert(self.num_in_bin[i]==np.sum(self.group_num_in_bin[i])), f"{self.num_in_bin[i],np.sum(self.group_num_in_bin[i])}"
@@ -294,7 +294,7 @@ class UMBSelect(object):
         size = scores.size
 
         # delta-randomization
-        scores = self._nudge(scores)
+        # scores = self._nudge(scores)
 
         # assign test data to bins
         test_bins = self._bin_points(scores)

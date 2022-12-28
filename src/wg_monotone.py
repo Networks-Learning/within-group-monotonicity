@@ -191,6 +191,7 @@ class wg_monotone(UMBSelect):
         recal_bin_assignment, self.recal_num_positives_in_bin, self.recal_num_in_bin, self.recal_group_num_positives_in_bin,\
         self.recal_group_num_in_bin = self.get_recal_bin_points(y_score)
 
+
         for i in range(self.recal_n_bins):
             assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
                                                                i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
@@ -273,13 +274,12 @@ class wg_monotone(UMBSelect):
             if recal_sum_scores >= k:
                 recal_sum_scores -= m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
                 recal_b = i
-                recal_theta = (k - recal_sum_scores) / (m * (self.recal_num_positives_in_bin[i] / self.num_examples
-                                                 - self.epsilon))
+                recal_theta = (k - recal_sum_scores) / (
+                            m * (self.recal_num_positives_in_bin[i] / self.num_examples
+                                 - self.epsilon))
                 break
         self.recal_b = recal_b
         self.recal_theta = recal_theta
-
-
 
     def recal_select(self, scores):
         scores = scores.squeeze()

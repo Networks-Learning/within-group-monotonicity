@@ -4,12 +4,15 @@ params = {'legend.fontsize': 16,#28,
           'ytick.labelsize': 28,
           'lines.markersize': 15,
           'errorbar.capsize': 8.0,
+            'axes.labelsize' : 24,
+            'text.usetex'  : True,
+            'font.family': 'serif',
           }
 
 
 line_width = 3.0
 transparency = 0.1
-font_size = 35
+font_size = 24
 capthick = 3.0
 dpi = 100
 
