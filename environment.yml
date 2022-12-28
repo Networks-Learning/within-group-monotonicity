@@ -1,0 +1,11 @@
+name: alg_screen
+channels:
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy
+  - scikit-learn
+  - matplotlib
+  - pandas
+  - pip:
+    - folktables==0.0.11
