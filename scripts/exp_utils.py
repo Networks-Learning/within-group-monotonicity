@@ -89,6 +89,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                                          "--scaler_path {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
                                                                                    classifier_path, umb_path, umb_result_path, k, n_test,
                                                                                    alpha, umb_num_bin, scaler_path)
+                                exp_commands.append(umb_prediction_command)
 
                                 # if train_umb:
                                 #     commands.append(umb_prediction_command)
@@ -102,7 +103,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                               " --wgm_path {} --result_path {} --k {} --m {} --alpha {} --B {} " \
                                               "--scaler_path {}".format("_".join([str(index) for index in Z_indices]),cal_data_path, test_raw_path, classifier_path, wgm_path,
                                                                         wgm_result_path, k, n_test, alpha,umb_num_bin, scaler_path)
-                                exp_commands.append([umb_prediction_command,wgm_command])
+                                exp_commands.append(wgm_command)
                                 # commands.append(wgm_command)
                                 # print("training wgm starting from umb with {} bins".format(umb_num_bin))
                                 # if os.system(wgm_command)==256:
