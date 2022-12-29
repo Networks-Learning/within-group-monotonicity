@@ -192,7 +192,7 @@ if __name__ == "__main__":
             axs[2+i][z].set_xlabel(r'n')
         axs[2][0].set_ylabel(r'$|\mathcal{B}|$')
         axs[3][0].set_ylabel(r'Shortlist Size')
-        axs[2][0].yaxis.set_major_locator(ticker.MultipleLocator())
+        axs[2][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
         axs[3][0].yaxis.set_major_locator(ticker.MultipleLocator())
 
         algorithms = []
@@ -311,7 +311,7 @@ if __name__ == "__main__":
         axs[4][0].legend(handles=handles, loc='center right', bbox_to_anchor=(-0.1, 0.5), ncol=1)
         axs[4][0].set_ylabel(r'$|\mathcal{B}|$')
         axs[5][0].set_ylabel(r'Shortlist Size')
-        axs[4][0].yaxis.set_major_locator(ticker.MultipleLocator())
+        axs[4][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
         axs[5][0].yaxis.set_major_locator(ticker.MultipleLocator())
 
 
