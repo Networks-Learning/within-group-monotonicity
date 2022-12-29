@@ -43,10 +43,10 @@ class wg_monotone(UMBSelect):
         group_positives = np.sum(self.group_num_positives_in_bin[l:r+1],axis=0)
         group_total = np.sum(self.group_num_in_bin[l:r+1],axis=0)
 
-        assert(positives/total - np.average(self.bin_values[l:r+1]) < 1e-2), f"{positives/total,np.average(self.bin_values[l:r+1])}"
+        # assert(positives/total - np.average(self.bin_values[l:r+1]) < 1e-2), f"{positives/total,np.average(self.bin_values[l:r+1])}"
 
         rho = self.group_rho[l:r+1]*self.bin_rho[l:r+1][:,np.newaxis]
-        assert (np.sum(rho) - np.sum(self.bin_rho[l:r+1]) < 1e-3)
+        # assert (np.sum(rho) - np.sum(self.bin_rho[l:r+1]) < 1e-3)
         # print(f"{rho = }")
         # print(f"{group_positives = }")
         # print(f"{group_total = }")
@@ -55,7 +55,7 @@ class wg_monotone(UMBSelect):
         # print(f"{np.sum(rho,axis=0) = }")
         # print(f"{np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0)= }")
         # print(f"{group_positives/group_total = }")
-        assert (np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0) - (group_positives/group_total)<1e-3).all(), f"{np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0),group_positives/group_total}"
+        # assert (np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0) - (group_positives/group_total)<1e-3).all(), f"{np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0),group_positives/group_total}"
         return positives, total, group_positives, group_total
 
 
@@ -193,9 +193,9 @@ class wg_monotone(UMBSelect):
 
 
         for i in range(self.recal_n_bins):
-            assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
-                                                               i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
-            assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
+            # assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
+            #                                                    i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
+            # assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
             assert (self.recal_group_num_in_bin[i] > 0).all(), f"{self.group_num_in_bin}"
             assert (self.recal_group_num_positives_in_bin[i] > 0).all()
             assert (self.recal_num_positives_in_bin[i] > 0).all()
@@ -248,22 +248,22 @@ class wg_monotone(UMBSelect):
         self.recal_group_bin_values = (self.recal_group_num_positives_in_bin) / (self.recal_group_num_in_bin)
 
         # sanity check
-        for i in range(self.recal_n_bins):
-            assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
-            assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-4)
-            for j in range(self.num_groups):
-                if i < self.recal_n_bins-1:
-                    assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
-                        f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
-            #     if self.recal_group_num_in_bin[i][j] == 0:
-            #         assert self.recal_group_rho[i][j] == 1.0/self.num_groups, f"{self.recal_group_rho[i][j], 1.0/self.num_groups}"
-            #     else:
-            #         assert self.recal_group_rho[i][j] - (self.recal_group_num_in_bin[i][j]/self.recal_num_in_bin[i])< 1e-3
-            #
-            #     if self.recal_group_num_positives_in_bin[i][j]==0:
-            #         assert self.recal_group_bin_values[i][j] - self.recal_bin_values[i] < 1e-2
-            #     else:
-            #         assert self.recal_group_bin_values[i][j] - (self.recal_group_num_positives_in_bin[i][j]/self.recal_group_num_in_bin[i][j]) < 1e-1
+        # for i in range(self.recal_n_bins):
+        #     assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
+        #     assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-4)
+        #     for j in range(self.num_groups):
+        #         if i < self.recal_n_bins-1:
+        #             assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
+        #                 f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
+        #     #     if self.recal_group_num_in_bin[i][j] == 0:
+        #     #         assert self.recal_group_rho[i][j] == 1.0/self.num_groups, f"{self.recal_group_rho[i][j], 1.0/self.num_groups}"
+        #     #     else:
+        #     #         assert self.recal_group_rho[i][j] - (self.recal_group_num_in_bin[i][j]/self.recal_num_in_bin[i])< 1e-3
+        #     #
+        #     #     if self.recal_group_num_positives_in_bin[i][j]==0:
+        #     #         assert self.recal_group_bin_values[i][j] - self.recal_bin_values[i] < 1e-2
+        #     #     else:
+        #     #         assert self.recal_group_bin_values[i][j] - (self.recal_group_num_positives_in_bin[i][j]/self.recal_group_num_in_bin[i][j]) < 1e-1
 
         # find threshold bin and theta
         recal_sum_scores = 0

@@ -78,8 +78,8 @@ class UMBSelect(object):
         assert(len(bin_upper_edges)==len(sorted))
         num_positives_in_bin = num_positives_in_bin[sorted]
         num_in_bin = num_in_bin[sorted]
-        for i in range(self.n_bins-1):
-            assert(num_positives_in_bin[i]/num_in_bin[i]<=num_positives_in_bin[i+1]/num_in_bin[i+1])
+        # for i in range(self.n_bins-1):
+        #     assert(num_positives_in_bin[i]/num_in_bin[i]<=num_positives_in_bin[i+1]/num_in_bin[i+1])
         bin_upper_edges = np.array(bin_upper_edges)
         bin_upper_edges = bin_upper_edges[sorted]
 
@@ -219,8 +219,8 @@ class UMBSelect(object):
 
             self.num_in_bin[i] += self.num_groups * np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i])
             # self.num_positives_in_bin[i] += self.num_groups
-            assert(self.num_positives_in_bin[i]==np.sum(self.group_num_positives_in_bin[i])),  f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
-            assert(self.num_in_bin[i]==np.sum(self.group_num_in_bin[i])), f"{self.num_in_bin[i],np.sum(self.group_num_in_bin[i])}"
+            # assert(self.num_positives_in_bin[i]==np.sum(self.group_num_positives_in_bin[i])),  f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
+            # assert(self.num_in_bin[i]==np.sum(self.group_num_in_bin[i])), f"{self.num_in_bin[i],np.sum(self.group_num_in_bin[i])}"
             assert(self.group_num_in_bin[i]>0).all(), f"{self.group_num_in_bin}"
             assert(self.group_num_positives_in_bin[i]>0).all()
             assert(self.num_positives_in_bin[i]>0).all()
@@ -253,21 +253,21 @@ class UMBSelect(object):
         self.group_bin_values = (self.group_num_positives_in_bin) / (self.group_num_in_bin)
 
         # sanity check
-        for i in range(self.n_bins):
-            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-1), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
-            assert (np.sum(self.group_rho[i]) - 1.0 < 1e-4)
-            for j in range(self.num_groups):
-                # if self.group_num_in_bin[i][j] == 0:
-                #     assert (self.group_rho[i][j] - 1.0 / self.num_groups < 1e-3)
-                # else:
-                assert self.group_rho[i][j] - (
-                            self.group_num_in_bin[i][j] / self.num_in_bin[i]) < 1e-3
-
-                # if self.group_num_positives_in_bin[i][j] == 0:
-                #     assert self.group_bin_values[i][j] - self.bin_values[i] < 1e-2
-                # else:
-                assert self.group_bin_values[i][j] - (
-                            self.group_num_positives_in_bin[i][j] / self.group_num_in_bin[i][j]) < 1e-1
+        # for i in range(self.n_bins):
+        #     assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-1), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
+        #     assert (np.sum(self.group_rho[i]) - 1.0 < 1e-4)
+        #     for j in range(self.num_groups):
+        #         # if self.group_num_in_bin[i][j] == 0:
+        #         #     assert (self.group_rho[i][j] - 1.0 / self.num_groups < 1e-3)
+        #         # else:
+        #         assert self.group_rho[i][j] - (
+        #                     self.group_num_in_bin[i][j] / self.num_in_bin[i]) < 1e-3
+        #
+        #         # if self.group_num_positives_in_bin[i][j] == 0:
+        #         #     assert self.group_bin_values[i][j] - self.bin_values[i] < 1e-2
+        #         # else:
+        #         assert self.group_bin_values[i][j] - (
+        #                     self.group_num_positives_in_bin[i][j] / self.group_num_in_bin[i][j]) < 1e-1
 
         # find threshold bin and theta
         sum_scores = 0
