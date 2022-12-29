@@ -115,6 +115,7 @@ if __name__ == "__main__":
 
                 axs[alg][z].set_xticks(range(0, num_bins[algorithm], 1), range(1, num_bins[algorithm] + 1, 1))
                 axs[alg][z].set_yticks([])
+                axs[alg][z].set_ylim((0,1))
 
 
             axs[alg][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
@@ -184,16 +185,21 @@ if __name__ == "__main__":
             axs[2+i][z].set_xticks(umb_num_bins)
             axs[2 + i][z].set_yticks([])
 
+            axs[2][z].set_ylim((5, 15))
+            axs[3][z].set_ylim((6, 7))
+
             if i==0:
                 axs[2][0].legend(handles=handles, loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
                 handles = []
+
+
 
 
             axs[2+i][z].set_xlabel(r'n')
         axs[2][0].set_ylabel(r'$|\mathcal{B}|$')
         axs[3][0].set_ylabel(r'Shortlist Size')
         axs[2][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
-        axs[3][0].set_ylim(top=8)
+        axs[3][0].set_ylim(top=7)
         axs[3][0].yaxis.set_major_locator(ticker.MultipleLocator(1))
 
         algorithms = []
@@ -309,11 +315,15 @@ if __name__ == "__main__":
                 # axs[3][z].set_xticks(np.arange(len(n_cals)),n_cals_label)
                 axs[4+i][z].set_yticks([])
                 axs[4+i][z].set_xlabel(r"$|\mathcal{X}|$")
+
+                axs[4][z].set_ylim(4,20)
+                axs[5][z].set_ylim(6,7)
+
         axs[4][0].legend(handles=handles, loc='center right', bbox_to_anchor=(-0.1, 0.5), ncol=1)
         axs[4][0].set_ylabel(r'$|\mathcal{B}|$')
         axs[5][0].set_ylabel(r'Shortlist Size')
         axs[4][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
-        axs[5][0].set_ylim(top=8)
+        axs[5][0].set_ylim(top=7)
         axs[5][0].yaxis.set_major_locator(ticker.MultipleLocator(1))
 
 
