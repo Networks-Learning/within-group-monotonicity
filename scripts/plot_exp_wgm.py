@@ -193,7 +193,7 @@ if __name__ == "__main__":
         axs[2][0].set_ylabel(r'$|\mathcal{B}|$')
         axs[3][0].set_ylabel(r'Shortlist Size')
         axs[2][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
-        axs[3][0].yaxis.set_major_locator(ticker.MultipleLocator())
+        axs[3][0].yaxis.set_major_locator(ticker.MultipleLocator(1))
 
         algorithms = []
         for umb_num_bin in umb_num_bins:
@@ -312,7 +312,7 @@ if __name__ == "__main__":
         axs[4][0].set_ylabel(r'$|\mathcal{B}|$')
         axs[5][0].set_ylabel(r'Shortlist Size')
         axs[4][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
-        axs[5][0].yaxis.set_major_locator(ticker.MultipleLocator())
+        axs[5][0].yaxis.set_major_locator(ticker.MultipleLocator(1))
 
 
     # axs[2][0].legend(handles = handles, loc='center right', bbox_to_anchor=(-0.08, 0.5), ncol=1)
