@@ -318,4 +318,6 @@ if __name__ == "__main__":
     # axs[2][0].legend(handles = handles, loc='center right', bbox_to_anchor=(-0.08, 0.5), ncol=1)
     # axs[2][0].yaxis.set_major_locator(ticker.MultipleLocator(5))
     plt.tight_layout(rect=[0, 0, 1, 1])
+    if not os.path.exists('./plots'):
+        os.mkdir('./plots')
     fig.savefig("./plots/exp_wgm.pdf", format="pdf")
