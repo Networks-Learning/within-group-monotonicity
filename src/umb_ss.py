@@ -186,8 +186,8 @@ class UMBSelect(object):
         self.discriminated_against = np.zeros(shape=self.group_num_in_bin.shape)
         #sanity check
         for i in range(self.n_bins):
-            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-3), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
-            assert (np.sum(self.group_rho[i]) - 1.0 < 1e-4)
+            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-2), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
+            assert (np.sum(self.group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
                 if i < self.n_bins - 1 and positive_group_rho[i][j]:
                     self.discriminated_against[i][j] =  np.greater(self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[i + 1][j],
@@ -195,14 +195,12 @@ class UMBSelect(object):
                 if self.group_num_in_bin[i][j] == 0:
                     assert (self.group_rho[i][j] ==0)
                 else:
-                    assert self.group_rho[i][j] - (
-                                self.group_num_in_bin[i][j] / self.num_in_bin[i]) < 1e-3
+                    assert self.group_rho[i][j] * self.num_in_bin[i] - self.group_num_in_bin[i][j] < 1e-2
 
                 if self.group_num_positives_in_bin[i][j] == 0:
                     assert self.group_bin_values[i][j] == 0
                 else:
-                    assert self.group_bin_values[i][j] - (
-                                self.group_num_positives_in_bin[i][j] / self.group_num_in_bin[i][j]) < 1e-3
+                    assert self.group_bin_values[i][j] * self.group_num_in_bin[i][j] - self.group_num_positives_in_bin[i][j] < 1e-2
 
         # find threshold bin and theta
         sum_scores = 0

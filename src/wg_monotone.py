@@ -45,7 +45,7 @@ class wg_monotone(UMBSelect):
         group_total = np.sum(self.group_num_in_bin[l:r+1],axis=0)
         group_rho = np.average(self.group_rho[l:r+1],axis=0)
 
-        assert(np.sum(group_positives) == positives and np.sum(group_total)==total and np.sum(group_rho)-1<1e-4)
+        assert(np.sum(group_positives) == positives and np.sum(group_total)==total and np.sum(group_rho)-1<1e-2)
 
         # assert(positives/total - np.average(self.bin_values[l:r+1]) < 1e-2), f"{positives/total,np.average(self.bin_values[l:r+1])}"
 
@@ -202,7 +202,7 @@ class wg_monotone(UMBSelect):
             assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
             # assert (self.recal_group_num_in_bin[i] > 0).all(), f"{self.group_num_in_bin}"
             # assert (self.recal_group_num_positives_in_bin[i] > 0).all()
-            assert (self.recal_num_positives_in_bin[i] > 0).all()
+            # assert (self.recal_num_positives_in_bin[i] > 0).all()
             assert (self.recal_num_in_bin[i] > 0).all()
 
         group_assignment = self.group_points(X_est)
@@ -253,7 +253,7 @@ class wg_monotone(UMBSelect):
         # sanity check
         for i in range(self.recal_n_bins):
             assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
-            assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-4)
+            assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
                 if i < self.recal_n_bins-1:
                     assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
@@ -261,12 +261,12 @@ class wg_monotone(UMBSelect):
                 if self.recal_group_num_in_bin[i][j] == 0:
                     assert self.recal_group_rho[i][j] == 0
                 else:
-                    assert self.recal_group_rho[i][j] - (self.recal_group_num_in_bin[i][j]/self.recal_num_in_bin[i])< 1e-3
+                    assert self.recal_group_rho[i][j] * self.recal_num_in_bin[i] - self.recal_group_num_in_bin[i][j]< 1e-2
 
                 if self.recal_group_num_positives_in_bin[i][j]==0:
                     assert self.recal_group_bin_values[i][j] ==0
                 else:
-                    assert self.recal_group_bin_values[i][j] - (self.recal_group_num_positives_in_bin[i][j]/self.recal_group_num_in_bin[i][j]) < 1e-1
+                    assert self.recal_group_bin_values[i][j]*self.recal_group_num_in_bin[i][j] - self.recal_group_num_positives_in_bin[i][j]< 1e-2
 
         # find threshold bin and theta
         recal_sum_scores = 0
