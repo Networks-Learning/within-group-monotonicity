@@ -16,6 +16,4 @@ def calculate_expected_qualified(s, y, m):
 def calculate_expected_selected(s, y, m):
     return np.sum(s) * 1. * m / y.size
 
-def get_mean_calibration_error(a_hat,a):
-    return np.average(abs(a_hat - a))
 

@@ -1,6 +1,6 @@
 import pickle
 params = {'legend.fontsize': 16,#28,
-          'xtick.labelsize': 28,
+          'xtick.labelsize': 24,
           'ytick.labelsize': 28,
           'lines.markersize': 15,
           'errorbar.capsize': 8.0,
@@ -17,7 +17,7 @@ capthick = 3.0
 dpi = 100
 
 
-def collect_results_normal_exp(result_path, exp_parameter, algorithm, results, metric):
+def collect_results_normal_exp(result_path, exp_parameter, algorithm, results, metrics):
     with open(result_path, 'rb') as f:
         result = pickle.load(f)
     # print(result)
@@ -34,15 +34,18 @@ def collect_results_normal_exp(result_path, exp_parameter, algorithm, results, m
     # results[exp_parameter][algorithm]["bin_value"]["values"].append(result["bin_value"][exp_parameter])
     # results[exp_parameter][algorithm]["group_bin_values"]["values"].append(result["group_bin_values"][exp_parameter])
     # results[exp_parameter][algorithm]["group_rho"]["values"].append(result["group_rho"][exp_parameter])
-    results[exp_parameter][algorithm][metric]["values"].append(result[metric][exp_parameter])
+    for metric in metrics:
+        results[exp_parameter][algorithm][metric]["values"].append(result[metric][exp_parameter])
 
 
 
-def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, results, metric):
+
+
+def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, results, metrics):
     with open(result_path, 'rb') as f:
         result = pickle.load(f)
-
-    results[exp_parameter][algorithm][metric]["values"].append(result[metric])
+    for metric in metrics:
+        results[exp_parameter][algorithm][metric]["values"].append(result[metric])
 
 
 

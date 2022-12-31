@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 from train_LR import NoisyLR
 from umb_ss import UMBSelect
-from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim, get_mean_calibration_error
+from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
 from sklearn.metrics import mean_squared_error,accuracy_score
 
 
@@ -36,16 +36,20 @@ class wg_monotone(UMBSelect):
         self.recal_group_bin_values = None
         self.recal_b = None
         self.recal_theta = None
+        self.recal_discriminated_against = None
 
     def _get_merged_statistics(self, l, r):
         positives = np.sum(self.num_positives_in_bin[l:r+1])
         total = np.sum(self.num_in_bin[l:r+1])
         group_positives = np.sum(self.group_num_positives_in_bin[l:r+1],axis=0)
         group_total = np.sum(self.group_num_in_bin[l:r+1],axis=0)
+        group_rho = np.average(self.group_rho[l:r+1],axis=0)
+
+        assert(np.sum(group_positives) == positives and np.sum(group_total)==total and np.sum(group_rho)-1<1e-4)
 
         # assert(positives/total - np.average(self.bin_values[l:r+1]) < 1e-2), f"{positives/total,np.average(self.bin_values[l:r+1])}"
 
-        rho = self.group_rho[l:r+1]*self.bin_rho[l:r+1][:,np.newaxis]
+        # rho = self.group_rho[l:r+1]*self.bin_rho[l:r+1][:,np.newaxis]
         # assert (np.sum(rho) - np.sum(self.bin_rho[l:r+1]) < 1e-3)
         # print(f"{rho = }")
         # print(f"{group_positives = }")
@@ -56,18 +60,18 @@ class wg_monotone(UMBSelect):
         # print(f"{np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0)= }")
         # print(f"{group_positives/group_total = }")
         # assert (np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0) - (group_positives/group_total)<1e-3).all(), f"{np.sum(self.group_bin_values[l:r+1]*rho,axis=0)/np.sum(rho,axis=0),group_positives/group_total}"
-        return positives, total, group_positives, group_total
+        return positives, total, group_positives, group_total, group_rho
 
 
     def _find_potential_merges(self):
-        S = np.zeros(shape=(self.n_bins,self.n_bins,self.n_bins))
+        S = np.ones(shape=(self.n_bins,self.n_bins,self.n_bins))
         for l in range(1,self.n_bins):
             for r in range(l,self.n_bins):
-                lr_positives, lr_total, lr_group_positives, lr_group_total = self._get_merged_statistics(l,r)
+                lr_positives, lr_total, lr_group_positives, lr_group_total, lr_group_rho = self._get_merged_statistics(l,r)
                 for k in range(l):
-                    kl_positives, kl_total, kl_group_positives, kl_group_total = self._get_merged_statistics(k, l-1)
-                    if (kl_group_positives*lr_group_total <= lr_group_positives * kl_group_total).all():  #can be adjacent
-                        S[l][r][k] = 1
+                    kl_positives, kl_total, kl_group_positives, kl_group_total, kl_group_rho = self._get_merged_statistics(k, l-1)
+                    if np.where(np.logical_and(lr_group_rho,kl_group_rho), np.greater(kl_group_positives*lr_group_total,lr_group_positives * kl_group_total),np.zeros(shape=kl_group_rho.shape)).any():  #can be adjacent
+                        S[l][r][k] = 0
         # print(f"{S = }")
         return S
 
@@ -193,11 +197,11 @@ class wg_monotone(UMBSelect):
 
 
         for i in range(self.recal_n_bins):
-            # assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
-            #                                                    i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
-            # assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
-            assert (self.recal_group_num_in_bin[i] > 0).all(), f"{self.group_num_in_bin}"
-            assert (self.recal_group_num_positives_in_bin[i] > 0).all()
+            assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
+                                                               i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
+            assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
+            # assert (self.recal_group_num_in_bin[i] > 0).all(), f"{self.group_num_in_bin}"
+            # assert (self.recal_group_num_positives_in_bin[i] > 0).all()
             assert (self.recal_num_positives_in_bin[i] > 0).all()
             assert (self.recal_num_in_bin[i] > 0).all()
 
@@ -218,19 +222,19 @@ class wg_monotone(UMBSelect):
         #     #
         #     # self.recal_num_positives_in_bin[i] = np.sum(self.num_positives_in_bin)
         #     # self.recal_num_in_bin[i] = np.sum(bin_idx)
-        #     for j in range(self.num_groups):
-        #         # self.recal_group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_idx, y),group_assignment[j]))
-        #         # self.recal_group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j]))
-        #         assert(self.recal_group_num_in_bin[i][j]!=0), f"{self.recal_group_num_in_bin[i][j], np.sum(group_assignment[j][bin_idx]),np.sum(bin_idx)}"
-
-            # assert(self.recal_num_in_bin[i]==np.sum(self.recal_group_num_in_bin[i])), f"{self.recal_num_in_bin[i],np.sum(self.recal_group_num_in_bin[i])}"
-            # assert(self.recal_num_positives_in_bin[i]==np.sum(self.recal_group_num_positives_in_bin[i])), f"{self.recal_num_positives_in_bin[i],np.sum(self.recal_group_num_positives_in_bin[i])}"
+        #     # for j in range(self.num_groups):
+        #     #     # self.recal_group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_idx, y),group_assignment[j]))
+        #     #     # self.recal_group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j]))
+        #     #     assert(self.recal_group_num_in_bin[i][j]!=0), f"{self.recal_group_num_in_bin[i][j], np.sum(group_assignment[j][bin_idx]),np.sum(bin_idx)}"
+        #
+        #     assert(self.recal_num_in_bin[i]==np.sum(self.recal_group_num_in_bin[i])), f"{self.recal_num_in_bin[i],np.sum(self.recal_group_num_in_bin[i])}"
+        #     assert(self.recal_num_positives_in_bin[i]==np.sum(self.recal_group_num_positives_in_bin[i])), f"{self.recal_num_positives_in_bin[i],np.sum(self.recal_group_num_positives_in_bin[i])}"
 
         self.recal_bin_rho = self.recal_num_in_bin / self.num_examples
         self.recal_bin_values = self.recal_num_positives_in_bin / self.recal_num_in_bin
 
-        # for i in range(self.recal_n_bins - 1):
-        #     assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
+        for i in range(self.recal_n_bins - 1):
+            assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
 
         # smoothing for the case where there is no sample of a particular group in some bin
         # smooth_alpha = np.ones(shape=self.recal_group_num_positives_in_bin.shape)
@@ -242,28 +246,27 @@ class wg_monotone(UMBSelect):
         #     self.recal_num_in_bin.shape[0], 1)
         # self.recal_group_bin_values = (self.recal_group_num_positives_in_bin + smooth_alpha) / (
         #             self.recal_group_num_in_bin + smooth_d)
-
-        self.recal_group_rho = (self.recal_group_num_in_bin) / (self.recal_num_in_bin).reshape(
-            self.recal_num_in_bin.shape[0], 1)
-        self.recal_group_bin_values = (self.recal_group_num_positives_in_bin) / (self.recal_group_num_in_bin)
-
+        positive_rho = np.greater(self.recal_group_num_in_bin,np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_group_rho = np.where(positive_rho,(self.recal_group_num_in_bin) / (self.recal_num_in_bin)[:,np.newaxis],np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_group_bin_values = np.where(positive_rho, self.recal_group_num_positives_in_bin / self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
         # sanity check
-        # for i in range(self.recal_n_bins):
-        #     assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
-        #     assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-4)
-        #     for j in range(self.num_groups):
-        #         if i < self.recal_n_bins-1:
-        #             assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
-        #                 f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
-        #     #     if self.recal_group_num_in_bin[i][j] == 0:
-        #     #         assert self.recal_group_rho[i][j] == 1.0/self.num_groups, f"{self.recal_group_rho[i][j], 1.0/self.num_groups}"
-        #     #     else:
-        #     #         assert self.recal_group_rho[i][j] - (self.recal_group_num_in_bin[i][j]/self.recal_num_in_bin[i])< 1e-3
-        #     #
-        #     #     if self.recal_group_num_positives_in_bin[i][j]==0:
-        #     #         assert self.recal_group_bin_values[i][j] - self.recal_bin_values[i] < 1e-2
-        #     #     else:
-        #     #         assert self.recal_group_bin_values[i][j] - (self.recal_group_num_positives_in_bin[i][j]/self.recal_group_num_in_bin[i][j]) < 1e-1
+        for i in range(self.recal_n_bins):
+            assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
+            assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-4)
+            for j in range(self.num_groups):
+                if i < self.recal_n_bins-1:
+                    assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
+                        f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
+                if self.recal_group_num_in_bin[i][j] == 0:
+                    assert self.recal_group_rho[i][j] == 0
+                else:
+                    assert self.recal_group_rho[i][j] - (self.recal_group_num_in_bin[i][j]/self.recal_num_in_bin[i])< 1e-3
+
+                if self.recal_group_num_positives_in_bin[i][j]==0:
+                    assert self.recal_group_bin_values[i][j] ==0
+                else:
+                    assert self.recal_group_bin_values[i][j] - (self.recal_group_num_positives_in_bin[i][j]/self.recal_group_num_in_bin[i][j]) < 1e-1
 
         # find threshold bin and theta
         recal_sum_scores = 0
@@ -280,6 +283,8 @@ class wg_monotone(UMBSelect):
                 break
         self.recal_b = recal_b
         self.recal_theta = recal_theta
+        print(f"{self.recal_b=}")
+        print(f"{self.recal_theta=}")
 
     def recal_select(self, scores):
         scores = scores.squeeze()
@@ -316,6 +321,7 @@ if __name__ == "__main__":
     parser.add_argument("--alpha", type=float, default=0.1, help="the failure probability")
     parser.add_argument("--B", type=int, help="the number of bins")
     parser.add_argument("--scaler_path", type=str, help="the path for the scaler")
+    parser.add_argument("--n_runs_test", type=int, help="the number of tests for estimating the expectation")
 
     args = parser.parse_args()
     k = args.k
@@ -337,12 +343,12 @@ if __name__ == "__main__":
     }
 
     with open(args.cal_data_path, 'rb') as f:
-        X_cal_est, y_cal = pickle.load(f)
-        available_features = np.setdiff1d(np.arange(X_cal_est.shape[1]), Z_indices)
-        X_cal = X_cal_est[:,available_features]
+        X_cal_all_features, y_cal = pickle.load(f)
+        available_features = np.setdiff1d(np.arange(X_cal_all_features.shape[1]), Z_indices)
+        X_cal = X_cal_all_features[:,available_features]
         # print(X_cal.shape,X_cal_est.shape)
 
-    groups = np.unique(X_cal_est[:, Z_indices])
+    groups = np.unique(X_cal_all_features[:, Z_indices])
 
 
     with open(args.classifier_path, "rb") as f:
@@ -355,23 +361,38 @@ if __name__ == "__main__":
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
     wgm = wg_monotone(args.B,Z_indices,groups,Z_map)
-    wgm.fit(X_cal_est,scores_cal, y_cal, m, k)
+    wgm.fit(X_cal_all_features,scores_cal, y_cal, m, k)
 
     # test
     with open(args.test_raw_path, "rb") as f:
-        X_test_est, y_test_raw = pickle.load(f)
+        X_test_all_features, y_test_raw = pickle.load(f)
     with open(args.scaler_path, 'rb') as f:
         scaler = pickle.load(f)
-    X_test_est = transform_except_last_dim(X_test_est, scaler)
-    X_test_raw = X_test_est[:, available_features]
+    X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
+    X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
+    total_test_selected = wgm.recal_select(scores_test_raw)
+    accuracy = wgm.get_accuracy(total_test_selected, y_test_raw)
+    group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
-    # s_test_raw = wgm.select(scores_test_raw)
-    recal_s_test_raw = wgm.recal_select(scores_test_raw)
+    #simulating pools of candidates
+    num_selected = []
+    num_qualified = []
+    for i in range(args.n_runs_test):
+        indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
+        y_test = y_test_raw[indexes]
+        scores_test = scores_test_raw[indexes]
+        recal_test_selected = wgm.recal_select(scores_test)
+        num_selected.append(calculate_expected_selected(recal_test_selected, y_test, m))
+        num_qualified.append(calculate_expected_qualified(recal_test_selected, y_test, m))
+
+
     performance_metrics = {}
-    performance_metrics["num_qualified"] = calculate_expected_qualified(recal_s_test_raw, y_test_raw, m)
-    performance_metrics["num_selected"] = calculate_expected_selected(recal_s_test_raw, y_test_raw, m)
+    performance_metrics["num_qualified"] = np.mean(num_qualified)
+    performance_metrics["num_selected"] = np.mean(num_selected)
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
+    performance_metrics["accuracy"] = accuracy
+    performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = wgm.recal_num_positives_in_bin
     performance_metrics["num_in_bin"] = wgm.recal_num_in_bin
     performance_metrics["bin_values"] = wgm.recal_bin_values
@@ -382,17 +403,7 @@ if __name__ == "__main__":
     performance_metrics["groups"] = wgm.groups
     performance_metrics["num_groups"] = wgm.num_groups
     performance_metrics["n_bins"] = wgm.recal_n_bins
-    #recalibrated
-    # performance_metrics["recal_num_positives_in_bin"] = wgm.recal_num_positives_in_bin
-    # performance_metrics["recal_num_in_bin"] = wgm.recal_num_in_bin
-    # performance_metrics["recal_bin_values"] = wgm.recal_bin_values
-    # performance_metrics["recal_group_num_positives_in_bin"] = wgm.recal_group_num_positives_in_bin
-    # performance_metrics["recal_group_num_in_bin"] = wgm.recal_group_num_in_bin
-    # performance_metrics["recal_group_bin_values"] = wgm.recal_group_bin_values
-    # performance_metrics["recal_group_rho"] = wgm.recal_group_rho
-    # performance_metrics["recal_num_qualified"] = calculate_expected_qualified(recal_s_test_raw, y_test_raw, m)
-    # performance_metrics["recal_num_selected"] = calculate_expected_selected(recal_s_test_raw, y_test_raw, m)
-    # performance_metrics["recal_constraint_satisfied"] = True if performance_metrics["recal_num_qualified"] >= k else False
+    performance_metrics["discriminated_against"] = wgm.recal_discriminated_against
 
     with open(args.result_path, 'wb') as f:
         pickle.dump(performance_metrics, f)

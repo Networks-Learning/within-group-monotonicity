@@ -22,3 +22,12 @@ if __name__ == "__main__":
     print(len(commands))
     if submit:
         submit_commands(exp_token, exp_dir, split_size, commands, submit)
+    else:
+        import random
+        from sklearn.utils import shuffle
+        perm = list(range(len(commands)))
+        random.shuffle(perm)
+        commands = [commands[idx] for idx in perm]
+        for exp_command in commands:
+            for command in exp_command:
+                os.system(command)
