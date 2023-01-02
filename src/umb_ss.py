@@ -8,7 +8,9 @@ from train_LR import NoisyLR
 from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
 from sklearn.metrics import mean_squared_error,accuracy_score
 
-
+import warnings
+warnings.filterwarnings(action='ignore',
+                        category=RuntimeWarning)  # setting ignore as a parameter and further adding category
 
 class UMBSelect(object):
     def __init__(self, n_bins, Z_indices, groups, Z_map):
@@ -18,6 +20,7 @@ class UMBSelect(object):
         self.Z_indices = Z_indices
         self.Z_map = Z_map
         self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[0]  # grouping based on values of the chosen feature, see Z_map
+        self.alpha = 0
 
         # Parameters to be learned
         self.bin_upper_edges = None
@@ -216,8 +219,8 @@ class UMBSelect(object):
                 break
         self.b = b
         self.theta = theta
-        print(f"{self.b=}")
-        print(f"{self.theta=}")
+        # print(f"{self.b=}")
+        # print(f"{self.theta=}")
 
 
 
@@ -248,9 +251,10 @@ class UMBSelect(object):
         test_group_assignment = self.group_points(X).astype(bool)
         group_accuracy = np.zeros(self.num_groups)
         for j in range(self.num_groups):
-            print(f"{np.sum(test_group_assignment[j])=}")
-            group_accuracy[j] = accuracy_score(selection[test_group_assignment[j]],y[test_group_assignment[j]])
-        print(f"{group_accuracy = }")
+            # print(f"{np.sum(test_group_assignment[j])=}")
+            # group_accuracy[j] = accuracy_score(selection[test_group_assignment[j]],y[test_group_assignment[j]])
+            group_accuracy[j] = np.average(selection[test_group_assignment[j]])
+        # print(f"{group_accuracy = }")
         return group_accuracy
 
 
@@ -349,6 +353,7 @@ if __name__ == "__main__":
     performance_metrics["num_groups"] = umb_select.num_groups
     performance_metrics["n_bins"] = umb_select.n_bins
     performance_metrics["discriminated_against"] = umb_select.discriminated_against
+    performance_metrics["alpha"] = 0
     # print(performance_metrics["group_bin_value"])
     with open(args.result_path, 'wb') as f:
         pickle.dump(performance_metrics, f)

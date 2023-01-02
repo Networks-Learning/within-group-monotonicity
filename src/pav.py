@@ -1,5 +1,5 @@
 """
-Recalibrates a given calibrated classifier so that it is within-group monotone.
+Recalibrates a given calibrated classifier so that it is within-group calibrated.
 """
 import argparse
 import pickle
@@ -9,15 +9,12 @@ from umb_ss import UMBSelect
 from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
 from sklearn.metrics import mean_squared_error,accuracy_score
 
-
-
-class WGM(UMBSelect):
+class PAV(UMBSelect):
     def __init__(self, n_bins, Z_indices, groups, Z_map):
         super().__init__(n_bins, Z_indices, groups, Z_map)
-
         # Parameters to be learned
         self.dp = None
-        self.mid_point = None
+        self.prev_point = None
         self.optimal_partition = None
         self.recal_n_bins = None
         self.recal_bin_upper_edges = None
@@ -48,39 +45,6 @@ class WGM(UMBSelect):
         assert(np.sum(group_positives) == positives and np.sum(group_total)==total and np.sum(group_rho)-1<1e-2)
 
         return positives, total, group_positives, group_total, group_rho
-
-
-    def _find_potential_merges(self):
-        S = np.ones(shape=(self.n_bins,self.n_bins,self.n_bins))
-        for l in range(1,self.n_bins):
-            for r in range(l,self.n_bins):
-                lr_positives, lr_total, lr_group_positives, lr_group_total, lr_group_rho = self._get_merged_statistics(l,r)
-                for k in range(l):
-                    kl_positives, kl_total, kl_group_positives, kl_group_total, kl_group_rho = self._get_merged_statistics(k, l-1)
-                    if np.where(np.logical_and(lr_group_rho,kl_group_rho), np.greater(kl_group_positives*lr_group_total,lr_group_positives * kl_group_total),\
-                                np.zeros(shape=kl_group_rho.shape)).any():  #can be adjacent
-                        S[l][r][k] = 0
-        # print(f"{S = }")
-        return S
-
-
-    def recalibrate(self):
-        S = self._find_potential_merges()
-        dp = np.zeros(shape = (self.n_bins,self.n_bins))
-        mid_point = np.repeat(-1,self.n_bins*self.n_bins).reshape(self.n_bins,self.n_bins)
-
-        for r in range(self.n_bins):
-            dp[0][r] = 1
-
-        for l in range(1,self.n_bins):
-            for r in range(l,self.n_bins):
-                for k in range(l):
-                    # print(f"{l =} { r =} {k = } {np.sum(S[l][r])}")
-                    if S[l][r][k] and dp[k][l-1]!=0 and dp[k][l-1]+1>dp[l][r]:
-                        dp[l][r] = dp[k][l-1] + 1
-                        mid_point[l][r] = k
-
-        return dp, mid_point
 
 
     def get_recal_upper_edges(self):
@@ -121,16 +85,65 @@ class WGM(UMBSelect):
         assert (np.sum(in_bin) == scores.size) ,f"{np.sum(in_bin), scores.size}"
         return recal_bin_assignment, recal_num_positives_in_bin, recal_num_in_bin, recal_group_num_positives_in_bin, recal_group_num_in_bin
 
-    def get_optimal_partition(self,l,r):
-        assert (self.dp is not None and self.mid_point is not None), "not yet recalibrated"
+    def _find_potential_merges(self):
+        S = np.ones(shape=(self.n_bins,self.n_bins,self.n_bins))
+        for l in range(1,self.n_bins):
+            for r in range(l,self.n_bins):
+                lr_positives, lr_total, lr_group_positives, lr_group_total, lr_group_rho = self._get_merged_statistics(l,r)
+                for k in range(l):
+                    kl_positives, kl_total, kl_group_positives, kl_group_total, kl_group_rho = self._get_merged_statistics(k, l-1)
+                    if np.where(np.logical_and(lr_group_rho,kl_group_rho), np.greater(kl_group_positives*lr_group_total,lr_group_positives * kl_group_total),\
+                                np.zeros(shape=kl_group_rho.shape)).any():  #can be adjacent
+                        S[l][r][k] = 0
+        # print(f"{S = }")
+        return S
 
-        if l == 0:
-            return [0]
 
-        if self.mid_point[l][r] == -1:
+    def recalibrate(self):
+        S = self._find_potential_merges()
+        prev_point = np.repeat(-2,self.n_bins).reshape(self.n_bins)
+        prev_point[0] = -1
+
+        for r in range(1,self.n_bins):
+            # prev_point[r] = r-1
+            l = r-1
+            while l>=0:
+                # print(f"{l,r,prev_point[l],prev_point[r]}")
+                assert prev_point[l] != -2, f"{l,r}"
+                # l_positives, l_total, l_group_positives, l_group_total, l_group_rho = self._get_merged_statistics(
+                #     prev_point[l]+1, l)
+                # r_positives, r_total, r_group_positives, r_group_total, r_group_rho = self._get_merged_statistics(
+                #     l+1, r)
+                #
+                # if np.where(np.logical_and(l_group_rho,r_group_rho), np.greater(l_group_positives*r_group_total, r_group_positives * l_group_total), np.zeros(shape=l_group_rho.shape)).any():
+                #     # prev_point[r] = prev_point[l]
+                #     l = prev_point[l]
+
+                if not S[l+1,r,prev_point[l]+1]:
+                    if prev_point[l]!=-1:
+                        l = prev_point[l]
+                    else:
+                        prev_point[r] = -1
+                        break
+
+                else:
+                    prev_point[r] = l
+                    break
+
+        return prev_point
+
+
+    def get_optimal_partition(self,r):
+        assert (self.prev_point is not None), "not yet recalibrated"
+        # print(f"{r,self.prev_point[r]}")
+        # if r == 0 or r==-1:
+        #     return [0]
+        if r==-1:
             return []
 
-        return self.get_optimal_partition(self.mid_point[l][r],l-1) + [l]
+        assert(self.prev_point[r]!=-2)
+
+        return self.get_optimal_partition(self.prev_point[r]) + [self.prev_point[r]+1]
 
 
     def fit(self, X_est, y_score, y, m, k):
@@ -139,16 +152,13 @@ class WGM(UMBSelect):
         super().fit(X_est, y_score, y, m, k)
 
         #recalibrate using algorithm 2
-        self.dp, self.mid_point = self.recalibrate()
+        self.prev_point = self.recalibrate()
 
         #get optimal partition
         recal_n_bins = -1
-        l = -1
-        for i in range(self.n_bins):
-            candidate_partition = self.get_optimal_partition(i,self.n_bins-1)
-            if len(candidate_partition)>0 and candidate_partition[0] == 0 and len(candidate_partition)>recal_n_bins:
-                l = i
-        self.optimal_partition = self.get_optimal_partition(l,self.n_bins-1)
+
+        self.optimal_partition = self.get_optimal_partition(self.prev_point[self.n_bins-1])
+        print(self.optimal_partition)
 
         self.recal_n_bins = len(self.optimal_partition)
 
@@ -188,8 +198,9 @@ class WGM(UMBSelect):
                         self.recal_discriminated_against[i][j] = np.greater(
                             self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j],
                             self.recal_group_num_positives_in_bin[i + 1][j] * self.recal_group_num_in_bin[i][j])
-                    assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
-                        f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
+                        assert (self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j] <=
+                                self.recal_group_num_positives_in_bin[i + 1][j] * self.recal_group_num_in_bin[i][j]), \
+                            f"{i, j, self.recal_group_num_positives_in_bin[i][j], self.recal_group_num_in_bin[i + 1][j], self.recal_group_num_positives_in_bin[i + 1][j], self.recal_group_num_in_bin[i][j]}"
                 if self.recal_group_num_in_bin[i][j] == 0:
                     assert self.recal_group_rho[i][j] == 0
                 else:
@@ -243,7 +254,7 @@ if __name__ == "__main__":
     parser.add_argument("--test_raw_path", type=str, help="the raw test data for sampling test data")
     parser.add_argument("--classifier_path", type=str, help="the input classifier path")
     parser.add_argument("--Z_indices", type=str, default="", help="features defining the group membership")
-    parser.add_argument("--wgm_path", type=str, help="the output wgm classifier path")
+    parser.add_argument("--pav_path", type=str, help="the output pav path")
     parser.add_argument("--result_path", type=str, help="the output selection result path")
     parser.add_argument("--k", type=float, help="the target expected number of qualified candidates")
     parser.add_argument("--m", type=float, help="the expected number of incoming candidates")
@@ -289,8 +300,8 @@ if __name__ == "__main__":
     n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    wgm = WGM(args.B,Z_indices,groups,Z_map)
-    wgm.fit(X_cal_all_features,scores_cal, y_cal, m, k)
+    pav = PAV(args.B,Z_indices,groups,Z_map)
+    pav.fit(X_cal_all_features,scores_cal, y_cal, m, k)
 
     # test
     with open(args.test_raw_path, "rb") as f:
@@ -300,9 +311,9 @@ if __name__ == "__main__":
     X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
-    total_test_selected = wgm.recal_select(scores_test_raw)
-    accuracy = wgm.get_accuracy(total_test_selected, y_test_raw)
-    group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
+    total_test_selected = pav.recal_select(scores_test_raw)
+    accuracy = pav.get_accuracy(total_test_selected, y_test_raw)
+    group_accuracy = pav.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
     #simulating pools of candidates
     num_selected = []
@@ -311,7 +322,7 @@ if __name__ == "__main__":
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
-        recal_test_selected = wgm.recal_select(scores_test)
+        recal_test_selected = pav.recal_select(scores_test)
         num_selected.append(calculate_expected_selected(recal_test_selected, y_test, m))
         num_qualified.append(calculate_expected_qualified(recal_test_selected, y_test, m))
 
@@ -322,21 +333,21 @@ if __name__ == "__main__":
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
     performance_metrics["accuracy"] = accuracy
     performance_metrics["group_accuracy"] = group_accuracy
-    performance_metrics["num_positives_in_bin"] = wgm.recal_num_positives_in_bin
-    performance_metrics["num_in_bin"] = wgm.recal_num_in_bin
-    performance_metrics["bin_values"] = wgm.recal_bin_values
-    performance_metrics["group_num_positives_in_bin"] = wgm.recal_group_num_positives_in_bin
-    performance_metrics["group_num_in_bin"] = wgm.recal_group_num_in_bin
-    performance_metrics["group_bin_values"] = wgm.recal_group_bin_values
-    performance_metrics["group_rho"] = wgm.recal_group_rho
-    performance_metrics["groups"] = wgm.groups
-    performance_metrics["num_groups"] = wgm.num_groups
-    performance_metrics["n_bins"] = wgm.recal_n_bins
-    performance_metrics["discriminated_against"] = wgm.recal_discriminated_against
+    performance_metrics["num_positives_in_bin"] = pav.recal_num_positives_in_bin
+    performance_metrics["num_in_bin"] = pav.recal_num_in_bin
+    performance_metrics["bin_values"] = pav.recal_bin_values
+    performance_metrics["group_num_positives_in_bin"] = pav.recal_group_num_positives_in_bin
+    performance_metrics["group_num_in_bin"] = pav.recal_group_num_in_bin
+    performance_metrics["group_bin_values"] = pav.recal_group_bin_values
+    performance_metrics["group_rho"] = pav.recal_group_rho
+    performance_metrics["groups"] = pav.groups
+    performance_metrics["num_groups"] = pav.num_groups
+    performance_metrics["n_bins"] = pav.recal_n_bins
+    performance_metrics["discriminated_against"] = pav.recal_discriminated_against
     performance_metrics["alpha"] = 0
 
     with open(args.result_path, 'wb') as f:
         pickle.dump(performance_metrics, f)
 
-    with open(args.wgm_path, "wb") as f:
-        pickle.dump(wgm, f)
+    with open(args.pav_path, "wb") as f:
+        pickle.dump(pav, f)

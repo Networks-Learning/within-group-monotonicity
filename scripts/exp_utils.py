@@ -7,13 +7,12 @@ import numpy as np
 from sklearn.utils import shuffle
 
 
-def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_test, k, alpha, classifier_type,
-                      umb_num_bins, train_cal_raw_path, test_raw_path, noise_ratios=[-1],generate_data = False, train_LR = False, train_umb = False):
+def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_test, k, classifier_type,
+                      umb_num_bins, train_cal_raw_path, test_raw_path, noise_ratios=[-1]):
     """
     generate a list of commands from the experiment setup
     """
     commands = []
-    print(Z)
     for Z_indices in Z:
         for n_train in n_trains:
             for noise_ratio in noise_ratios:
@@ -79,20 +78,20 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                             #                                                               n_runs_test, scaler_path)
                             #
                             exp_commands = [data_generation_command, train_classifier_command]
+                            # exp_commands = []
                             for umb_num_bin in umb_num_bins:
                                 umb_result_path = os.path.join(exp_dir, exp_identity_string +
                                                                "_umb_{}_result.pkl".format(umb_num_bin))
                                 umb_path = os.path.join(exp_dir, exp_identity_string + "_umb.pkl")
                                 umb_prediction_command = "python ./src/umb_ss.py --Z_indices {} --cal_data_path {} " \
                                                          "--test_raw_path {} --classifier_path {} --umb_path {} --result_path {} --k {}" \
-                                                         " --m {} --alpha {} --B {} " \
+                                                         " --m {} --B {} " \
                                                          "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
                                                                                    classifier_path, umb_path, umb_result_path, k, n_test,
-                                                                                   alpha, umb_num_bin, scaler_path,n_runs_test)
+                                                                                    umb_num_bin, scaler_path,n_runs_test)
                                 exp_commands.append(umb_prediction_command)
 
                                 # if train_umb:
-                                #     commands.append(umb_prediction_command)
                                     # print("training umb with {} bins".format(umb_num_bin))
                                     # if os.system(umb_prediction_command)==256:
                                     #     return
@@ -100,16 +99,39 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                 wgm_path = os.path.join(exp_dir, exp_identity_string + "_wgm.pkl")
                                 wgm_result_path = os.path.join(exp_dir, exp_identity_string + "_wgm_{}_result.pkl".format(umb_num_bin))
                                 wgm_command = "python ./src/wg_monotone.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
-                                              " --wgm_path {} --result_path {} --k {} --m {} --alpha {} --B {} " \
+                                              " --wgm_path {} --result_path {} --k {} --m {}  --B {} " \
                                               "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]),cal_data_path, test_raw_path, classifier_path, wgm_path,
-                                                                        wgm_result_path, k, n_test, alpha,umb_num_bin, scaler_path,n_runs_test)
+                                                                        wgm_result_path, k, n_test,umb_num_bin, scaler_path,n_runs_test)
                                 exp_commands.append(wgm_command)
-                                # commands.append(wgm_command)
                                 # print("training wgm starting from umb with {} bins".format(umb_num_bin))
                                 # if os.system(wgm_command)==256:
                                 #     return
 
-                            #     exp_commands.append(umb_prediction_command)
+                                wgc_path = os.path.join(exp_dir, exp_identity_string + "_wgc.pkl")
+                                wgc_result_path = os.path.join(exp_dir,
+                                                               exp_identity_string + "_wgc_{}_result.pkl".format(
+                                                                   umb_num_bin))
+                                wgc_command = "python ./src/wg_calibrated.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
+                                              " --wgc_path {} --result_path {} --k {} --m {}  --B {} " \
+                                              "--scaler_path {} --n_runs_test {}".format(
+                                    "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
+                                    classifier_path, wgc_path,
+                                    wgc_result_path, k, n_test, umb_num_bin, scaler_path, n_runs_test)
+                                exp_commands.append(wgc_command)
+
+                                pav_path = os.path.join(exp_dir, exp_identity_string + "_pav.pkl")
+                                pav_result_path = os.path.join(exp_dir,
+                                                               exp_identity_string + "_pav_{}_result.pkl".format(
+                                                                   umb_num_bin))
+                                pav_command = "python ./src/pav.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
+                                              " --pav_path {} --result_path {} --k {} --m {}  --B {} " \
+                                              "--scaler_path {} --n_runs_test {}".format(
+                                    "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
+                                    classifier_path, pav_path,
+                                    pav_result_path, k, n_test, umb_num_bin, scaler_path,
+                                    n_runs_test)
+                                exp_commands.append(pav_command)
+
                             commands.append(exp_commands)
     return commands
 
