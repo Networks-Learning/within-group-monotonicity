@@ -57,7 +57,7 @@ if __name__ == "__main__":
         algorithms = []
         results = {}
         num_bins = {}
-        the_n_cal = n_cals[0]  # for one calibration set
+        the_n_cal = n_cals[1]  # for one calibration set
         the_run = 0
         the_umb_num_bin = umb_num_bins[0]
         algorithms.append("umb_" + str(the_umb_num_bin))
@@ -140,11 +140,19 @@ if __name__ == "__main__":
 
             # axs[alg][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
             if algorithm.startswith("umb"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|a,z)$')
-                axs[row][z].set_xlabel(r'$a,z$')
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_(X))$')
             if algorithm.startswith("wgm"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|a_\mathcal{A},z)$')
-                axs[row][z].set_xlabel(r'$a_\mathcal{A},z$')
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\Bcal^*}(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\Bcal^*}(X))$')
+            if algorithm.startswith("wgc"):
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\Bcal_{cal}}(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\Bcal_{cal}}(X))$')
+
+            if algorithm.startswith("pav"):
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\Bcal_{pav}}(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\Bcal_{pav}}(X))$')
+
 
             row += 1
 
