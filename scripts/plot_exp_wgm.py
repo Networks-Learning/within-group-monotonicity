@@ -13,28 +13,29 @@ plt.rc('font', family='serif')
 if __name__ == "__main__":
     from params_exp_cal import *
     from matplotlib.ticker import StrMethodFormatter
-    fig, axs = plt.subplots(9, len(Z))
+    fig, axs = plt.subplots(12, len(Z))
 
     fig.set_size_inches(len(Z)*15, 30)
 
     Z_labels = {
         # 2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
-        2: {0:"Married or Separated", 1: "Never married", "feature":"Marital status", "num_groups":2},
-        4: {0: "With a disability", 1: "Without a disability", "feature": "Disability record","num_groups":2},
-        6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen", "feature":"Citizenship status", "num_groups":4},
-        10: {0:"Native", 1:"Foreign born", "feature":"Nativity","num_groups":2},
-        14: {0: "Male", 1:"Female", "feature":"Gender","num_groups":2},
-        15: {0: "White", 1:"Black or African American", 2:"American Indian or Alaska", 3:"Asian, Native Hawaiian or other", "feature":"Race code","num_groups":4},
-        1: {0:"No diploma", 1:"diploma", 2:"Associate or Bachelor degree", 3: "Masters or Doctorate degree", "feature":"Educational attainment","num_groups":4},
-        0: {0:"0-25", 1:"26-50", 2:"51-75", 3:"76-99", "feature":"Age","num_groups":4}
+        2: {0:"Married or Separated", 1: "Never married", "feature":"Marital status (Z)", "num_groups":2},
+        4: {0: "With a disability", 1: "Without a disability", "feature": "Disability record (Z)","num_groups":2},
+        6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen", "feature":"Citizenship status (Z)", "num_groups":4},
+        10: {0:"Native", 1:"Foreign born", "feature":"Nativity (Z)","num_groups":2},
+        14: {0: "Male", 1:"Female", "feature":"Gender (Z)","num_groups":2},
+        15: {0: "White", 1:"Black or African American", 2:"American Indian or Alaska", 3:"Asian, Native Hawaiian or other", "feature":"Race code (Z)","num_groups":4},
+        1: {0:"No diploma", 1:"diploma", 2:"Associate or Bachelor degree", 3: "Masters or Doctorate degree", "feature":"Educational attainment (Z)","num_groups":4},
+        0: {0:"0-25", 1:"26-50", 2:"51-75", 3:"76-99", "feature":"Age (Z)","num_groups":4}
     }
     algorithm_labels = {}
     algorithm_colors = {}
     algorithm_markers = {}
-    metric_labels = {"group_accuracy": r'$\Pr(Y=S|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(Y=S)$', "num_selected": r'Shortlist Size',\
-                     "alpha":r'$\alpha$'}
+    metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(Y=S)$', "num_selected": r'Shortlist Size',\
+                     "alpha":r'$\alpha$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate"}
+    xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate"}
     for umb_num_bin in umb_num_bins:
-        algorithm_labels["umb_" + str(umb_num_bin)] = "UMB {} Bins".format(umb_num_bin)
+        algorithm_labels["umb_" + str(umb_num_bin)] = "UMB"
         algorithm_labels["wgm_" + str(umb_num_bin)] = "WGM"
         algorithm_labels["wgc_" + str(umb_num_bin)] = "WGC"
         algorithm_labels["pav_" + str(umb_num_bin)] = "PAV"
@@ -42,10 +43,10 @@ if __name__ == "__main__":
         algorithm_colors["wgm_" + str(umb_num_bin)] = "tab:green"
         algorithm_colors["wgc_" + str(umb_num_bin)] = "tab:purple"
         algorithm_colors["pav_" + str(umb_num_bin)] = "tab:blue"
-        algorithm_markers["umb_" + str(umb_num_bin)] = 10
-        algorithm_markers["wgm_" + str(umb_num_bin)] = 11
+        algorithm_markers["umb_" + str(umb_num_bin)] = 8
+        algorithm_markers["wgm_" + str(umb_num_bin)] = 10
         algorithm_markers["wgc_" + str(umb_num_bin)] = 9
-        algorithm_markers["pav_" + str(umb_num_bin)] = 8
+        algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
 
     for z,Z_indices in enumerate(Z):
@@ -59,11 +60,12 @@ if __name__ == "__main__":
         num_bins = {}
         the_n_cal = n_cals[0]  # for one calibration set
         the_run = 0
-        the_umb_num_bin = umb_num_bins[1]
+        the_umb_num_bin = umb_num_bins[0]
         algorithms.append("umb_" + str(the_umb_num_bin))
         algorithms.append("wgm_" + str(the_umb_num_bin))
-        algorithms.append("wgc_" + str(the_umb_num_bin))
         algorithms.append("pav_" + str(the_umb_num_bin))
+        algorithms.append("wgc_" + str(the_umb_num_bin))
+        metrics = ["group_bin_values", "group_rho", "bin_values", "discriminated_against"]
 
         row = 0
         handles = []
@@ -75,7 +77,7 @@ if __name__ == "__main__":
                 result = pickle.load(f)
             num_bins[algorithm] = len(result["bin_values"])
 
-            metrics = ["group_bin_values", "group_rho", "bin_values", "discriminated_against"]
+
 
             for bin in range(num_bins[algorithm]):
                 results[bin] = {}
@@ -140,8 +142,8 @@ if __name__ == "__main__":
 
             # axs[alg][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
             if algorithm.startswith("umb"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_(X))$')
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f(X))$')
             if algorithm.startswith("wgm"):
                 axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X),Z)$')
                 axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X))$')
@@ -164,10 +166,11 @@ if __name__ == "__main__":
 
         algorithms.append("wgm")
         algorithms.append("umb")
-        algorithms.append("wgc")
         algorithms.append("pav")
+        algorithms.append("wgc")
 
-        metrics = ["n_bins", "accuracy", "num_selected", "alpha"]
+
+        metrics = ["n_bins", "num_selected", "alpha","fpr","tpr","group_fpr","group_tpr"]
 
         the_n_cal = n_cals[0]
 
@@ -191,7 +194,7 @@ if __name__ == "__main__":
 
         for umb_num_bin in umb_num_bins:
             for algorithm in algorithms:
-                for metric in metrics:
+                for metric in ["n_bins", "num_selected", "alpha"]:
                     results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
                         results[umb_num_bin][algorithm][metric]["values"])
                     results[umb_num_bin][algorithm][metric]["std"] = np.std(
@@ -199,13 +202,14 @@ if __name__ == "__main__":
                         ddof=1)
                 # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
 
-        for metric in metrics:
+        for metric in ["n_bins", "num_selected", "alpha"]:
             handles = []
             for algorithm in algorithms:
                 if metric=="n_bins" and algorithm=="umb":
                     continue
                 if metric=="alpha" and algorithm!="wgc":
                     continue
+
                 mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
                 std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
@@ -231,7 +235,7 @@ if __name__ == "__main__":
                 # axs[3][z].set_ylim((6, 7))
             axs[row][0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
             axs[row][0].set_ylabel(metric_labels[metric])
-            axs[row][z].set_xlabel(r'n')
+            axs[row][z].set_xlabel(xlabels["n_bins"])
 
             # axs[3][0].set_ylabel(r'Shortlist Size')
             # axs[2][0].yaxis.set_major_locator(ticker.MultipleLocator(2))
@@ -239,10 +243,44 @@ if __name__ == "__main__":
             # axs[3][0].yaxis.set_major_locator(ticker.MultipleLocator(1))
             row += 1
 
+        # plotting ROC
+        for algorithm in algorithms:
+            for metric in ["fpr", "tpr", "group_fpr", "group_tpr"]:
+                results[the_umb_num_bin][algorithm][metric]["mean"] = np.mean(
+                    results[the_umb_num_bin][algorithm][metric]["values"], axis=0)
+                results[the_umb_num_bin][algorithm][metric]["std"] = np.std(
+                    results[the_umb_num_bin][algorithm][metric]["values"], ddof=1, axis=0)
 
+        for algorithm in algorithms:
+            axs[row][z].plot(results[the_umb_num_bin][algorithm]["fpr"]["mean"],
+                             results[the_umb_num_bin][algorithm]["tpr"]["mean"], linewidth=line_width,
+                             label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                             color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                             marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+                                                                                        0]))])
+            axs[row][z].set_xlabel(xlabels["fpr"])
+        axs[row][0].set_ylabel(metric_labels["tpr"])
+        axs[row][0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+        row += 1
 
+        # plot ROC per group
+        for grp in range(num_groups):
+            for algorithm in algorithms:
+                print(results[the_umb_num_bin][algorithm]["group_fpr"]["mean"].shape)
+                axs[row][z].plot(results[the_umb_num_bin][algorithm]["group_fpr"]["mean"][grp],
+                                 results[the_umb_num_bin][algorithm]["group_tpr"]["mean"][grp],
+                                 linewidth=line_width,
+                                 label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                                 color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+                                                                                            0]))])
+                axs[row][z].set_xlabel(xlabels["fpr"])
+            axs[row][0].set_ylabel(metric_labels["tpr"])
+            axs[row][0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+            row += 1
 
         # plot group accuracy, one calibration set, multiple runs, across algorithms
+        break
         algorithms = []
         results = {}
         handles = []
@@ -282,28 +320,28 @@ if __name__ == "__main__":
                     assert (np.array(results[grp][algorithm][metric]["mean"]) >= 0).all()
 
         for metric in metrics:
-            for alg_idx,algorithm in enumerate(algorithms):
-                    mean_algorithm = np.array([results[grp][algorithm][metric]["mean"] for grp in range(num_groups)])
-                    std_algorithm = np.array([results[grp][algorithm][metric]["std"] for grp in range(num_groups)])
+            for alg_idx, algorithm in enumerate(algorithms):
+                mean_algorithm = np.array([results[grp][algorithm][metric]["mean"] for grp in range(num_groups)])
+                std_algorithm = np.array([results[grp][algorithm][metric]["std"] for grp in range(num_groups)])
 
-                    bars = axs[row][z].bar(np.arange(num_groups) - ((alg_idx - 1) * 0.2), mean_algorithm,align='edge',
-                                            width=0.1,label=algorithm_labels[algorithm], color=algorithm_colors[algorithm])
+                bars = axs[row][z].bar(np.arange(num_groups) - ((alg_idx - 1) * 0.2), mean_algorithm, align='edge',
+                                       width=0.1, label=algorithm_labels[algorithm],
+                                       color=algorithm_colors[algorithm])
 
-                    if z==0:
-                        axs[row][z].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+                if z == 0:
+                    axs[row][z].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-                    # axs[row][z].errorbar(np.arange(num_groups) - ((alg_idx - 1) * 0.2),mean_algorithm,std_algorithm,color=algorithm_colors[algorithm]\
-                    #                       ,linewidth=line_width,capthick=capthick)
-                    axs[row][0].set_ylabel(metric_labels[metric])
+                # axs[row][z].errorbar(np.arange(num_groups) - ((alg_idx - 1) * 0.2),mean_algorithm,std_algorithm,color=algorithm_colors[algorithm]\
+                #                       ,linewidth=line_width,capthick=capthick)
+                axs[row][0].set_ylabel(metric_labels[metric])
 
-                    axs[row][z].set_xticks(range(num_groups))
-                    axs[row][z].set_xticklabels([Z_labels[Z_indices[0]][i] for i in range(num_groups)])
-                    # axs[alg][z].set_yticks([])
-                    # axs[alg][z].set_ylim((0,1))
+                axs[row][z].set_xticks(range(num_groups))
+                axs[row][z].set_xticklabels([Z_labels[Z_indices[0]][i] for i in range(num_groups)])
+                # axs[alg][z].set_yticks([])
+                # axs[alg][z].set_ylim((0,1))
 
-                # axs[alg][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
+            # axs[alg][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
             row += 1
-
 
 
         # plotting num bins of wgm vs umb number of bins for different umb bin numbers

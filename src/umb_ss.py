@@ -4,9 +4,8 @@ Select a Shortlist of Applicants Based on Uniform Mass Binning (details in the p
 import argparse
 import pickle
 import numpy as np
-from train_LR import NoisyLR
 from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
-from sklearn.metrics import mean_squared_error,accuracy_score
+from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score
 
 import warnings
 warnings.filterwarnings(action='ignore',
@@ -102,7 +101,7 @@ class UMBSelect(object):
         assert(np.sum(in_bin) == scores.size), f"{np.sum(in_bin), scores.size}"
         assert(bin_assignment>=0).all()
         assert (bin_assignment < self.n_bins).all(), f"{bin_assignment}"
-        return bin_assignment
+        return bin_assignment.astype(int)
 
     def group_points(self, X_est):
         assert (self.num_groups is not None), "Group number not set"
@@ -244,18 +243,32 @@ class UMBSelect(object):
         return s
 
 
-    def get_accuracy(self, selection, y):
-        return accuracy_score(selection, y)
+    def get_test_roc(self, X, scores, y):
+        scores = scores.squeeze()
+        # assign test data to bins
+        test_bins = self._bin_points(scores)
+        y_prob = self.bin_values[test_bins]
+        fpr, tpr, _ = roc_curve(y,y_prob)
 
-    def get_group_accuracy(self,selection, X, y):
         test_group_assignment = self.group_points(X).astype(bool)
-        group_accuracy = np.zeros(self.num_groups)
+
+        group_fpr = np.zeros(shape = (self.num_groups,self.n_bins+1))
+        group_tpr = np.zeros(shape = (self.num_groups,self.n_bins+1))
+        #
+        for j in range(self.num_groups):
+            group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
+            # print(f"{thresholds,self.bin_values}")
+        return fpr, tpr, group_fpr, group_tpr
+
+    def get_shortlist_group_accuracy(self,selection, X, y):
+        test_group_assignment = self.group_points(X).astype(bool)
+        shortlist_group_accuracy = np.zeros(self.num_groups)
         for j in range(self.num_groups):
             # print(f"{np.sum(test_group_assignment[j])=}")
-            # group_accuracy[j] = accuracy_score(selection[test_group_assignment[j]],y[test_group_assignment[j]])
-            group_accuracy[j] = np.average(selection[test_group_assignment[j]])
+            shortlist_group_accuracy[j] = accuracy_score(selection[test_group_assignment[j]],y[test_group_assignment[j]])
+            # group_accuracy[j] = np.average(selection[test_group_assignment[j]])
         # print(f"{group_accuracy = }")
-        return group_accuracy
+        return shortlist_group_accuracy
 
 
 
@@ -322,8 +335,8 @@ if __name__ == "__main__":
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     total_test_selected = umb_select.select(scores_test_raw)
-    accuracy = umb_select.get_accuracy(total_test_selected,y_test_raw)
-    group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
+    fpr, tpr, group_fpr, group_tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+    # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
     # simulating pools of candidates
     num_selected = []
@@ -340,8 +353,13 @@ if __name__ == "__main__":
     performance_metrics["num_qualified"] = np.mean(num_qualified)
     performance_metrics["num_selected"] = np.mean(num_selected)
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
-    performance_metrics["accuracy"] = accuracy
-    performance_metrics["group_accuracy"] = group_accuracy
+    performance_metrics["fpr"] = fpr
+    performance_metrics["tpr"] = tpr
+    performance_metrics["group_fpr"] = group_fpr
+    performance_metrics["group_tpr"] = group_tpr
+    # performance_metrics["accuracy"] = accuracy
+    # performance_metrics["MSE"] = MSE
+    # performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = umb_select.num_positives_in_bin
     performance_metrics["num_in_bin"] = umb_select.num_in_bin
     performance_metrics["bin_values"] = umb_select.bin_values

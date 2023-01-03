@@ -26,9 +26,15 @@ if __name__ == "__main__":
     else:
         import random
         from sklearn.utils import shuffle
+        import time
         perm = list(range(len(commands)))
         random.shuffle(perm)
         commands = [commands[idx] for idx in perm]
         for exp_command in commands:
+
             for command in exp_command:
+                start = time.time()
+                print(command[:command.find('.py')])
                 os.system(command)
+                end = time.time()
+                print(end - start)

@@ -4,50 +4,50 @@ Recalibrates a given calibrated classifier so that it is within-group monotone.
 import argparse
 import pickle
 import numpy as np
-from train_LR import NoisyLR
 from umb_ss import UMBSelect
-from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
-from sklearn.metrics import mean_squared_error,accuracy_score
+from partition import BinPartition
+from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim, Z_map
+from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score
 
 
 
-class WGM(UMBSelect):
+class WGM(BinPartition):
     def __init__(self, n_bins, Z_indices, groups, Z_map):
         super().__init__(n_bins, Z_indices, groups, Z_map)
 
-        # Parameters to be learned
-        self.dp = None
-        self.mid_point = None
-        self.optimal_partition = None
-        self.recal_n_bins = None
-        self.recal_bin_upper_edges = None
-        self.recal_num_positives_in_bin = None
-        self.recal_num_in_bin = None
-        self.recal_bin_values = None
-        self.recal_bin_rho = None
-        self.num_examples = None
-        self.epsilon = None
-        self.b = None
-        self.theta = None
-        # self.num_groups = None
-        self.recal_group_num_positives_in_bin = None
-        self.recal_group_num_in_bin = None
-        self.recal_group_rho = None
-        self.recal_group_bin_values = None
-        self.recal_b = None
-        self.recal_theta = None
-        self.recal_discriminated_against = None
+        # # Parameters to be learned
+        # self.dp = None
+        # self.mid_point = None
+        # self.optimal_partition = None
+        # self.recal_n_bins = None
+        # self.recal_bin_upper_edges = None
+        # self.recal_num_positives_in_bin = None
+        # self.recal_num_in_bin = None
+        # self.recal_bin_values = None
+        # self.recal_bin_rho = None
+        # self.num_examples = None
+        # self.epsilon = None
+        # self.b = None
+        # self.theta = None
+        # # self.num_groups = None
+        # self.recal_group_num_positives_in_bin = None
+        # self.recal_group_num_in_bin = None
+        # self.recal_group_rho = None
+        # self.recal_group_bin_values = None
+        # self.recal_b = None
+        # self.recal_theta = None
+        # self.recal_discriminated_against = None
 
-    def _get_merged_statistics(self, l, r):
-        positives = np.sum(self.num_positives_in_bin[l:r+1])
-        total = np.sum(self.num_in_bin[l:r+1])
-        group_positives = np.sum(self.group_num_positives_in_bin[l:r+1],axis=0)
-        group_total = np.sum(self.group_num_in_bin[l:r+1],axis=0)
-        group_rho = np.average(self.group_rho[l:r+1],axis=0)
-
-        assert(np.sum(group_positives) == positives and np.sum(group_total)==total and np.sum(group_rho)-1<1e-2)
-
-        return positives, total, group_positives, group_total, group_rho
+    # def _get_merged_statistics(self, l, r):
+    #     positives = np.sum(self.num_positives_in_bin[l:r+1])
+    #     total = np.sum(self.num_in_bin[l:r+1])
+    #     group_positives = np.sum(self.group_num_positives_in_bin[l:r+1],axis=0)
+    #     group_total = np.sum(self.group_num_in_bin[l:r+1],axis=0)
+    #     group_rho = np.average(self.group_rho[l:r+1],axis=0)
+    #
+    #     assert(np.sum(group_positives) == positives and np.sum(group_total)==total and np.sum(group_rho)-1<1e-2)
+    #
+    #     return positives, total, group_positives, group_total, group_rho
 
 
     def _find_potential_merges(self):
@@ -60,7 +60,6 @@ class WGM(UMBSelect):
                     if np.where(np.logical_and(lr_group_rho,kl_group_rho), np.greater(kl_group_positives*lr_group_total,lr_group_positives * kl_group_total),\
                                 np.zeros(shape=kl_group_rho.shape)).any():  #can be adjacent
                         S[l][r][k] = 0
-        # print(f"{S = }")
         return S
 
 
@@ -83,47 +82,46 @@ class WGM(UMBSelect):
         return dp, mid_point
 
 
-    def get_recal_upper_edges(self):
-        assert (self.recal_n_bins is not None and self.optimal_partition is not None), "not yet recalibrated"
-        recal_bin_upper_edges = []
-        for i in range(len(self.optimal_partition)):
-            recal_bin_upper_edges.append(self.bin_upper_edges[self.optimal_partition[i]])
-
-        assert len(recal_bin_upper_edges) == len(self.optimal_partition)
-
-
-        return np.array(recal_bin_upper_edges)
-
-
-    def get_recal_bin_points(self, scores):
-        assert self.recal_n_bins is not None and self.optimal_partition is not None
-        recal_bin_assignment = np.empty(shape=scores.size)
-        bin_assignment = self._bin_points(scores)
-        in_bin = np.empty(shape=(self.recal_n_bins, scores.size))
-
-        recal_num_in_bin = np.empty(self.recal_n_bins)
-        recal_num_positives_in_bin = np.empty(self.recal_n_bins)
-        recal_group_num_positives_in_bin = np.empty(shape=(self.recal_n_bins, self.num_groups))
-        recal_group_num_in_bin = np.empty(shape=(self.recal_n_bins, self.num_groups))
-        optimal_partition = np.append(self.optimal_partition, self.n_bins)
-
-        for i in range(self.recal_n_bins):
-            in_bin[i] = (np.logical_and(bin_assignment >= optimal_partition[i], bin_assignment < optimal_partition[i+1]))
-            recal_bin_assignment[in_bin[i].astype(bool)] = i
-            recal_num_positives_in_bin[i] = np.sum(self.num_positives_in_bin[optimal_partition[i]:optimal_partition[i+1]])
-            recal_num_in_bin[i] = np.sum(self.num_in_bin[optimal_partition[i]:optimal_partition[i+1]])
-            for j in range(self.num_groups):
-                recal_group_num_positives_in_bin[i][j] = np.sum(self.group_num_positives_in_bin[optimal_partition[i]:optimal_partition[i+1],j])
-                recal_group_num_in_bin[i][j] = np.sum(
-                    self.group_num_in_bin[optimal_partition[i]:optimal_partition[i + 1],j])
+    # def get_recal_upper_edges(self):
+    #     assert (self.recal_n_bins is not None and self.optimal_partition is not None), "not yet recalibrated"
+    #     recal_bin_upper_edges = []
+    #     for i in range(len(self.optimal_partition)):
+    #         recal_bin_upper_edges.append(self.bin_upper_edges[self.optimal_partition[i]])
+    #
+    #     assert len(recal_bin_upper_edges) == len(self.optimal_partition)
+    #
+    #
+    #     return np.array(recal_bin_upper_edges)
 
 
-        assert (np.sum(in_bin) == scores.size) ,f"{np.sum(in_bin), scores.size}"
-        return recal_bin_assignment, recal_num_positives_in_bin, recal_num_in_bin, recal_group_num_positives_in_bin, recal_group_num_in_bin
+    # def get_recal_bin_points(self, scores):
+    #     assert self.recal_n_bins is not None and self.optimal_partition is not None
+    #     recal_bin_assignment = np.empty(shape=scores.size)
+    #     bin_assignment = self._bin_points(scores)
+    #     in_bin = np.empty(shape=(self.recal_n_bins, scores.size))
+    #
+    #     recal_num_in_bin = np.empty(self.recal_n_bins)
+    #     recal_num_positives_in_bin = np.empty(self.recal_n_bins)
+    #     recal_group_num_positives_in_bin = np.empty(shape=(self.recal_n_bins, self.num_groups))
+    #     recal_group_num_in_bin = np.empty(shape=(self.recal_n_bins, self.num_groups))
+    #     optimal_partition = np.append(self.optimal_partition, self.n_bins)
+    #
+    #     for i in range(self.recal_n_bins):
+    #         in_bin[i] = (np.logical_and(bin_assignment >= optimal_partition[i], bin_assignment < optimal_partition[i+1]))
+    #         recal_bin_assignment[in_bin[i].astype(bool)] = i
+    #         recal_num_positives_in_bin[i] = np.sum(self.num_positives_in_bin[optimal_partition[i]:optimal_partition[i+1]])
+    #         recal_num_in_bin[i] = np.sum(self.num_in_bin[optimal_partition[i]:optimal_partition[i+1]])
+    #         for j in range(self.num_groups):
+    #             recal_group_num_positives_in_bin[i][j] = np.sum(self.group_num_positives_in_bin[optimal_partition[i]:optimal_partition[i+1],j])
+    #             recal_group_num_in_bin[i][j] = np.sum(
+    #                 self.group_num_in_bin[optimal_partition[i]:optimal_partition[i + 1],j])
+    #
+    #
+    #     assert (np.sum(in_bin) == scores.size) ,f"{np.sum(in_bin), scores.size}"
+    #     return recal_bin_assignment.astype(int), recal_num_positives_in_bin, recal_num_in_bin, recal_group_num_positives_in_bin, recal_group_num_in_bin
 
     def get_optimal_partition(self,l,r):
         assert (self.dp is not None and self.mid_point is not None), "not yet recalibrated"
-
         if l == 0:
             return [0]
 
@@ -153,88 +151,117 @@ class WGM(UMBSelect):
         self.recal_n_bins = len(self.optimal_partition)
 
         #get new upper edges
-
         recal_bin_assignment, self.recal_num_positives_in_bin, self.recal_num_in_bin, self.recal_group_num_positives_in_bin,\
         self.recal_group_num_in_bin = self.get_recal_bin_points(y_score)
 
 
-        for i in range(self.recal_n_bins):
-            assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
-                                                               i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
-            assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
-            assert (self.recal_num_in_bin[i] > 0).all()
+        # for i in range(self.recal_n_bins):
+        #     assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[
+        #                                                        i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
+        #     assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
+        #     assert (self.recal_num_in_bin[i] > 0).all()
 
         group_assignment = self.group_points(X_est)
-        assert np.sum([recal_bin_assignment==i for i in range(self.recal_n_bins)])==X_est.shape[0], f"{np.sum([recal_bin_assignment==i for i in range(self.recal_n_bins)]), X_est.shape[0]}"
+        assert np.sum([recal_bin_assignment==i for i in range(self.recal_n_bins)])==X_est.shape[0]
         assert np.sum(group_assignment) == X_est.shape[0]
 
         self.recal_bin_rho = self.recal_num_in_bin / self.num_examples
         self.recal_bin_values = self.recal_num_positives_in_bin / self.recal_num_in_bin
 
-        for i in range(self.recal_n_bins - 1):
-            assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
+        # for i in range(self.recal_n_bins - 1):
+        #     assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
 
-        positive_group_rho = np.greater(self.recal_group_num_in_bin,np.zeros(shape=self.recal_group_num_in_bin.shape))
-        self.recal_group_rho = np.where(positive_group_rho,(self.recal_group_num_in_bin) / (self.recal_num_in_bin)[:,np.newaxis],np.zeros(shape=self.recal_group_num_in_bin.shape))
-        self.recal_group_bin_values = np.where(positive_group_rho, self.recal_group_num_positives_in_bin / self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
-        self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
-        # sanity check
-        for i in range(self.recal_n_bins):
-            assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
-            assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-2)
-            for j in range(self.num_groups):
-                if i < self.recal_n_bins-1:
-                    if positive_group_rho[i][j]:
-                        self.recal_discriminated_against[i][j] = np.greater(
-                            self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j],
-                            self.recal_group_num_positives_in_bin[i + 1][j] * self.recal_group_num_in_bin[i][j])
-                    assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
-                        f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
-                if self.recal_group_num_in_bin[i][j] == 0:
-                    assert self.recal_group_rho[i][j] == 0
-                else:
-                    assert self.recal_group_rho[i][j] * self.recal_num_in_bin[i] - self.recal_group_num_in_bin[i][j]< 1e-2
+        positive_group_rho = np.greater(self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_group_rho = np.where(positive_group_rho,
+                                        (self.recal_group_num_in_bin) / (self.recal_num_in_bin)[:, np.newaxis],
+                                        np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_group_bin_values = np.where(positive_group_rho,
+                                               self.recal_group_num_positives_in_bin / self.recal_group_num_in_bin,
+                                               np.zeros(shape=self.recal_group_num_in_bin.shape))
 
-                if self.recal_group_num_positives_in_bin[i][j]==0:
-                    assert self.recal_group_bin_values[i][j] ==0
-                else:
-                    assert self.recal_group_bin_values[i][j]*self.recal_group_num_in_bin[i][j] - self.recal_group_num_positives_in_bin[i][j]< 1e-2
+        self.find_discriminations()
+        assert np.sum(self.recal_discriminated_against) == 0
+
+        self.sanity_check()
+
+        # assert np.sum(self.recal_discriminated_against)==0   #within-group monotonicity
+        # self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
+        #
+        # # sanity check
+        # for i in range(self.recal_n_bins):
+        #     assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3), f"{self.recal_group_rho[i], self.recal_group_bin_values[i], self.recal_bin_values[i]}"
+        #     assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-2)
+        #     for j in range(self.num_groups):
+        #         if i < self.recal_n_bins-1:
+        #             if positive_group_rho[i][j]:
+        #                 self.recal_discriminated_against[i][j] = np.greater(
+        #                     self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j],
+        #                     self.recal_group_num_positives_in_bin[i + 1][j] * self.recal_group_num_in_bin[i][j])
+        #             assert(self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i+1][j]<=self.recal_group_num_positives_in_bin[i+1][j]*self.recal_group_num_in_bin[i][j]),\
+        #                 f"{i, j, self.recal_group_num_positives_in_bin[i][j],self.recal_group_num_in_bin[i+1][j],self.recal_group_num_positives_in_bin[i+1][j],self.recal_group_num_in_bin[i][j]}"   #within-group monotonicity
+        #         if self.recal_group_num_in_bin[i][j] == 0:
+        #             assert self.recal_group_rho[i][j] == 0
+        #         else:
+        #             assert self.recal_group_rho[i][j] * self.recal_num_in_bin[i] - self.recal_group_num_in_bin[i][j]< 1e-2
+        #
+        #         if self.recal_group_num_positives_in_bin[i][j]==0:
+        #             assert self.recal_group_bin_values[i][j] ==0
+        #         else:
+        #             assert self.recal_group_bin_values[i][j]*self.recal_group_num_in_bin[i][j] - self.recal_group_num_positives_in_bin[i][j]< 1e-2
 
         # find threshold bin and theta
-        recal_sum_scores = 0
-        recal_b = 0  # bin on the threshold
-        recal_theta = 1.
-        for i in reversed(range(self.recal_n_bins)):
-            recal_sum_scores += m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
-            if recal_sum_scores >= k:
-                recal_sum_scores -= m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
-                recal_b = i
-                recal_theta = (k - recal_sum_scores) / (
-                            m * (self.recal_num_positives_in_bin[i] / self.num_examples
-                                 - self.epsilon))
-                break
-        self.recal_b = recal_b
-        self.recal_theta = recal_theta
+        self.recal_b, self.recal_theta = self.get_recal_threshold(m,k)
+        # recal_sum_scores = 0
+        # recal_b = 0  # bin on the threshold
+        # recal_theta = 1.
+        # for i in reversed(range(self.recal_n_bins)):
+        #     recal_sum_scores += m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
+        #     if recal_sum_scores >= k:
+        #         recal_sum_scores -= m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
+        #         recal_b = i
+        #         recal_theta = (k - recal_sum_scores) / (
+        #                     m * (self.recal_num_positives_in_bin[i] / self.num_examples
+        #                          - self.epsilon))
+        #         break
+        # self.recal_b = recal_b
+        # self.recal_theta = recal_theta
         # print(f"{self.recal_b=}")
         # print(f"{self.recal_theta=}")
 
-    def recal_select(self, scores):
-        scores = scores.squeeze()
-        size = scores.size
+    # def recal_select(self, scores):
+    #     scores = scores.squeeze()
+    #     size = scores.size
+    #
+    #     # assign test data to bins
+    #     test_bins,_,_,_,_ = self.get_recal_bin_points(scores)
+    #
+    #     # make decisions
+    #     s = np.zeros(size, dtype=bool)
+    #     for i in range(size):
+    #         if test_bins[i] > self.recal_b:
+    #             s[i] = True
+    #         elif test_bins[i] == self.recal_b:
+    #             s[i] = bool(np.random.binomial(1, self.recal_theta))
+    #         else:
+    #             s[i] = False
+    #     return s
 
-        # assign test data to bins
-        test_bins,_,_,_,_ = self.get_recal_bin_points(scores)
-
-        # make decisions
-        s = np.zeros(size, dtype=bool)
-        for i in range(size):
-            if test_bins[i] > self.recal_b:
-                s[i] = True
-            elif test_bins[i] == self.recal_b:
-                s[i] = bool(np.random.binomial(1, self.recal_theta))
-            else:
-                s[i] = False
-        return s
+    # def recal_get_test_roc(self, X, scores, y):
+    #     scores = scores.squeeze()
+    #     # assign test data to bins
+    #     test_bins,_,_,_,_ = self.get_recal_bin_points(scores)
+    #     y_prob = self.recal_bin_values[test_bins]
+    #     fpr, tpr, _ = roc_curve(y,y_prob)
+    #
+    #     test_group_assignment = self.group_points(X).astype(bool)
+    #
+    #     group_fpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
+    #     group_tpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
+    #     #
+    #     for j in range(self.num_groups):
+    #         group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
+    #         # print(f"{thresholds,self.recal_bin_values}")
+    #     return fpr, tpr, group_fpr, group_tpr
 
 
 if __name__ == "__main__":
@@ -259,32 +286,17 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     Z_indices = [int(index) for index in args.Z_indices.split('_')]
-    def list_maker(val,n):
-        return [val]*n
-    Z_map = {
-        15: [0] + [1] + list_maker(2,3) + list_maker(3,4),
-        1: list_maker(0,16)+list_maker(1,4)+list_maker(2,2)+list_maker(3,3),
-        0: list_maker(0,25) + list_maker(1,25) + list_maker(2,25) + list_maker(3,25),
-        14: [0,1],
-        4: [0,1],
-        6: [0,1,2,2,3],
-        2: [0,0,0,0,1]
-    }
+
 
     with open(args.cal_data_path, 'rb') as f:
         X_cal_all_features, y_cal = pickle.load(f)
         available_features = np.setdiff1d(np.arange(X_cal_all_features.shape[1]), Z_indices)
         X_cal = X_cal_all_features[:,available_features]
-        # print(X_cal.shape,X_cal_est.shape)
 
     groups = np.unique(X_cal_all_features[:, Z_indices])
 
-
     with open(args.classifier_path, "rb") as f:
         classifier = pickle.load(f)
-
-    # with open(args.calibrated_classifier_path, "rb") as f:
-    #     calibrated_classifier = pickle.load(f)
 
     n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
@@ -300,9 +312,9 @@ if __name__ == "__main__":
     X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
-    total_test_selected = wgm.recal_select(scores_test_raw)
-    accuracy = wgm.get_accuracy(total_test_selected, y_test_raw)
-    group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
+    # total_test_selected = wgm.recal_select(scores_test_raw)
+    fpr, tpr, group_fpr, group_tpr = wgm.recal_get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+    # group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
     #simulating pools of candidates
     num_selected = []
@@ -320,8 +332,12 @@ if __name__ == "__main__":
     performance_metrics["num_qualified"] = np.mean(num_qualified)
     performance_metrics["num_selected"] = np.mean(num_selected)
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
-    performance_metrics["accuracy"] = accuracy
-    performance_metrics["group_accuracy"] = group_accuracy
+    # performance_metrics["accuracy"] = accuracy
+    performance_metrics["fpr"] = fpr
+    performance_metrics["tpr"] = tpr
+    performance_metrics["group_fpr"] = group_fpr
+    performance_metrics["group_tpr"] = group_tpr
+    # performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = wgm.recal_num_positives_in_bin
     performance_metrics["num_in_bin"] = wgm.recal_num_in_bin
     performance_metrics["bin_values"] = wgm.recal_bin_values

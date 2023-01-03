@@ -72,11 +72,11 @@ if __name__ == "__main__":
     if args.noise_ratio_min < 0.:
         classifier = LogisticRegression(C=C).fit(X, y)
 
-        print("---calibration---")
-        # print("----MSE")
-        # print(mean_squared_error(classifier.predict_proba(X_cal)[:,1], y_cal * 1.))
-        print("----Accuracy")
-        print(accuracy_score(classifier.predict(X_cal), y_cal))
+        # print("---calibration---")
+        # # print("----MSE")
+        # # print(mean_squared_error(classifier.predict_proba(X_cal)[:,1], y_cal * 1.))
+        # print("----Accuracy")
+        # print(accuracy_score(classifier.predict(X_cal), y_cal))
 
     else:
         classifier = NoisyLR(C=C).fit(X, y)
@@ -84,18 +84,18 @@ if __name__ == "__main__":
         noise_ratio["maj"] = args.noise_ratio_maj
         noise_ratio["min"] = args.noise_ratio_min
         classifier.set_noise_ratio(noise_ratio)
-        print("---Train---")
-        print("----MSE")
-        print(mean_squared_error(classifier.predict_proba(X)[:, 1], y * 1.))
-        print("----Accuracy")
-        print(accuracy_score(classifier.predict(X), y))
-
-
-        print("---calibration---")
-        print("----MSE")
-        print(mean_squared_error(classifier.predict_proba(X_cal)[:, 1], y_cal * 1.))
-        print("----Accuracy")
-        print(accuracy_score(classifier.predict(X_cal), y_cal))
+        # print("---Train---")
+        # print("----MSE")
+        # print(mean_squared_error(classifier.predict_proba(X)[:, 1], y * 1.))
+        # print("----Accuracy")
+        # print(accuracy_score(classifier.predict(X), y))
+        #
+        #
+        # print("---calibration---")
+        # print("----MSE")
+        # print(mean_squared_error(classifier.predict_proba(X_cal)[:, 1], y_cal * 1.))
+        # print("----Accuracy")
+        # print(accuracy_score(classifier.predict(X_cal), y_cal))
 
 
     with open(args.classifier_path, "wb") as f:

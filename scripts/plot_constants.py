@@ -6,6 +6,7 @@ params = {'legend.fontsize': 16,#28,
           'errorbar.capsize': 8.0,
             'axes.labelsize' : 24,
             'text.usetex'  : True,
+            'text.latex.preamble': r'\usepackage{amsmath}',
             'font.family': 'serif',
           }
 
