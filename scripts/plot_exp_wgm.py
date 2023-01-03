@@ -60,7 +60,7 @@ if __name__ == "__main__":
         num_bins = {}
         the_n_cal = n_cals[0]  # for one calibration set
         the_run = 0
-        the_umb_num_bin = umb_num_bins[0]
+        the_umb_num_bin = umb_num_bins[1]
         algorithms.append("umb_" + str(the_umb_num_bin))
         algorithms.append("wgm_" + str(the_umb_num_bin))
         algorithms.append("pav_" + str(the_umb_num_bin))
