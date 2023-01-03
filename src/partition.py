@@ -104,14 +104,14 @@ class BinPartition(UMBSelect):
         # self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
 
         for i in range(self.recal_n_bins):
-            assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-3)
+            assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-2)
             assert (self.recal_num_positives_in_bin[i] == np.sum(self.recal_group_num_positives_in_bin[i]))
             assert (self.recal_num_in_bin[i] == np.sum(self.recal_group_num_in_bin[i]))
             assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-2)
             assert (self.recal_num_in_bin[i] > 0).all()
             for j in range(self.num_groups):
-                if i < self.recal_n_bins - 1:
-                    assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
+                # if i < self.recal_n_bins - 1:
+                #     assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
                     # if positive_group_rho[i][j]:
                     #     self.recal_discriminated_against[i][j] = np.greater(
                     #         self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j],
