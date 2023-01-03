@@ -143,15 +143,15 @@ if __name__ == "__main__":
                 axs[row][0].set_ylabel(r'$\Pr(Y=1|f_(X),Z)$')
                 axs[row][z].set_xlabel(r'$\Pr(Y=1|f_(X))$')
             if algorithm.startswith("wgm"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{{\mathcal{B}}^*}(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{{\mathcal{B}}^*}(X))$')
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X))$')
             if algorithm.startswith("wgc"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{{\mathcal{B}}_{cal}}(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{{\mathcal{B}}_{cal}}(X))$')
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X))$')
 
             if algorithm.startswith("pav"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{{\mathcal{B}}_{pav}}(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{{\mathcal{B}}_{pav}}(X))$')
+                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X),Z)$')
+                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X))$')
 
 
             row += 1
