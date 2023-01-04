@@ -85,6 +85,9 @@ if __name__ == "__main__":
                 if metric=="n_bins" and algorithm=="umb":
                     continue
 
+                if metric=="num_selected" and algorithm=="wgc":
+                    continue
+
                 mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
                 std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
