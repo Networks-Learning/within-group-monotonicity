@@ -86,6 +86,7 @@ if __name__ == "__main__":
                     continue
 
                 if metric=="num_selected" and algorithm=="wgc":
+                    print("here")
                     continue
 
                 mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
