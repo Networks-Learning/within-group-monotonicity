@@ -110,8 +110,8 @@ class BinPartition(UMBSelect):
             assert (np.sum(self.recal_group_rho[i]) - 1.0 < 1e-2)
             assert (self.recal_num_in_bin[i] > 0).all()
             for j in range(self.num_groups):
-                # if i < self.recal_n_bins - 1:
-                #     assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
+                if i < self.recal_n_bins - 1:
+                    assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
                     # if positive_group_rho[i][j]:
                     #     self.recal_discriminated_against[i][j] = np.greater(
                     #         self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j],
@@ -179,10 +179,10 @@ class BinPartition(UMBSelect):
 
         test_group_assignment = self.group_points(X).astype(bool)
 
-        group_fpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
-        group_tpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
-        #
-        for j in range(self.num_groups):
-            group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
+        # group_fpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
+        # group_tpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
+        # #
+        # for j in range(self.num_groups):
+        #     group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
             # print(f"{thresholds,self.recal_bin_values}")
-        return fpr, tpr, group_fpr, group_tpr
+        return fpr, tpr#, group_fpr, group_tpr

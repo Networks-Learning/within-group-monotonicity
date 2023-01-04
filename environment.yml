@@ -1,4 +1,4 @@
-name: alg_screen
+name: wgm
 channels:
   - defaults
 dependencies:

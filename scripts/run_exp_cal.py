@@ -3,7 +3,8 @@ Run the experiments where we vary the amount of calibration data.
 """
 import os
 from exp_utils import generate_commands, submit_commands
-from params_exp_cal import *
+from params_exp_bins import *
+# from params_exp_violations import *
 if __name__ == "__main__":
 
     if not os.path.isdir(exp_dir):
@@ -31,7 +32,6 @@ if __name__ == "__main__":
         random.shuffle(perm)
         commands = [commands[idx] for idx in perm]
         for exp_command in commands:
-
             for command in exp_command:
                 start = time.time()
                 print(command[:command.find('.py')])

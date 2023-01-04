@@ -1,13 +1,14 @@
 import pickle
-params = {'legend.fontsize': 16,#28,
-          'xtick.labelsize': 24,
+params = {'legend.fontsize': 20,#28,
+          'xtick.labelsize': 26,
           'ytick.labelsize': 28,
           'lines.markersize': 15,
           'errorbar.capsize': 8.0,
-            'axes.labelsize' : 24,
+            'axes.labelsize' : 28,
             'text.usetex'  : True,
             'text.latex.preamble': r'\usepackage{amsmath}',
             'font.family': 'serif',
+          'axes.titlesize':26
           }
 
 
@@ -16,30 +17,34 @@ transparency = 0.1
 font_size = 24
 capthick = 3.0
 dpi = 100
+fig_width = 28
+fig_height = 6
+
+Z_labels = {
+        # 2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
+        2: {0:"Married or Separated", 1: "Never married", "feature":"Marital status (Z)", "num_groups":2},
+        4: {0: "With a disability", 1: "Without a disability", "feature": "Disability record (Z)","num_groups":2},
+        6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen", "feature":"Citizenship status (Z)", "num_groups":4},
+        10: {0:"Native", 1:"Foreign born", "feature":"Nativity (Z)","num_groups":2},
+        14: {0: "Male", 1:"Female", "feature":"Gender (Z)","num_groups":2},
+        15: {0: "White", 1:"Black or African American", 2:"American Indian or Alaska", 3:"Asian, Native Hawaiian or other", "feature":"Race code (Z)","num_groups":4},
+        1: {0:"No diploma", 1:"diploma", 2:"Associate or Bachelor degree", 3: "Masters or Doctorate degree", "feature":"Educational attainment (Z)","num_groups":4},
+        0: {0:"0-25", 1:"26-50", 2:"51-75", 3:"76-99", "feature":"Age (Z)","num_groups":4}
+    }
+algorithm_labels = {}
+algorithm_colors = {}
+algorithm_markers = {}
+metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(Y=S)$', "num_selected": r'Shortlist Size',\
+                 "alpha":r'$\alpha$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate"}
+xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate"}
+
 
 
 def collect_results_normal_exp(result_path, exp_parameter, algorithm, results, metrics):
     with open(result_path, 'rb') as f:
         result = pickle.load(f)
-    # print(result)
-    # print(result["bin_value"].shape)
-    # print(result["group_bin_value"][exp_parameter].shape)
-    # results[exp_parameter][algorithm]["num_selected"]["values"].append(result["num_selected"])
-    # results[exp_parameter][algorithm]["num_qualified"]["values"].append(result["num_qualified"])
-    # results[exp_parameter][algorithm]["num_unqualified"]["values"].append(result["num_selected"] -
-    #                                                                       result["num_qualified"])
-    # results[exp_parameter][algorithm]["constraint_satisfied"]["values"].append(result["constraint_satisfied"])
-    #
-    # results[exp_parameter][algorithm]["num_positives_in_bin"]["values"].append(result["num_positives_in_bin"])
-    # results[exp_parameter][algorithm]["num_in_bin"]["values"].append(result["num_in_bin"])
-    # results[exp_parameter][algorithm]["bin_value"]["values"].append(result["bin_value"][exp_parameter])
-    # results[exp_parameter][algorithm]["group_bin_values"]["values"].append(result["group_bin_values"][exp_parameter])
-    # results[exp_parameter][algorithm]["group_rho"]["values"].append(result["group_rho"][exp_parameter])
     for metric in metrics:
         results[exp_parameter][algorithm][metric]["values"].append(result[metric][exp_parameter])
-
-
-
 
 
 def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, results, metrics):
@@ -47,19 +52,3 @@ def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, resu
         result = pickle.load(f)
     for metric in metrics:
         results[exp_parameter][algorithm][metric]["values"].append(result[metric])
-
-
-
-def collect_results_diversity_exp(result_path, exp_parameter, algorithm, results):
-    with open(result_path, 'rb') as f:
-        result = pickle.load(f)
-    results[exp_parameter][algorithm]["num_selected_maj"]["values"].append(result["num_selected_maj"])
-    results[exp_parameter][algorithm]["num_qualified_maj"]["values"].append(result["num_qualified_maj"])
-    results[exp_parameter][algorithm]["num_unqualified_maj"]["values"].append(result["num_selected_maj"] -
-                                                                          result["num_qualified_maj"])
-    results[exp_parameter][algorithm]["constraint_satisfied_maj"]["values"].append(result["constraint_satisfied_maj"])
-    results[exp_parameter][algorithm]["num_selected_min"]["values"].append(result["num_selected_min"])
-    results[exp_parameter][algorithm]["num_qualified_min"]["values"].append(result["num_qualified_min"])
-    results[exp_parameter][algorithm]["num_unqualified_min"]["values"].append(result["num_selected_min"] -
-                                                                              result["num_qualified_min"])
-    results[exp_parameter][algorithm]["constraint_satisfied_min"]["values"].append(result["constraint_satisfied_min"])

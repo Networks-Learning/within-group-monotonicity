@@ -255,10 +255,10 @@ class UMBSelect(object):
         group_fpr = np.zeros(shape = (self.num_groups,self.n_bins+1))
         group_tpr = np.zeros(shape = (self.num_groups,self.n_bins+1))
         #
-        for j in range(self.num_groups):
-            group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
+        # for j in range(self.num_groups):
+        #     group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
             # print(f"{thresholds,self.bin_values}")
-        return fpr, tpr, group_fpr, group_tpr
+        return fpr, tpr#, group_fpr, group_tpr
 
     def get_shortlist_group_accuracy(self,selection, X, y):
         test_group_assignment = self.group_points(X).astype(bool)
@@ -335,7 +335,7 @@ if __name__ == "__main__":
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     total_test_selected = umb_select.select(scores_test_raw)
-    fpr, tpr, group_fpr, group_tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+    fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
     # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
     # simulating pools of candidates
@@ -355,8 +355,8 @@ if __name__ == "__main__":
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
     performance_metrics["fpr"] = fpr
     performance_metrics["tpr"] = tpr
-    performance_metrics["group_fpr"] = group_fpr
-    performance_metrics["group_tpr"] = group_tpr
+    # performance_metrics["group_fpr"] = group_fpr
+    # performance_metrics["group_tpr"] = group_tpr
     # performance_metrics["accuracy"] = accuracy
     # performance_metrics["MSE"] = MSE
     # performance_metrics["group_accuracy"] = group_accuracy
@@ -367,6 +367,7 @@ if __name__ == "__main__":
     performance_metrics["group_num_in_bin"] = umb_select.group_num_in_bin
     performance_metrics["group_bin_values"] = umb_select.group_bin_values
     performance_metrics["group_rho"] = umb_select.group_rho
+    performance_metrics["bin_rho"] = umb_select.bin_rho
     performance_metrics["groups"] = umb_select.groups
     performance_metrics["num_groups"] = umb_select.num_groups
     performance_metrics["n_bins"] = umb_select.n_bins

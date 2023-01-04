@@ -11,7 +11,7 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    from params_exp_cal import *
+    from params_exp_bins import *
     from matplotlib.ticker import StrMethodFormatter
     fig, axs = plt.subplots(12, len(Z))
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":
 
         # plotting ROC
         for algorithm in algorithms:
-            for metric in ["fpr", "tpr", "group_fpr", "group_tpr"]:
+            for metric in ["fpr", "tpr"]:
                 results[the_umb_num_bin][algorithm][metric]["mean"] = np.mean(
                     results[the_umb_num_bin][algorithm][metric]["values"], axis=0)
                 results[the_umb_num_bin][algorithm][metric]["std"] = np.std(
@@ -264,20 +264,20 @@ if __name__ == "__main__":
         row += 1
 
         # plot ROC per group
-        for grp in range(num_groups):
-            for algorithm in algorithms:
-                print(results[the_umb_num_bin][algorithm]["group_fpr"]["mean"].shape)
-                axs[row][z].plot(results[the_umb_num_bin][algorithm]["group_fpr"]["mean"][grp],
-                                 results[the_umb_num_bin][algorithm]["group_tpr"]["mean"][grp],
-                                 linewidth=line_width,
-                                 label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                 color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                            0]))])
-                axs[row][z].set_xlabel(xlabels["fpr"])
-            axs[row][0].set_ylabel(metric_labels["tpr"])
-            axs[row][0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
-            row += 1
+        # for grp in range(num_groups):
+        #     for algorithm in algorithms:
+        #         print(results[the_umb_num_bin][algorithm]["group_fpr"]["mean"].shape)
+        #         axs[row][z].plot(results[the_umb_num_bin][algorithm]["group_fpr"]["mean"][grp],
+        #                          results[the_umb_num_bin][algorithm]["group_tpr"]["mean"][grp],
+        #                          linewidth=line_width,
+        #                          label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+        #                          color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+        #                          marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+        #                                                                                     0]))])
+        #         axs[row][z].set_xlabel(xlabels["fpr"])
+        #     axs[row][0].set_ylabel(metric_labels["tpr"])
+        #     axs[row][0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+        #     row += 1
 
         # plot group accuracy, one calibration set, multiple runs, across algorithms
         break

@@ -297,7 +297,7 @@ if __name__ == "__main__":
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     total_test_selected = pav.recal_select(scores_test_raw)
-    fpr, tpr, group_fpr, group_tpr = pav.recal_get_test_roc(X_test_all_features, scores_test_raw, y_test_raw)
+    fpr, tpr = pav.recal_get_test_roc(X_test_all_features, scores_test_raw, y_test_raw)
     # accuracy = pav.get_accuracy(total_test_selected, y_test_raw)
     # group_accuracy = pav.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
@@ -319,8 +319,8 @@ if __name__ == "__main__":
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
     performance_metrics["fpr"] = fpr
     performance_metrics["tpr"] = tpr
-    performance_metrics["group_fpr"] = group_fpr
-    performance_metrics["group_tpr"] = group_tpr
+    # performance_metrics["group_fpr"] = group_fpr
+    # performance_metrics["group_tpr"] = group_tpr
     # performance_metrics["accuracy"] = accuracy
     # performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = pav.recal_num_positives_in_bin
@@ -330,6 +330,7 @@ if __name__ == "__main__":
     performance_metrics["group_num_in_bin"] = pav.recal_group_num_in_bin
     performance_metrics["group_bin_values"] = pav.recal_group_bin_values
     performance_metrics["group_rho"] = pav.recal_group_rho
+    performance_metrics["bin_rho"] = pav.recal_bin_rho
     performance_metrics["groups"] = pav.groups
     performance_metrics["num_groups"] = pav.num_groups
     performance_metrics["n_bins"] = pav.recal_n_bins
