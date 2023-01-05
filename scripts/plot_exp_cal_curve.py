@@ -16,7 +16,9 @@ if __name__ == "__main__":
 
     if not os.path.exists('./plots'):
         os.mkdir('./plots')
-    the_umb_num_bin = 15
+
+
+    the_umb_num_bin = 30
 
     algorithm_labels["umb_" + str(the_umb_num_bin)] = "UMB"
     algorithm_labels["wgm_" + str(the_umb_num_bin)] = "WGM"
