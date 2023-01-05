@@ -115,7 +115,7 @@ if __name__ == "__main__":
                 # title.set_position([0.5,0.8])
                 # axs[row][z].set_yticks([])
                 axs[z*2+idx].set_ylabel(metric_labels[metric])
-                axs[1][z * 2 + idx].set_xlabel(xlabels["n_bins"])
+                axs[z * 2 + idx].set_xlabel(xlabels["n_bins"])
 
 
 
