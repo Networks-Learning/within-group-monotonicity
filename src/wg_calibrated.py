@@ -318,8 +318,8 @@ if __name__ == "__main__":
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     total_test_selected = wgc.recal_select(scores_test_raw)
     fpr, tpr = wgc.recal_get_test_roc(X_test_all_features, scores_test_raw, y_test_raw)
-    # accuracy = wgc.get_accuracy(total_test_selected, y_test_raw)
-    # group_accuracy = wgc.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
+    accuracy,logloss = wgc.recal_get_accuracy(scores_test_raw, y_test_raw)
+    group_accuracy = wgc.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
 
     #simulating pools of candidates
     num_selected = []
@@ -341,8 +341,9 @@ if __name__ == "__main__":
     performance_metrics["tpr"] = tpr
     # performance_metrics["group_fpr"] = group_fpr
     # performance_metrics["group_tpr"] = group_tpr
-    # performance_metrics["accuracy"] = accuracy
-    # performance_metrics["group_accuracy"] = group_accuracy
+    performance_metrics["accuracy"] = accuracy
+    performance_metrics["log_loss"] = logloss
+    performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = wgc.recal_num_positives_in_bin
     performance_metrics["num_in_bin"] = wgc.recal_num_in_bin
     performance_metrics["bin_values"] = wgc.recal_bin_values

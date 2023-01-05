@@ -314,6 +314,8 @@ if __name__ == "__main__":
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     # total_test_selected = wgm.recal_select(scores_test_raw)
     fpr, tpr = wgm.recal_get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+    accuracy,logloss = wgm.recal_get_accuracy(scores_test_raw, y_test_raw)
+    group_accuracy = wgm.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
     # group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
     #simulating pools of candidates
@@ -332,12 +334,13 @@ if __name__ == "__main__":
     performance_metrics["num_qualified"] = np.mean(num_qualified)
     performance_metrics["num_selected"] = np.mean(num_selected)
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
-    # performance_metrics["accuracy"] = accuracy
+    performance_metrics["accuracy"] = accuracy
+    performance_metrics["log_loss"] = logloss
     performance_metrics["fpr"] = fpr
     performance_metrics["tpr"] = tpr
     # performance_metrics["group_fpr"] = group_fpr
     # performance_metrics["group_tpr"] = group_tpr
-    # performance_metrics["group_accuracy"] = group_accuracy
+    performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = wgm.recal_num_positives_in_bin
     performance_metrics["num_in_bin"] = wgm.recal_num_in_bin
     performance_metrics["bin_values"] = wgm.recal_bin_values

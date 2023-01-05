@@ -5,7 +5,7 @@ import argparse
 import pickle
 import numpy as np
 from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
-from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score
+from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss
 
 import warnings
 warnings.filterwarnings(action='ignore',
@@ -270,6 +270,26 @@ class UMBSelect(object):
         # print(f"{group_accuracy = }")
         return shortlist_group_accuracy
 
+    def get_accuracy(self,scores, y):
+        scores = scores.squeeze()
+        # assign test data to bins
+        test_bins = self._bin_points(scores)
+        y_prob = self.bin_values[test_bins]
+        y_pred = y_prob>0.5
+        return accuracy_score(y,y_pred),log_loss(y,y_pred)
+
+    def get_group_accuracy(self,X, scores, y):
+        scores = scores.squeeze()
+        # assign test data to bins
+        test_group_assignment = self.group_points(X).astype(bool)
+        group_accuracy = np.zeros(self.num_groups)
+        test_bins = self._bin_points(scores)
+        y_prob = self.bin_values[test_bins]
+        y_pred = y_prob>0.5
+        for grp in range(self.num_groups):
+            group_accuracy[grp] = accuracy_score(y[test_group_assignment[grp]],y_pred[test_group_assignment[grp]])
+
+        return group_accuracy
 
 
 if __name__ == "__main__":
@@ -336,6 +356,8 @@ if __name__ == "__main__":
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     total_test_selected = umb_select.select(scores_test_raw)
     fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+    accuracy,logloss = umb_select.get_accuracy(scores_test_raw,y_test_raw)
+    group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
     # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
     # simulating pools of candidates
@@ -357,9 +379,10 @@ if __name__ == "__main__":
     performance_metrics["tpr"] = tpr
     # performance_metrics["group_fpr"] = group_fpr
     # performance_metrics["group_tpr"] = group_tpr
-    # performance_metrics["accuracy"] = accuracy
+    performance_metrics["accuracy"] = accuracy
+    performance_metrics["log_loss"] = logloss
     # performance_metrics["MSE"] = MSE
-    # performance_metrics["group_accuracy"] = group_accuracy
+    performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = umb_select.num_positives_in_bin
     performance_metrics["num_in_bin"] = umb_select.num_in_bin
     performance_metrics["bin_values"] = umb_select.bin_values

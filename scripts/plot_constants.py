@@ -1,5 +1,5 @@
 import pickle
-params = {'legend.fontsize': 20,#28,
+params = {'legend.fontsize': 28,#28,
           'xtick.labelsize': 26,
           'ytick.labelsize': 28,
           'lines.markersize': 15,
@@ -8,7 +8,7 @@ params = {'legend.fontsize': 20,#28,
             'text.usetex'  : True,
             'text.latex.preamble': r'\usepackage{amsmath}',
             'font.family': 'serif',
-          'axes.titlesize':26
+          'axes.titlesize':26,
           }
 
 
@@ -34,8 +34,8 @@ Z_labels = {
 algorithm_labels = {}
 algorithm_colors = {}
 algorithm_markers = {}
-metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(Y=S)$', "num_selected": r'Shortlist Size',\
-                 "alpha":r'$\alpha$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate"}
+metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(\hat{Y} = Y)$', "num_selected": r'Shortlist Size',\
+                 "alpha":r'$\alpha$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate", "log_loss":"Cross Entropy Loss"}
 xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate"}
 
 
