@@ -114,8 +114,6 @@ if __name__ == "__main__":
                 # title.set_position([0.5,0.8])
                 # axs[row][z].set_yticks([])
                 axs[0][z*2+idx].set_ylabel(metric_labels[metric])
-                plt.figtext( x=0.23, y=0.95, s=Z_labels[Z[0][0]]["feature"],fontsize=font_size)
-                plt.figtext( x=0.74, y=0.95, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
 
 
                 # axs[2][z].set_ylim((5, 15))
@@ -144,11 +142,11 @@ if __name__ == "__main__":
                                       marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
                                                                                                  0]))])  # , color=group_colors[i], marker=group_markers[i])
                 handles.append(line[0])
-
-                axs[1][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
-                                       mean_algorithm + std_algorithm, alpha=transparency,
-                                       color=algorithm_colors[
-                                           "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                if metric == "n_bins":
+                    axs[1][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+                                           mean_algorithm + std_algorithm, alpha=transparency,
+                                           color=algorithm_colors[
+                                               "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
                 axs[1][z*2+idx].set_xticks(umb_num_bins)
 
@@ -161,10 +159,12 @@ if __name__ == "__main__":
                 # axs[2][z].set_ylim((5, 15))
                 # axs[3][z].set_ylim((6, 7))
 
-    fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1), ncol=4)
+    fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.01), ncol=4)
+    plt.figtext(x=0.21, y=0.91, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
+    plt.figtext(x=0.73, y=0.91, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
 
     # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.tight_layout(rect=[0, 0, 1, 0.91])
 
     fig.savefig("./plots/exp_bins.pdf", format="pdf")

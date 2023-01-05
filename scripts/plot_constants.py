@@ -14,7 +14,7 @@ params = {'legend.fontsize': 28,#28,
 
 line_width = 3.0
 transparency = 0.1
-font_size = 24
+font_size = 32
 capthick = 3.0
 dpi = 100
 fig_width = 28
