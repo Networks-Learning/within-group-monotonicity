@@ -56,6 +56,7 @@ if __name__ == "__main__":
         metrics = ["prob_true", "prob_pred"]
 
         the_n_cal = n_cals[0]
+        the_run = 0
 
         for algorithm in algorithms:
             results[algorithm] = {}
@@ -63,18 +64,17 @@ if __name__ == "__main__":
                 results[algorithm][metric] = {}
                 results[algorithm][metric]["values"] = []
 
-        for run in runs:
-            for algorithm in algorithms:
-                exp_identity_string = "_".join(
-                    [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
-                result_path = os.path.join(exp_dir,
-                                           exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
-                                                                                            the_umb_num_bin))
-                with open(result_path, 'rb') as f:
-                    result = pickle.load(f)
-                for metric in metrics:
+        for algorithm in algorithms:
+            exp_identity_string = "_".join(
+                [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(the_run)])
+            result_path = os.path.join(exp_dir,
+                                       exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
+                                                                                        the_umb_num_bin))
+            with open(result_path, 'rb') as f:
+                result = pickle.load(f)
+            for metric in metrics:
 
-                    results[algorithm][metric]["values"].append(result[metric])
+                results[algorithm][metric]["values"].append(result[metric])
 
         for algorithm in algorithms:
             for metric in metrics:
