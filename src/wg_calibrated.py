@@ -320,6 +320,7 @@ if __name__ == "__main__":
     fpr, tpr = wgc.recal_get_test_roc(X_test_all_features, scores_test_raw, y_test_raw)
     accuracy,logloss = wgc.recal_get_accuracy(scores_test_raw, y_test_raw)
     group_accuracy = wgc.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
+    prob_true, prob_pred = wgc.recal_get_calibration_curve(scores_test_raw, y_test_raw)
 
     #simulating pools of candidates
     num_selected = []
@@ -343,6 +344,8 @@ if __name__ == "__main__":
     # performance_metrics["group_tpr"] = group_tpr
     performance_metrics["accuracy"] = accuracy
     performance_metrics["log_loss"] = logloss
+    performance_metrics["prob_true"] = prob_true
+    performance_metrics["prob_pred"] = prob_pred
     performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = wgc.recal_num_positives_in_bin
     performance_metrics["num_in_bin"] = wgc.recal_num_in_bin

@@ -207,3 +207,19 @@ class BinPartition(UMBSelect):
             group_accuracy[grp] = accuracy_score(y[test_group_assignment[grp]],y_pred[test_group_assignment[grp]])
 
         return group_accuracy
+
+    def recal_get_calibration_curve(self,scores,y):
+        from sklearn.calibration import calibration_curve
+        scores = scores.squeeze()
+        # assign test data to bins
+        recal_test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
+        test_bins = self._bin_points(scores)
+        recal_pred = self.recal_bin_values[recal_test_bins]
+        prob_pred = np.empty(self.n_bins)
+        prob_true = np.empty(self.n_bins)
+        for i in range(self.n_bins):
+            in_bin_i = (test_bins == i)
+            prob_true[i] = np.average(y[in_bin_i])
+            prob_pred[i] = np.average(recal_pred[in_bin_i])
+        # prob_true, prob_pred = calibration_curve(y,y_prob,n_bins=self.n_bins)
+        return prob_true, prob_pred

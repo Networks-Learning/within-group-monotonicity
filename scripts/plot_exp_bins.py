@@ -32,8 +32,8 @@ if __name__ == "__main__":
         algorithm_markers["wgc_" + str(umb_num_bin)] = 9
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
-    fig, axs = plt.subplots(2, len(Z)*2)
-    fig.set_size_inches(fig_width, fig_height*2)
+    fig, axs = plt.subplots(1, len(Z)*2)
+    fig.set_size_inches(fig_width, fig_height*1)
     for z,Z_indices in enumerate(Z):
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         algorithms.append("wgc")
 
 
-        metrics = ["n_bins", "num_selected","log_loss","accuracy"]  #"alpha","accuracy"
+        metrics = ["n_bins", "num_selected"]#,"log_loss","accuracy"]  #"alpha","accuracy"
 
         the_n_cal = n_cals[0]
 
@@ -85,8 +85,8 @@ if __name__ == "__main__":
             for algorithm in algorithms:
                 if metric=="n_bins" and algorithm=="umb":
                     continue
-                if metric=="num_selected" and algorithm=="wgc":
-                    continue
+                # if metric=="num_selected" and algorithm=="wgc":
+                #     continue
 
                 # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
                 #     print("here")
@@ -97,7 +97,7 @@ if __name__ == "__main__":
                 std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
                                           in umb_num_bins])
 
-                line = axs[0][z*2+idx].plot(umb_num_bins, mean_algorithm,
+                line = axs[z*2+idx].plot(umb_num_bins, mean_algorithm,
                                         linewidth=line_width,
                                         label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
                                         color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
@@ -105,69 +105,69 @@ if __name__ == "__main__":
                                                                                                    0]))])  # , color=group_colors[i], marker=group_markers[i])
                 handles.append(line[0])
 
-                axs[0][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+                axs[z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
                                          mean_algorithm + std_algorithm, alpha=transparency,
                                          color=algorithm_colors[
                                              "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-                axs[0][z*2+idx].set_xticks(umb_num_bins)
+                axs[z*2+idx].set_xticks(umb_num_bins)
 
                 # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
                 # title.set_position([0.5,0.8])
                 # axs[row][z].set_yticks([])
-                axs[0][z*2+idx].set_ylabel(metric_labels[metric])
+                axs[z*2+idx].set_ylabel(metric_labels[metric])
 
 
                 # axs[2][z].set_ylim((5, 15))
                 # axs[3][z].set_ylim((6, 7))
 
 
-        for idx, metric in enumerate(["log_loss","accuracy"]):
-            handles = []
-            for algorithm in algorithms:
-                if metric == "n_bins" and algorithm == "umb":
-                    continue
-                if algorithm=="wgc":
-                    continue
+        # for idx, metric in enumerate(["log_loss","accuracy"]):
+        #     handles = []
+        #     for algorithm in algorithms:
+        #         if metric == "n_bins" and algorithm == "umb":
+        #             continue
+        #         if algorithm=="wgc":
+        #             continue
+        #
+        #         # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
+        #         #     print("here")
+        #         #     continue
+        #
+        #         mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
+        #                                    in umb_num_bins])
+        #         std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
+        #                                   in umb_num_bins])
+        #
+        #         line = axs[1][z*2+idx].plot(umb_num_bins, mean_algorithm,
+        #                               linewidth=line_width,
+        #                               label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+        #                               color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+        #                               marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+        #                                                                                          0]))])  # , color=group_colors[i], marker=group_markers[i])
+        #         handles.append(line[0])
+        #         axs[1][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+        #                                mean_algorithm + std_algorithm, alpha=transparency,
+        #                                color=algorithm_colors[
+        #                                    "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+        #
+        #         axs[1][z*2+idx].set_xticks(umb_num_bins)
+        #
+        #
+        #         # title.set_position([0.5,0.8])
+        #         # axs[row][z].set_yticks([])
+        #         axs[1][z*2+idx].set_ylabel(metric_labels[metric])
+        #         axs[1][z*2+idx].set_xlabel(xlabels["n_bins"])
+        #
+        #         # axs[2][z].set_ylim((5, 15))
+        #         # axs[3][z].set_ylim((6, 7))
 
-                # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
-                #     print("here")
-                #     continue
-
-                mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
-                                           in umb_num_bins])
-                std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
-                                          in umb_num_bins])
-
-                line = axs[1][z*2+idx].plot(umb_num_bins, mean_algorithm,
-                                      linewidth=line_width,
-                                      label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                      color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                      marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                                 0]))])  # , color=group_colors[i], marker=group_markers[i])
-                handles.append(line[0])
-                axs[1][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
-                                       mean_algorithm + std_algorithm, alpha=transparency,
-                                       color=algorithm_colors[
-                                           "{}_{}".format(algorithm, str(umb_num_bins[0]))])
-
-                axs[1][z*2+idx].set_xticks(umb_num_bins)
-
-
-                # title.set_position([0.5,0.8])
-                # axs[row][z].set_yticks([])
-                axs[1][z*2+idx].set_ylabel(metric_labels[metric])
-                axs[1][z*2+idx].set_xlabel(xlabels["n_bins"])
-
-                # axs[2][z].set_ylim((5, 15))
-                # axs[3][z].set_ylim((6, 7))
-
-    fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.01), ncol=4)
-    plt.figtext(x=0.21, y=0.91, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
-    plt.figtext(x=0.73, y=0.91, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
+    fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.03), ncol=4)
+    plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
+    plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
 
     # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.91])
+    plt.tight_layout(rect=[0, 0, 1, 0.82])
 
     fig.savefig("./plots/exp_bins.pdf", format="pdf")
