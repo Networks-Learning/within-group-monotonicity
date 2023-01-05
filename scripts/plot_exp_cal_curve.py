@@ -99,10 +99,10 @@ if __name__ == "__main__":
                                                                                           0]))])
             handles.append(line[0])
 
-            # axs[z].fill_between(results[algorithm]["prob_true"]["mean"], results[algorithm]["prob_pred"]["mean"] - results[algorithm]["prob_pred"]["std"],
-            #                               results[algorithm]["prob_pred"]["mean"] + results[algorithm]["prob_pred"]["std"], alpha=transparency,
-            #                               color=algorithm_colors[
-            #                                   "{}_{}".format(algorithm, str(the_umb_num_bin))])
+            axs[z].fill_between(umb_num_bins, mean_pred-std_pred,
+                                          mean_pred+std_pred, alpha=transparency,
+                                          color=algorithm_colors[
+                                              "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
         axs[z].set_xlabel(xlabels["prob_true"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
