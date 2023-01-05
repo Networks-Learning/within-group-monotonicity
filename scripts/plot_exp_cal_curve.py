@@ -17,22 +17,19 @@ if __name__ == "__main__":
     if not os.path.exists('./plots'):
         os.mkdir('./plots')
 
-
-    the_umb_num_bin = 30
-
-    algorithm_labels["umb_" + str(the_umb_num_bin)] = "UMB"
-    algorithm_labels["wgm_" + str(the_umb_num_bin)] = "WGM"
-    algorithm_labels["wgc_" + str(the_umb_num_bin)] = "WGC"
-    algorithm_labels["pav_" + str(the_umb_num_bin)] = "PAV"
-    algorithm_colors["umb_" + str(the_umb_num_bin)] = "tab:green"
-    algorithm_colors["wgm_" + str(the_umb_num_bin)] = "tab:blue"
-    algorithm_colors["wgc_" + str(the_umb_num_bin)] = "tab:red"
-    algorithm_colors["pav_" + str(the_umb_num_bin)] = "tab:orange"
-    algorithm_markers["umb_" + str(the_umb_num_bin)] = 8
-    algorithm_markers["wgm_" + str(the_umb_num_bin)] = 10
-    algorithm_markers["wgc_" + str(the_umb_num_bin)] = 9
-    algorithm_markers["pav_" + str(the_umb_num_bin)] = 11
-
+    for umb_num_bin in umb_num_bins:
+        algorithm_labels["umb_" + str(umb_num_bin)] = "UMB"
+        algorithm_labels["wgm_" + str(umb_num_bin)] = "WGM"
+        algorithm_labels["wgc_" + str(umb_num_bin)] = "WGC"
+        algorithm_labels["pav_" + str(umb_num_bin)] = "PAV"
+        algorithm_colors["umb_" + str(umb_num_bin)] = "tab:green"
+        algorithm_colors["wgm_" + str(umb_num_bin)] = "tab:blue"
+        algorithm_colors["wgc_" + str(umb_num_bin)] = "tab:red"
+        algorithm_colors["pav_" + str(umb_num_bin)] = "tab:orange"
+        algorithm_markers["umb_" + str(umb_num_bin)] = 8
+        algorithm_markers["wgm_" + str(umb_num_bin)] = 10
+        algorithm_markers["wgc_" + str(umb_num_bin)] = 9
+        algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
     the_n_cal = n_cals[0]  # for one calibration set
 
@@ -53,54 +50,59 @@ if __name__ == "__main__":
         algorithms.append("umb")
         algorithms.append("wgm")
 
-        metrics = ["prob_true", "prob_pred"]
+        metrics = ["ECE"]
 
         the_n_cal = n_cals[0]
-        n_runs = 1
-        runs = list(range(n_runs))
-        for algorithm in algorithms:
-            results[algorithm] = {}
-            for metric in metrics:
-                results[algorithm][metric] = {}
-                results[algorithm][metric]["values"] = []
 
-        for run in runs:
+        for umb_num_bin in umb_num_bins:
+            results[umb_num_bin] = {}
             for algorithm in algorithms:
-                exp_identity_string = "_".join(
-                    [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
-                result_path = os.path.join(exp_dir,
-                                           exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
-                                                                                            the_umb_num_bin))
-                with open(result_path, 'rb') as f:
-                    result = pickle.load(f)
+                results[umb_num_bin][algorithm] = {}
                 for metric in metrics:
+                    results[umb_num_bin][algorithm][metric] = {}
+                    results[umb_num_bin][algorithm][metric]["values"] = []
 
-                    results[algorithm][metric]["values"].append(result[metric])
+        for umb_num_bin in umb_num_bins:
+            for run in runs:
+                for algorithm in algorithms:
+                    exp_identity_string = "_".join(
+                        [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
+                    result_path = os.path.join(exp_dir,
+                                               exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
+                                                                                                umb_num_bin))
+                    with open(result_path, 'rb') as f:
+                        result = pickle.load(f)
+                    results[umb_num_bin][algorithm]["ECE"]["values"].append(np.average(np.abs(result["prob_true"] - result["prob_pred"])))
 
-        for algorithm in algorithms:
-            for metric in metrics:
-                assert len(results[algorithm][metric]["values"]) == n_runs
-                results[algorithm][metric]["mean"] = np.mean(
-                    results[algorithm][metric]["values"],axis=0)
-                results[algorithm][metric]["std"] = np.std(
-                    results[algorithm][metric]["values"],axis=0)
+        for umb_num_bin in umb_num_bins:
+            for algorithm in algorithms:
+                for metric in metrics:
+                    assert len(results[umb_num_bin][algorithm][metric]["values"]) == n_runs
+                    results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
+                        results[umb_num_bin][algorithm][metric]["values"],axis=0)
+                    results[umb_num_bin][algorithm][metric]["std"] = np.std(
+                        results[umb_num_bin][algorithm][metric]["values"],axis=0)
 
 
         for algorithm in algorithms:
             # print(algorithm,results[algorithm]["prob_true"]["values"])
-            assert(results[algorithm]["prob_true"]["mean"].shape[0]==the_umb_num_bin)
-            line = axs[z].plot(np.array(results[algorithm]["prob_true"]["mean"]),
-                        np.array(results[algorithm]["prob_pred"]["mean"]), linewidth=line_width,
-                        label=algorithm_labels["{}_{}".format(algorithm, str(the_umb_num_bin))],
-                        color=algorithm_colors["{}_{}".format(algorithm, str(the_umb_num_bin))],
-                        marker=algorithm_markers["{}_{}".format(algorithm, str(the_umb_num_bin))]
-                        )
+            mean_pred = np.array([results[umb_num_bin][algorithm]["ECE"]["mean"] for umb_num_bin
+                                       in umb_num_bins])
+            std_pred = np.array([results[umb_num_bin][algorithm]["ECE"]["std"] for umb_num_bin
+                                      in umb_num_bins])
+
+            line = axs[z].plot(umb_num_bins,
+                        mean_pred, linewidth=line_width,
+                               label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                               color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                               marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+                                                                                          0]))])
             handles.append(line[0])
 
-            axs[z].fill_between(results[algorithm]["prob_true"]["mean"], results[algorithm]["prob_pred"]["mean"] - results[algorithm]["prob_pred"]["std"],
-                                          results[algorithm]["prob_pred"]["mean"] + results[algorithm]["prob_pred"]["std"], alpha=transparency,
-                                          color=algorithm_colors[
-                                              "{}_{}".format(algorithm, str(the_umb_num_bin))])
+            # axs[z].fill_between(results[algorithm]["prob_true"]["mean"], results[algorithm]["prob_pred"]["mean"] - results[algorithm]["prob_pred"]["std"],
+            #                               results[algorithm]["prob_pred"]["mean"] + results[algorithm]["prob_pred"]["std"], alpha=transparency,
+            #                               color=algorithm_colors[
+            #                                   "{}_{}".format(algorithm, str(the_umb_num_bin))])
 
         axs[z].set_xlabel(xlabels["prob_true"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
@@ -112,5 +114,5 @@ if __name__ == "__main__":
     axs[0].set_ylabel(metric_labels["prob_pred"])
 
     plt.tight_layout(rect=[0, 0, 1, 0.82])
-    fig.savefig("./plots/exp_cal_curve_{}.pdf".format(the_umb_num_bin), format="pdf")
+    fig.savefig("./plots/exp_cal_curve.pdf", format="pdf")
 
