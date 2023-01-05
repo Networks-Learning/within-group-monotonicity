@@ -104,7 +104,7 @@ if __name__ == "__main__":
                                           color=algorithm_colors[
                                               "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-        axs[z].set_xlabel(xlabels["prob_true"])
+        axs[z].set_xlabel(xlabels["n_bins"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
         # axs[z].set_xticklabels([str(round(float(label), 2)) for label in results["umb"]["prob_true"]["mean"]])
 

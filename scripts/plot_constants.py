@@ -37,7 +37,8 @@ algorithm_markers = {}
 metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(\hat{Y} = Y)$', "num_selected": r'Shortlist Size',\
                  "alpha":r'$\alpha$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate", "log_loss":"Cross Entropy Loss"\
                  ,"prob_pred":r"$\Pr(\hat{Y}=1|X)$"}
-xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate","prob_true":r"$\Pr(Y=1|X)$"}
+xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate",\
+           "prob_true":r"$\Pr(Y=1|X)$", "ECE":"ECE"}
 
 
 
