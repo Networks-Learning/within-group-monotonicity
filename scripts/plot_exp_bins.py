@@ -76,8 +76,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
                         results[umb_num_bin][algorithm][metric]["values"])
                     results[umb_num_bin][algorithm][metric]["std"] = np.std(
-                        results[umb_num_bin][algorithm][metric]["values"],
-                        ddof=1)
+                        results[umb_num_bin][algorithm][metric]["values"])
                 # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
 
         for idx,metric in enumerate(["n_bins", "num_selected"]):
@@ -104,7 +103,6 @@ if __name__ == "__main__":
                                         marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
                                                                                                    0]))])  # , color=group_colors[i], marker=group_markers[i])
                 handles.append(line[0])
-
                 axs[z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
                                          mean_algorithm + std_algorithm, alpha=transparency,
                                          color=algorithm_colors[

@@ -80,8 +80,7 @@ if __name__ == "__main__":
                 results[algorithm][metric]["mean"] = np.mean(
                     results[algorithm][metric]["values"],axis=0)
                 results[algorithm][metric]["std"] = np.std(
-                    results[algorithm][metric]["values"],axis=0,
-                    ddof=1)
+                    results[algorithm][metric]["values"],axis=0)
 
 
         for algorithm in algorithms:
