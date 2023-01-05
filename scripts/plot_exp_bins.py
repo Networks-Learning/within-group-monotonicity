@@ -85,6 +85,8 @@ if __name__ == "__main__":
             for algorithm in algorithms:
                 if metric=="n_bins" and algorithm=="umb":
                     continue
+                if metric=="num_selected" and algorithm=="wgc":
+                    continue
 
                 # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
                 #     print("here")
@@ -125,6 +127,8 @@ if __name__ == "__main__":
             for algorithm in algorithms:
                 if metric == "n_bins" and algorithm == "umb":
                     continue
+                if algorithm=="wgc":
+                    continue
 
                 # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
                 #     print("here")
@@ -142,11 +146,10 @@ if __name__ == "__main__":
                                       marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
                                                                                                  0]))])  # , color=group_colors[i], marker=group_markers[i])
                 handles.append(line[0])
-                if metric == "n_bins":
-                    axs[1][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
-                                           mean_algorithm + std_algorithm, alpha=transparency,
-                                           color=algorithm_colors[
-                                               "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                axs[1][z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+                                       mean_algorithm + std_algorithm, alpha=transparency,
+                                       color=algorithm_colors[
+                                           "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
                 axs[1][z*2+idx].set_xticks(umb_num_bins)
 
