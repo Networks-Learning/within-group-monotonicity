@@ -45,7 +45,7 @@ if __name__ == "__main__":
         algorithms = []
         results = {}
 
-        algorithms.append("wgc")
+        # algorithms.append("wgc")
         algorithms.append("pav")
         algorithms.append("umb")
         algorithms.append("wgm")
