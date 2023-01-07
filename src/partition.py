@@ -209,17 +209,47 @@ class BinPartition(UMBSelect):
         return group_accuracy
 
     def recal_get_calibration_curve(self,scores,y):
-        from sklearn.calibration import calibration_curve
+
+        sorted_indexes = np.argsort(scores)
+        y = y[sorted_indexes]
+        scores = scores[sorted_indexes]
+        # split scores into groups of approx equal size
+        split_size = 30
+        groups = np.array_split(sorted_indexes, split_size)
         scores = scores.squeeze()
         # assign test data to bins
         recal_test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
-        test_bins = self._bin_points(scores)
-        recal_pred = self.recal_bin_values[recal_test_bins]
-        prob_pred = np.empty(self.n_bins)
-        prob_true = np.empty(self.n_bins)
-        for i in range(self.n_bins):
-            in_bin_i = (test_bins == i)
-            prob_true[i] = np.average(y[in_bin_i])
-            prob_pred[i] = np.average(recal_pred[in_bin_i])
-        # prob_true, prob_pred = calibration_curve(y,y_prob,n_bins=self.n_bins)
-        return prob_true, prob_pred
+
+        prob_pred = np.zeros(split_size)
+        prob_true = np.zeros(split_size)
+        ECE = np.zeros(split_size)
+        for i,group in enumerate(groups):
+            prob_true[i] = np.sum(y[group])
+            prob_pred[i] = np.sum(self.recal_bin_values[recal_test_bins[group]])
+            ECE[i] = np.abs(prob_pred[i] - prob_true[i])
+        return prob_true, prob_pred, np.sum(ECE)/scores.shape[0]
+
+    def recal_get_ECE(self,scores,y):
+        from sklearn.calibration import calibration_curve
+        scores = scores.squeeze()
+        test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
+        y_pred = self.recal_bin_values[test_bins]
+        prob_true, prob_pred = calibration_curve(y,y_pred,n_bins=self.n_bins,strategy='quantile')
+        return np.average(np.abs(prob_true - prob_pred))
+
+    def recal_get_sharpness(self, scores):
+        # sorted_indexes = np.argsort(scores)
+        # scores = scores[sorted_indexes]
+        # split scores into groups of approx equal size
+        # groups = np.array_split(sorted_indexes, self.recal_n_bins)
+        # split_size = int(scores.shape[0]/self.recal_n_bins)
+        scores = scores.squeeze()
+        # assign test data to bins
+        test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
+        var = np.zeros(self.recal_n_bins)
+
+        for i in range(self.recal_n_bins):
+            in_bin_i = (test_bins==i)
+            var[i] = np.var(scores[in_bin_i])
+
+        return np.average(var)

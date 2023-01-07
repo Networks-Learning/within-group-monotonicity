@@ -293,18 +293,52 @@ class UMBSelect(object):
         return group_accuracy
 
     def get_calibration_curve(self,scores,y):
-        from sklearn.calibration import calibration_curve
+
+        sorted_indexes = np.argsort(scores)
+        y = y[sorted_indexes]
+        scores = scores[sorted_indexes]
+        # split scores into groups of approx equal size
+        split_size = 30
+        groups = np.array_split(sorted_indexes, split_size)
         scores = scores.squeeze()
         # assign test data to bins
         test_bins = self._bin_points(scores)
-        prob_pred = np.empty(self.n_bins)
-        prob_true = np.empty(self.n_bins)
+        prob_pred = np.zeros(split_size)
+        prob_true = np.zeros(split_size)
+        ECE = np.zeros(split_size)
+
+        for i,group in enumerate(groups):
+            # print(group)
+            prob_true[i] = np.sum(y[group])
+            prob_pred[i] = np.sum(self.bin_values[test_bins[group]])
+            ECE[i]= abs(prob_true[i]-prob_pred[i])
+        return prob_true, prob_pred, np.sum(ECE)/scores.shape[0]
+
+
+    def get_ECE(self,scores,y):
+        from sklearn.calibration import calibration_curve
+        scores = scores.squeeze()
+        test_bins = self._bin_points(scores)
+        y_pred = self.bin_values[test_bins]
+        prob_true, prob_pred = calibration_curve(y,y_pred,n_bins=self.n_bins,strategy='quantile')
+        return np.average(np.abs(prob_true - prob_pred))
+
+    def get_sharpness(self,scores):
+        # sorted_indexes = np.argsort(scores)
+        # scores = scores[sorted_indexes]
+        # split scores into groups of approx equal size
+        # groups = np.array_split(sorted_indexes, self.n_bins)
+        # split_size = int(scores.shape[0]/self.n_bins)
+        scores = scores.squeeze()
+        # assign test data to bins
+        test_bins = self._bin_points(scores)
+        var = np.zeros(self.n_bins)
+
         for i in range(self.n_bins):
             in_bin_i = (test_bins==i)
-            prob_true[i] = np.average(y[in_bin_i])
-            prob_pred[i] = self.bin_values[i]
-        # prob_true, prob_pred = calibration_curve(y,y_prob,n_bins=self.n_bins)
-        return prob_true, prob_pred
+            var[i] = np.var(scores[in_bin_i])
+
+        return np.average(var)
 
 
 if __name__ == "__main__":
@@ -373,7 +407,9 @@ if __name__ == "__main__":
     fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
     accuracy,logloss = umb_select.get_accuracy(scores_test_raw,y_test_raw)
     group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
-    prob_true, prob_pred = umb_select.get_calibration_curve(scores_test_raw,y_test_raw)
+    # prob_true, prob_pred, ECE = umb_select.get_calibration_curve(scores_cal,y_cal)
+    ECE = umb_select.get_ECE(scores_cal,y_cal)
+    sharpness = umb_select.get_sharpness(scores_cal)
     # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
     # simulating pools of candidates
@@ -397,8 +433,10 @@ if __name__ == "__main__":
     # performance_metrics["group_tpr"] = group_tpr
     performance_metrics["accuracy"] = accuracy
     performance_metrics["log_loss"] = logloss
-    performance_metrics["prob_true"] = prob_true
-    performance_metrics["prob_pred"] = prob_pred
+    # performance_metrics["prob_true"] = prob_true
+    # performance_metrics["prob_pred"] = prob_pred
+    performance_metrics["ECE"] = ECE
+    performance_metrics["sharpness"] = sharpness
     # performance_metrics["MSE"] = MSE
     performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = umb_select.num_positives_in_bin

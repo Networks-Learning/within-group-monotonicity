@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
                 mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
-                std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
+                std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"]/ np.sqrt(n_runs) for umb_num_bin
                                           in umb_num_bins])
 
                 line = axs[z*2+idx].plot(umb_num_bins, mean_algorithm,
@@ -103,11 +103,16 @@ if __name__ == "__main__":
                                         marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
                                                                                                    0]))])  # , color=group_colors[i], marker=group_markers[i])
                 handles.append(line[0])
-                if metric=="n_bins":
-                    axs[z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
-                                             mean_algorithm + std_algorithm, alpha=transparency,
-                                             color=algorithm_colors[
-                                                 "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                # if metric=="n_bins":
+                axs[z*2+idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+                                         mean_algorithm + std_algorithm, alpha=transparency,
+                                         color=algorithm_colors[
+                                             "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+
+                # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
+                #                        std_algorithm,
+                #                        color=algorithm_colors[
+                #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
                 axs[z*2+idx].set_xticks(umb_num_bins)
 
