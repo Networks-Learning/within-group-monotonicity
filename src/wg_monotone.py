@@ -318,7 +318,7 @@ if __name__ == "__main__":
     group_accuracy = wgm.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
     # prob_true, prob_pred, ECE = wgm.recal_get_calibration_curve(scores_cal, y_cal)
     ECE = wgm.recal_get_ECE(scores_cal,y_cal)
-    sharpness = wgm.recal_get_sharpness(scores_cal)
+    sharpness = wgm.recal_get_sharpness(scores_cal,y_cal)
     # group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
     #simulating pools of candidates

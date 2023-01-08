@@ -323,7 +323,7 @@ class UMBSelect(object):
         prob_true, prob_pred = calibration_curve(y,y_pred,n_bins=self.n_bins,strategy='quantile')
         return np.average(np.abs(prob_true - prob_pred))
 
-    def get_sharpness(self,scores):
+    def get_sharpness(self,scores,y):
         # sorted_indexes = np.argsort(scores)
         # scores = scores[sorted_indexes]
         # split scores into groups of approx equal size
@@ -335,8 +335,8 @@ class UMBSelect(object):
         var = np.zeros(self.n_bins)
 
         for i in range(self.n_bins):
-            in_bin_i = (test_bins<=i)
-            var[i] = np.var(scores[in_bin_i])
+            in_bin_i = (test_bins==i)
+            var[i] = np.var(y[in_bin_i])
 
         return np.average(var)
 
@@ -409,7 +409,7 @@ if __name__ == "__main__":
     group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
     # prob_true, prob_pred, ECE = umb_select.get_calibration_curve(scores_cal,y_cal)
     ECE = umb_select.get_ECE(scores_cal,y_cal)
-    sharpness = umb_select.get_sharpness(scores_cal)
+    sharpness = umb_select.get_sharpness(scores_cal,y_cal)
     # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
     # simulating pools of candidates

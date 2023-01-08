@@ -302,7 +302,7 @@ if __name__ == "__main__":
     group_accuracy = pav.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
     # prob_true, prob_pred,ECE = pav.recal_get_calibration_curve(scores_cal, y_cal)
     ECE = pav.recal_get_ECE(scores_cal, y_cal)
-    sharpness = pav.recal_get_sharpness(scores_cal)
+    sharpness = pav.recal_get_sharpness(scores_cal,y_cal)
 
     #simulating pools of candidates
     num_selected = []

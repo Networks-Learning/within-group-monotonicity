@@ -237,7 +237,7 @@ class BinPartition(UMBSelect):
         prob_true, prob_pred = calibration_curve(y,y_pred,n_bins=self.n_bins,strategy='quantile')
         return np.average(np.abs(prob_true - prob_pred))
 
-    def recal_get_sharpness(self, scores):
+    def recal_get_sharpness(self, scores,y):
         # sorted_indexes = np.argsort(scores)
         # scores = scores[sorted_indexes]
         # split scores into groups of approx equal size
@@ -249,7 +249,7 @@ class BinPartition(UMBSelect):
         var = np.zeros(self.recal_n_bins)
 
         for i in range(self.recal_n_bins):
-            in_bin_i = (test_bins<=i)
-            var[i] = np.var(scores[in_bin_i])
+            in_bin_i = (test_bins==i)
+            var[i] = np.var(y[in_bin_i])
 
         return np.average(var)
