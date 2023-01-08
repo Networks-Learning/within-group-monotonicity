@@ -50,7 +50,7 @@ if __name__ == "__main__":
         algorithms.append("umb")
         algorithms.append("wgm")
 
-        metrics = ["sharpness"]
+        metrics = ["f1_score"]
 
         the_n_cal = n_cals[0]
 
@@ -86,31 +86,32 @@ if __name__ == "__main__":
 
 
         for algorithm in algorithms:
-            # print(algorithm,results[algorithm]["prob_true"]["values"])
-            mean_pred = np.array([results[umb_num_bin][algorithm]["sharpness"]["mean"] for umb_num_bin
-                                       in umb_num_bins])
-            std_pred = np.array([results[umb_num_bin][algorithm]["sharpness"]["std"] for umb_num_bin
-                                      in umb_num_bins])
+            for metric in metrics:
+                # print(algorithm,results[algorithm]["prob_true"]["values"])
+                mean_pred = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
+                                           in umb_num_bins])
+                std_pred = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
+                                          in umb_num_bins])
 
-            line = axs[z].plot(umb_num_bins,
-                        mean_pred, linewidth=line_width,
-                               label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                               color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                               marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                          0]))])
-            handles.append(line[0])
+                line = axs[z].plot(umb_num_bins,
+                            mean_pred, linewidth=line_width,
+                                   label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                                   color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                                   marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+                                                                                              0]))])
+                handles.append(line[0])
 
-            axs[z].fill_between(umb_num_bins, mean_pred-std_pred,
-                                          mean_pred+std_pred, alpha=transparency,
-                                          color=algorithm_colors[
-                                              "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                axs[z].fill_between(umb_num_bins, mean_pred-std_pred,
+                                              mean_pred+std_pred, alpha=transparency,
+                                              color=algorithm_colors[
+                                                  "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-            # axs[z].errorbar(umb_num_bins, mean_pred,
-            #                     std_pred,capthick=capthick,
-            #                 label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-            #                 color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-            #                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-            #                                                                            0]))])
+                # axs[z].errorbar(umb_num_bins, mean_pred,
+                #                     std_pred,capthick=capthick,
+                #                 label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                #                 color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                #                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+                #                                                                            0]))])
 
         axs[z].set_xlabel(xlabels["n_bins"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
@@ -119,7 +120,7 @@ if __name__ == "__main__":
         fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.03), ncol=4)
     plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
-    axs[0].set_ylabel(metric_labels["sharpness"])
+    axs[0].set_ylabel(metric_labels[metrics[0]])
 
     plt.tight_layout(rect=[0, 0, 1, 0.82])
     fig.savefig("./plots/exp_cal_curve.pdf", format="pdf")

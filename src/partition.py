@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 from umb_ss import UMBSelect
 from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
-from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss
+from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss,f1_score
 
 
 
@@ -187,13 +187,13 @@ class BinPartition(UMBSelect):
             # print(f"{thresholds,self.recal_bin_values}")
         return fpr, tpr#, group_fpr, group_tpr
 
-    def recal_get_accuracy(self,scores,y):
-        assert (self.recal_bin_values is not None and self.recal_n_bins is not None), "Not yet recalibrated"
-        scores = scores.squeeze()
-        test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
-        y_prob = self.recal_bin_values[test_bins]
-        y_pred = y_prob>0.5
-        return accuracy_score(y,y_pred),log_loss(y,y_pred)
+    # def recal_get_accuracy(self,selection,y):
+    #     # assert (self.recal_bin_values is not None and self.recal_n_bins is not None), "Not yet recalibrated"
+    #     # scores = scores.squeeze()
+    #     # test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
+    #     # y_prob = self.recal_bin_values[test_bins]
+    #     # y_pred = y_prob>0.5
+    #     return accuracy_score(y,selection),f1_score(y,selection)
 
     def recal_get_group_accuracy(self,X, scores, y):
         scores = scores.squeeze()

@@ -5,7 +5,7 @@ import argparse
 import pickle
 import numpy as np
 from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
-from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss
+from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss,f1_score
 
 
 import warnings
@@ -271,13 +271,13 @@ class UMBSelect(object):
         # print(f"{group_accuracy = }")
         return shortlist_group_accuracy
 
-    def get_accuracy(self,scores, y):
-        scores = scores.squeeze()
+    def get_accuracy(self,selection, y):
+        # scores = scores.squeeze()
         # assign test data to bins
-        test_bins = self._bin_points(scores)
-        y_prob = self.bin_values[test_bins]
-        y_pred = y_prob>0.5
-        return accuracy_score(y,y_pred),log_loss(y,y_pred)
+        # test_bins = self._bin_points(scores)
+        # y_prob = self.bin_values[test_bins]
+        # y_pred = y_prob>self.theta
+        return accuracy_score(y,selection),f1_score(y,selection)
 
     def get_group_accuracy(self,X, scores, y):
         scores = scores.squeeze()
@@ -405,7 +405,7 @@ if __name__ == "__main__":
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
     total_test_selected = umb_select.select(scores_test_raw)
     fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
-    accuracy,logloss = umb_select.get_accuracy(scores_test_raw,y_test_raw)
+    accuracy,f1score = umb_select.get_accuracy(total_test_selected,y_test_raw)
     group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
     # prob_true, prob_pred, ECE = umb_select.get_calibration_curve(scores_cal,y_cal)
     ECE = umb_select.get_ECE(scores_cal,y_cal)
@@ -432,7 +432,7 @@ if __name__ == "__main__":
     # performance_metrics["group_fpr"] = group_fpr
     # performance_metrics["group_tpr"] = group_tpr
     performance_metrics["accuracy"] = accuracy
-    performance_metrics["log_loss"] = logloss
+    performance_metrics["f1_score"] = f1score
     # performance_metrics["prob_true"] = prob_true
     # performance_metrics["prob_pred"] = prob_pred
     performance_metrics["ECE"] = ECE
