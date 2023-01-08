@@ -408,7 +408,7 @@ if __name__ == "__main__":
     accuracy,f1score = umb_select.get_accuracy(total_test_selected,y_test_raw)
     group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
     # prob_true, prob_pred, ECE = umb_select.get_calibration_curve(scores_cal,y_cal)
-    ECE = umb_select.get_ECE(scores_cal,y_cal)
+    # ECE = umb_select.get_ECE(scores_cal,y_cal)
     sharpness = umb_select.get_sharpness(scores_cal,y_cal)
     # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
@@ -435,7 +435,7 @@ if __name__ == "__main__":
     performance_metrics["f1_score"] = f1score
     # performance_metrics["prob_true"] = prob_true
     # performance_metrics["prob_pred"] = prob_pred
-    performance_metrics["ECE"] = ECE
+    # performance_metrics["ECE"] = ECE
     performance_metrics["sharpness"] = sharpness
     # performance_metrics["MSE"] = MSE
     performance_metrics["group_accuracy"] = group_accuracy

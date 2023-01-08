@@ -317,7 +317,7 @@ if __name__ == "__main__":
     accuracy,f1score = wgm.get_accuracy(total_test_selected, y_test_raw)
     group_accuracy = wgm.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
     # prob_true, prob_pred, ECE = wgm.recal_get_calibration_curve(scores_cal, y_cal)
-    ECE = wgm.recal_get_ECE(scores_cal,y_cal)
+    # ECE = wgm.recal_get_ECE(scores_cal,y_cal)
     sharpness = wgm.recal_get_sharpness(scores_cal,y_cal)
     # group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
@@ -341,7 +341,7 @@ if __name__ == "__main__":
     performance_metrics["f1_score"] = f1score
     # performance_metrics["prob_true"] = prob_true
     # performance_metrics["prob_pred"] = prob_pred
-    performance_metrics["ECE"] = ECE
+    # performance_metrics["ECE"] = ECE
     performance_metrics["sharpness"] = sharpness
     performance_metrics["fpr"] = fpr
     performance_metrics["tpr"] = tpr

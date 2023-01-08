@@ -76,7 +76,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
                         results[umb_num_bin][algorithm][metric]["values"])
                     results[umb_num_bin][algorithm][metric]["std"] = np.std(
-                        results[umb_num_bin][algorithm][metric]["values"])
+                        results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                 # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
 
         for idx,metric in enumerate(["n_bins", "num_selected"]):
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
                 mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
-                std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"] for umb_num_bin
+                std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
                                           in umb_num_bins])
 
                 line = axs[z*2+idx].plot(umb_num_bins, mean_algorithm,
