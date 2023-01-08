@@ -335,7 +335,7 @@ class UMBSelect(object):
         var = np.zeros(self.n_bins)
 
         for i in range(self.n_bins):
-            in_bin_i = (test_bins==i)
+            in_bin_i = (test_bins<=i)
             var[i] = np.var(scores[in_bin_i])
 
         return np.average(var)
