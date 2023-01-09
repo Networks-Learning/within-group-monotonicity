@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     for z,Z_indices in enumerate(Z):
         fig, axs = plt.subplots(1, 2)
-        fig.set_size_inches(fig_width,fig_height)
+        fig.set_size_inches(fig_width,fig_height-1)
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
         # plotting num bins of wgm vs umb number of bins for different umb bin numbers
@@ -131,5 +131,5 @@ if __name__ == "__main__":
 
         # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-        plt.tight_layout(rect=[0, 0, 1, 0.82])
+        plt.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig("./plots/exp_bins_{}.pdf".format(Z_indices[0]), format="pdf")
