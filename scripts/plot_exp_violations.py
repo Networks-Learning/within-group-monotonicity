@@ -39,8 +39,8 @@ if __name__ == "__main__":
     algorithms = []
     algorithms.append("umb_" + str(the_umb_num_bin))
     algorithms.append("wgm_" + str(the_umb_num_bin))
-    # algorithms.append("pav_" + str(the_umb_num_bin))
-    # algorithms.append("wgc_" + str(the_umb_num_bin))
+    algorithms.append("pav_" + str(the_umb_num_bin))
+    algorithms.append("wgc_" + str(the_umb_num_bin))
 
 
 
@@ -106,7 +106,7 @@ if __name__ == "__main__":
 
             for i in range(num_groups):
                 if algorithm.startswith("wgc"):
-                    axs[row][z].text(0.05,0.85,s=r"$\alpha_{WGC} = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row][z].transAxes)
+                    axs[row].text(0.05,0.85,s=r"$\alpha_{WGC} = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row].transAxes)
 
                 mean = mean_algorithm[:,i]
                 # std = std_algorithm[:,i]
@@ -127,7 +127,7 @@ if __name__ == "__main__":
                 if row==0:
                     # legend = axs[row].legend(handles = handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
                     # plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
-                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97), ncol=2)
+                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97), ncol=4)
 
                 hatch = ['//' if dis else '' for dis in disc]
                 for bar, h in zip(bars, hatch):
@@ -279,7 +279,7 @@ if __name__ == "__main__":
                                                                                                 0]))])
                     axs[row][z].set_xlabel(xlabels["fpr"])
                 axs[row][0].set_ylabel(metric_labels["tpr"])
-                axs[row][0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+                axs[row][0].legend(loc='bottom right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
         plt.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig("./plots/exp_violations_group_ROC.pdf", format="pdf")

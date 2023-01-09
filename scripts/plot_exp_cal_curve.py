@@ -34,10 +34,11 @@ if __name__ == "__main__":
     the_n_cal = n_cals[0]  # for one calibration set
 
 
-    fig, axs = plt.subplots(1, len(Z)*2)
-    fig.set_size_inches(fig_width, fig_height)
+
 
     for z, Z_indices in enumerate(Z):
+        fig, axs = plt.subplots(1, 2)
+        fig.set_size_inches(fig_width, fig_height-1)
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
         handles = []
@@ -98,7 +99,7 @@ if __name__ == "__main__":
                 std_pred = np.array([results[umb_num_bin][algorithm][metric]["std"] /denom for umb_num_bin
                                           in umb_num_bins])
 
-                line = axs[z*2+idx].plot(umb_num_bins,
+                line = axs[idx].plot(umb_num_bins,
                             mean_pred, linewidth=line_width,
                                    label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
                                    color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
@@ -106,13 +107,13 @@ if __name__ == "__main__":
                                                                                               0]))])
                 handles.append(line[0])
 
-                axs[z*2+idx].fill_between(umb_num_bins, mean_pred-std_pred,
+                axs[idx].fill_between(umb_num_bins, mean_pred-std_pred,
                                               mean_pred+std_pred, alpha=transparency,
                                               color=algorithm_colors[
                                                   "{}_{}".format(algorithm, str(umb_num_bins[0]))])
-                axs[z * 2 + idx].set_xticks(umb_num_bins)
-                axs[z * 2 + idx].set_ylabel(metric_labels[metric])
-                axs[z * 2 + idx].set_xlabel(xlabels["n_bins"])
+                axs[idx].set_xticks(umb_num_bins)
+                axs[idx].set_ylabel(metric_labels[metric])
+                axs[idx].set_xlabel(xlabels["n_bins"])
 
                 # axs[z].errorbar(umb_num_bins, mean_pred,
                 #                     std_pred,capthick=capthick,
@@ -124,12 +125,12 @@ if __name__ == "__main__":
             # axs[z].set_xlabel(xlabels["n_bins"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
         # axs[z].set_xticklabels([str(round(float(label), 2)) for label in results["umb"]["prob_true"]["mean"]])
-            if metric!="alpha":
-                fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
-    plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
-    plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
-    # axs[0].set_ylabel(metric_labels[metrics[0]])
+        #     if metric!="alpha":
+        #         fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
+        # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
+        # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
+        # axs[0].set_ylabel(metric_labels[metrics[0]])
 
-    plt.tight_layout(rect=[0, 0, 1, 0.82])
-    fig.savefig("./plots/exp_cal_curve_{}.pdf".format(str(Z[0][0])), format="pdf")
+        plt.tight_layout(rect=[0, 0, 1, 1])
+        fig.savefig("./plots/exp_cal_curve_{}.pdf".format(Z_indices[0]), format="pdf")
 
