@@ -54,6 +54,7 @@ if __name__ == "__main__":
         results = {}
         num_bins = {}
 
+
         metrics = ["group_bin_values", "bin_values", "bin_rho","discriminated_against"]
 
         handles = []
@@ -64,6 +65,9 @@ if __name__ == "__main__":
             with open(result_path, 'rb') as f:
                 result = pickle.load(f)
             num_bins = len(result["bin_values"])
+            alpha = 0
+            if algorithm.startswith("wgc"):
+                alpha = result["alpha"]
 
 
             for bin in range(num_bins):
@@ -99,6 +103,9 @@ if __name__ == "__main__":
             import matplotlib.colors as mcolors
 
             for i in range(num_groups):
+                if algorithm.startswith("wgc"):
+                    axs[row][z].text(0.05,0.85,s=r"$\alpha_{WGC} = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row][z].transAxes)
+
                 mean = mean_algorithm[:,i]
                 # std = std_algorithm[:,i]
                 # alpha = alpha_algorithm[:,i]
