@@ -411,7 +411,7 @@ if __name__ == "__main__":
     X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
-    total_test_selected = umb_select.global_select(scores_test_raw)
+    total_test_selected = umb_select.select(scores_test_raw)
     fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
     accuracy,f1score = umb_select.get_accuracy(total_test_selected,y_test_raw)
     group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
