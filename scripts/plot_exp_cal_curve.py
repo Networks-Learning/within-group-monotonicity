@@ -34,7 +34,7 @@ if __name__ == "__main__":
     the_n_cal = n_cals[0]  # for one calibration set
 
 
-    fig, axs = plt.subplots(1, len(Z))
+    fig, axs = plt.subplots(1, len(Z)*2)
     fig.set_size_inches(fig_width, fig_height)
 
     Z = [[6], [15]]
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         algorithms.append("umb")
         algorithms.append("wgm")
 
-        metrics = ["f1_score"]
+        metrics = ["accuracy","f1_score"]
 
         the_n_cal = n_cals[0]
 
@@ -85,15 +85,16 @@ if __name__ == "__main__":
                         results[umb_num_bin][algorithm][metric]["values"],axis=0,ddof=1)
 
 
-        for algorithm in algorithms:
-            for metric in metrics:
+        for idx,metric in enumerate(metrics):
+            handles = []
+            for algorithm in algorithms:
                 # print(algorithm,results[algorithm]["prob_true"]["values"])
                 mean_pred = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
                 std_pred = np.array([results[umb_num_bin][algorithm][metric]["std"] /np.sqrt(n_runs) for umb_num_bin
                                           in umb_num_bins])
 
-                line = axs[z].plot(umb_num_bins,
+                line = axs[z*2+idx].plot(umb_num_bins,
                             mean_pred, linewidth=line_width,
                                    label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
                                    color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
@@ -101,10 +102,13 @@ if __name__ == "__main__":
                                                                                               0]))])
                 handles.append(line[0])
 
-                axs[z].fill_between(umb_num_bins, mean_pred-std_pred,
+                axs[z*2+idx].fill_between(umb_num_bins, mean_pred-std_pred,
                                               mean_pred+std_pred, alpha=transparency,
                                               color=algorithm_colors[
                                                   "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                axs[z * 2 + idx].set_xticks(umb_num_bins)
+                axs[z * 2 + idx].set_ylabel(metric_labels[metric])
+                axs[z * 2 + idx].set_xlabel(xlabels["n_bins"])
 
                 # axs[z].errorbar(umb_num_bins, mean_pred,
                 #                     std_pred,capthick=capthick,
@@ -113,7 +117,7 @@ if __name__ == "__main__":
                 #                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
                 #                                                                            0]))])
 
-        axs[z].set_xlabel(xlabels["n_bins"])
+            # axs[z].set_xlabel(xlabels["n_bins"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
         # axs[z].set_xticklabels([str(round(float(label), 2)) for label in results["umb"]["prob_true"]["mean"]])
 
