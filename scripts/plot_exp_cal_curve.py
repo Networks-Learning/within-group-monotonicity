@@ -126,7 +126,7 @@ if __name__ == "__main__":
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
         # axs[z].set_xticklabels([str(round(float(label), 2)) for label in results["umb"]["prob_true"]["mean"]])
             if metric!="alpha":
-                fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.03), ncol=4)
+                fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
     plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
     axs[0].set_ylabel(metric_labels[metrics[0]])

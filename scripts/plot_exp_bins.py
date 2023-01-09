@@ -168,7 +168,7 @@ if __name__ == "__main__":
         #         # axs[2][z].set_ylim((5, 15))
         #         # axs[3][z].set_ylim((6, 7))
 
-    fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.03), ncol=4)
+    fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
     plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
 
