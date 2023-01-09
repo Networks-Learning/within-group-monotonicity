@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     for z,Z_indices in enumerate(Z):
         fig, axs = plt.subplots(1, 2)
-        fig.set_size_inches(18,8)
+        fig.set_size_inches(fig_width,fig_height)
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
         # plotting num bins of wgm vs umb number of bins for different umb bin numbers
@@ -78,7 +78,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][algorithm][metric]["std"] = np.std(
                         results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                 # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
-        fig_legend = plt.figure(figsize=(fig_width,0.7))
+        # fig_legend = plt.figure(figsize=(fig_width,0.7))
         for idx,metric in enumerate(["n_bins", "num_selected"]):
             handles = []
             for algorithm in algorithms:
@@ -122,8 +122,8 @@ if __name__ == "__main__":
                 axs[idx].set_ylabel(metric_labels[metric])
                 axs[idx].set_xlabel(xlabels["n_bins"])
 
-        fig_legend.legend(handles=handles,loc='center', ncol=4)
-        fig_legend.savefig('./plots/legend.pdf')
+        # fig_legend.legend(handles=handles,loc='center', ncol=4)
+        # fig_legend.savefig('./plots/legend.pdf')
         # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
 
         # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
@@ -131,5 +131,5 @@ if __name__ == "__main__":
 
         # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-        plt.tight_layout(rect=[0, 0, 1, 1])
+        plt.tight_layout(rect=[0, 0, 1, 0.82])
         fig.savefig("./plots/exp_bins_{}.pdf".format(Z_indices[0]), format="pdf")
