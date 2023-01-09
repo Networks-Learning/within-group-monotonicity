@@ -9,6 +9,7 @@ params = {'legend.fontsize': 24,#28,
             'text.latex.preamble': r'\usepackage{amsmath}',
             'font.family': 'serif',
           'axes.titlesize':26,
+        'figure.autolayout': True
           }
 
 
