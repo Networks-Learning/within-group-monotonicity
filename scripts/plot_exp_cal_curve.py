@@ -37,7 +37,6 @@ if __name__ == "__main__":
     fig, axs = plt.subplots(1, len(Z)*2)
     fig.set_size_inches(fig_width, fig_height)
 
-    Z = [[6], [15]]
     for z, Z_indices in enumerate(Z):
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
