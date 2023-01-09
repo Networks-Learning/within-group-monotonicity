@@ -1,5 +1,5 @@
 import pickle
-params = {'legend.fontsize': 26,#28,
+params = {'legend.fontsize': 24,#28,
           'xtick.labelsize': 26,
           'ytick.labelsize': 28,
           'lines.markersize': 15,

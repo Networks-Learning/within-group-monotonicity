@@ -37,15 +37,14 @@ if __name__ == "__main__":
     the_umb_num_bin = 15
 
     algorithms = []
-    algorithms.append("umb_" + str(the_umb_num_bin))
-    algorithms.append("wgm_" + str(the_umb_num_bin))
-    # algorithms.append("pav_" + str(the_umb_num_bin))
-    # algorithms.append("wgc_" + str(the_umb_num_bin))
+    # algorithms.append("umb_" + str(the_umb_num_bin))
+    # algorithms.append("wgm_" + str(the_umb_num_bin))
+    algorithms.append("pav_" + str(the_umb_num_bin))
+    algorithms.append("wgc_" + str(the_umb_num_bin))
 
     fig, axs = plt.subplots(len(algorithms), len(Z))
     fig.set_size_inches(fig_width, fig_height * len(algorithms))
 
-    Z = [[6], [15]]
     for z,Z_indices in enumerate(Z):
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
@@ -117,7 +116,7 @@ if __name__ == "__main__":
                             linewidth=disc,width=0.1,edgecolor='black',color=group_colors[i])
 
                 if row==0:
-                    legend = axs[row][z].legend(handles = handles, loc='upper center', bbox_to_anchor=(0.5, 1.2),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
+                    legend = axs[row][z].legend(handles = handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
                     plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
 
                 hatch = ['//' if dis else '' for dis in disc]
@@ -146,7 +145,7 @@ if __name__ == "__main__":
                 axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X))$')
 
     plt.tight_layout(rect=[0, 0, 1, 1])
-    fig.savefig("./plots/exp_violations_{}.pdf".format('_'.join(algorithms)), format="pdf")
+    fig.savefig("./plots/exp_violations_{}_{}.pdf".format(str(Z[0][0]),'_'.join(algorithms)), format="pdf")
 
 
     # plotting ROC

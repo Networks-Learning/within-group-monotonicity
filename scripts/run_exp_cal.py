@@ -3,8 +3,8 @@ Run the experiments where we vary the amount of calibration data.
 """
 import os
 from exp_utils import generate_commands, submit_commands
-from params_exp_bins import *
-# from params_exp_violations import *
+# from params_exp_bins import *
+from params_exp_violations import *
 if __name__ == "__main__":
 
     if not os.path.isdir(exp_dir):
