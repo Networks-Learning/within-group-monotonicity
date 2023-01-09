@@ -93,9 +93,9 @@ if __name__ == "__main__":
                 # print(algorithm,results[algorithm]["prob_true"]["values"])
                 mean_pred = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
-                denom = 1
-                if metric!="alpha":
-                    denom = np.sqrt(n_runs)
+                denom = np.sqrt(n_runs)
+                # if metric!="alpha":
+                #     denom = np.sqrt(n_runs)
                 std_pred = np.array([results[umb_num_bin][algorithm][metric]["std"] /denom for umb_num_bin
                                           in umb_num_bins])
 
