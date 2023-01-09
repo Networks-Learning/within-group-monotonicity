@@ -176,4 +176,4 @@ if __name__ == "__main__":
 
     plt.tight_layout(rect=[0, 0, 1, 0.82])
 
-    fig.savefig("./plots/exp_bins.pdf", format="pdf")
+    fig.savefig("./plots/exp_bins_{}.pdf".format(str(Z[0][0])), format="pdf")

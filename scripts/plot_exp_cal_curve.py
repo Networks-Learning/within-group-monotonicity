@@ -132,5 +132,5 @@ if __name__ == "__main__":
     # axs[0].set_ylabel(metric_labels[metrics[0]])
 
     plt.tight_layout(rect=[0, 0, 1, 0.82])
-    fig.savefig("./plots/exp_cal_curve.pdf", format="pdf")
+    fig.savefig("./plots/exp_cal_curve_{}.pdf".format(str(Z[0][0])), format="pdf")
 
