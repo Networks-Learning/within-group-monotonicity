@@ -45,12 +45,12 @@ if __name__ == "__main__":
         algorithms = []
         results = {}
 
-        algorithms.append("wgc")
-        algorithms.append("pav")
-        algorithms.append("umb")
         algorithms.append("wgm")
+        algorithms.append("umb")
+        algorithms.append("pav")
+        algorithms.append("wgc")
 
-        metrics = ["accuracy","f1_score"]
+        metrics = ["f1_score","alpha"]
 
         the_n_cal = n_cals[0]
 
@@ -88,10 +88,15 @@ if __name__ == "__main__":
         for idx,metric in enumerate(metrics):
             handles = []
             for algorithm in algorithms:
+                if metric=="alpha" and algorithm!="wgc":
+                    continue
                 # print(algorithm,results[algorithm]["prob_true"]["values"])
                 mean_pred = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
                                            in umb_num_bins])
-                std_pred = np.array([results[umb_num_bin][algorithm][metric]["std"] /np.sqrt(n_runs) for umb_num_bin
+                denom = 1
+                if metric!="alpha":
+                    denom = np.sqrt(n_runs)
+                std_pred = np.array([results[umb_num_bin][algorithm][metric]["std"] /denom for umb_num_bin
                                           in umb_num_bins])
 
                 line = axs[z*2+idx].plot(umb_num_bins,
@@ -120,8 +125,8 @@ if __name__ == "__main__":
             # axs[z].set_xlabel(xlabels["n_bins"])
         # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
         # axs[z].set_xticklabels([str(round(float(label), 2)) for label in results["umb"]["prob_true"]["mean"]])
-
-        fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.03), ncol=4)
+            if metric!="alpha":
+                fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.03), ncol=4)
     plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
     axs[0].set_ylabel(metric_labels[metrics[0]])
