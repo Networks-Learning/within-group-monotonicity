@@ -50,7 +50,7 @@ if __name__ == "__main__":
         algorithms.append("umb")
         algorithms.append("wgm")
 
-        metrics = ["accuracy"]
+        metrics = ["f1_score"]
 
         the_n_cal = n_cals[0]
 
