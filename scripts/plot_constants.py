@@ -1,7 +1,7 @@
 import pickle
 params = {'legend.fontsize': 24,#28,
-          'xtick.labelsize': 26,
-          'ytick.labelsize': 28,
+          'xtick.labelsize': 24,
+          'ytick.labelsize': 24,
           'lines.markersize': 15,
           'errorbar.capsize': 8.0,
             'axes.labelsize' : 28,
@@ -17,7 +17,7 @@ transparency = 0.1
 font_size = 28
 capthick = 3.0
 dpi = 100
-fig_width = 28
+fig_width = 14
 fig_height = 6
 
 Z_labels = {

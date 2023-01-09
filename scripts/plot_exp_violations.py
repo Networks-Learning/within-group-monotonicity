@@ -37,17 +37,19 @@ if __name__ == "__main__":
     the_umb_num_bin = 15
 
     algorithms = []
-    # algorithms.append("umb_" + str(the_umb_num_bin))
-    # algorithms.append("wgm_" + str(the_umb_num_bin))
-    algorithms.append("pav_" + str(the_umb_num_bin))
-    algorithms.append("wgc_" + str(the_umb_num_bin))
+    algorithms.append("umb_" + str(the_umb_num_bin))
+    algorithms.append("wgm_" + str(the_umb_num_bin))
+    # algorithms.append("pav_" + str(the_umb_num_bin))
+    # algorithms.append("wgc_" + str(the_umb_num_bin))
 
-    fig, axs = plt.subplots(len(algorithms), len(Z))
-    fig.set_size_inches(fig_width, fig_height * len(algorithms))
+
 
     for z,Z_indices in enumerate(Z):
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
+
+        fig, axs = plt.subplots(len(algorithms), 1)
+        fig.set_size_inches(fig_width, fig_height * len(algorithms))
 
         # plot group bin values for one run, one calibration set, for each algorithms across bin values
 
@@ -114,46 +116,46 @@ if __name__ == "__main__":
                 # rgba_colors[:,:3] = mcolors.to_rgb(group_colors[i])
                 # rgba_colors[:,3] = [1 if dis else 0.7 for dis in disc]
 
-                legend_bars = axs[row][z].bar(np.arange(num_bins) - ((i - 1) * 0.2), mean, align='edge',
+                legend_bars = axs[row].bar(np.arange(num_bins) - ((i - 1) * 0.2), mean, align='edge',
                                 linewidth=disc, width=0.1, color=group_colors[i],
                                 label=Z_labels[Z_indices[0]][i])
                 handles.append(legend_bars)
 
-                bars = axs[row][z].bar(np.arange(num_bins)-((i-1)*0.2), mean,align='edge',
+                bars = axs[row].bar(np.arange(num_bins)-((i-1)*0.2), mean,align='edge',
                             linewidth=disc,width=0.1,edgecolor='black',color=group_colors[i])
 
                 if row==0:
-                    legend = axs[row][z].legend(handles = handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
-                    plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
+                    # legend = axs[row].legend(handles = handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
+                    # plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
+                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97), ncol=2)
 
                 hatch = ['//' if dis else '' for dis in disc]
                 for bar, h in zip(bars, hatch):
                     bar.set_hatch(h)
 
-                axs[row][z].set_xticks(range(num_bins))
-                axs[row][z].set_xticklabels([str(round(float(label), 2)) for label in bin_value_algorithm])
+                axs[row].set_xticks(range(num_bins))
+                axs[row].set_xticklabels([str(round(float(label), 2)) for label in bin_value_algorithm])
 
-                axs[row][z].set_yticks([])
+                axs[row].set_yticks([])
                 # axs[alg][z].set_ylim((0,1))
 
-            axs[row][0].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
+            axs[row].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
             if algorithm.startswith("umb"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f(X))$')
+                axs[row].set_ylabel(r'$\Pr(Y=1|f(X),Z)$')
+                axs[row].set_xlabel(r'$\Pr(Y=1|f(X))$')
             if algorithm.startswith("wgm"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X))$')
+                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X),Z)$')
+                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X))$')
             if algorithm.startswith("wgc"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X))$')
+                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X),Z)$')
+                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X))$')
 
             if algorithm.startswith("pav"):
-                axs[row][0].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X),Z)$')
-                axs[row][z].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X))$')
+                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X),Z)$')
+                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X))$')
 
-    plt.tight_layout(rect=[0, 0, 1, 1])
-    fig.savefig("./plots/exp_violations_{}_{}.pdf".format(str(Z[0][0]),'_'.join(algorithms)), format="pdf")
-
+        plt.tight_layout(rect=[0, 0, 1, 1])
+        fig.savefig("./plots/exp_violations_{}_{}.pdf".format(Z_indices[0],'_'.join(algorithms)), format="pdf")
 
     # plotting ROC
     Z = [[6], [15]]
