@@ -285,7 +285,7 @@ class UMBSelect(object):
         # test_bins = self._bin_points(scores)
         # y_prob = self.bin_values[test_bins]
         # y_pred = y_prob>self.theta
-        return accuracy_score(y,selection),precision_score(y,selection)
+        return accuracy_score(y,selection),f1_score(y,selection)
 
     def get_group_accuracy(self,X, scores, y):
         scores = scores.squeeze()
