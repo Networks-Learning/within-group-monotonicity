@@ -169,6 +169,15 @@ class BinPartition(UMBSelect):
                 s[i] = False
         return s
 
+    def recal_global_select(self,scores):
+        scores = scores.squeeze()
+        size = scores.size
+        # assign test data to bins
+        test_bins,_,_,_,_ = self.get_recal_bin_points(scores)
+        # make decisions
+        return self.recal_bin_values[test_bins]>0.5
+
+
     def recal_get_test_roc(self, X, scores, y):
         assert (self.recal_bin_values is not None and self.recal_n_bins is not None), "Not yet recalibrated"
         scores = scores.squeeze()

@@ -36,6 +36,7 @@ if __name__ == "__main__":
     # X_train = scaler.fit_transform(X_train)
     X_cal = transform_except_last_dim(X_cal, scaler)
     # X_cal = scaler.transform(X_cal)
+    print(f"{np.sum(y_cal)/y_cal.shape[0]=}")
 
     with open(args.train_data_path, "wb") as f:
         pickle.dump([X_train, y_train], f)
