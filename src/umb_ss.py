@@ -4,7 +4,7 @@ Select a Shortlist of Applicants Based on Uniform Mass Binning (details in the p
 import argparse
 import pickle
 import numpy as np
-from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
+from utils import *
 from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss,f1_score,precision_score
 
 
@@ -120,7 +120,7 @@ class UMBSelect(object):
     #                                         high=self.delta,
     #                                         size=matrix.shape)) / (1 + self.delta))
 
-    def fit(self, X_est, y_score, y, m, k):
+    def fit(self, X_est, y_score, y, m):
         assert (self.n_bins is not None), "Number of bins has to be specified"
         y_score = y_score.squeeze()
         y = y.squeeze()
@@ -206,17 +206,20 @@ class UMBSelect(object):
                     assert self.group_bin_values[i][j] * self.group_num_in_bin[i][j] - self.group_num_positives_in_bin[i][j] < 1e-2
 
         # find threshold bin and theta
-        sum_scores = 0
-        b = 0  # bin on the threshold
-        theta = 1.
-        for i in reversed(range(self.n_bins)):
-            sum_scores += m * (self.num_positives_in_bin[i] / self.num_examples - self.epsilon)
-            if sum_scores >= k:
-                sum_scores -= m * (self.num_positives_in_bin[i] / self.num_examples - self.epsilon)
-                b = i
-                theta = (k - sum_scores) / (m * (self.num_positives_in_bin[i] / self.num_examples
-                                                 - self.epsilon))
-                break
+        b = np.zeros(shape=len(ks))
+        theta = np.ones(shape=len(ks))
+        for k_idx,k in enumerate(ks):
+            sum_scores = 0
+            # b = 0  # bin on the threshold
+            # theta = 1.
+            for i in reversed(range(self.n_bins)):
+                sum_scores += m * (self.num_positives_in_bin[i] / self.num_examples - self.epsilon)
+                if sum_scores >= k:
+                    sum_scores -= m * (self.num_positives_in_bin[i] / self.num_examples - self.epsilon)
+                    b[k_idx] = i
+                    theta[k_idx] = (k - sum_scores) / (m * (self.num_positives_in_bin[i] / self.num_examples
+                                                     - self.epsilon))
+                    break
         self.b = b
         self.theta = theta
         # print(f"{self.b=}")
@@ -227,7 +230,7 @@ class UMBSelect(object):
         # histogram binning done
         self.fitted = True
 
-    def select(self, scores):
+    def select(self, scores, k_idx):
         scores = scores.squeeze()
         size = scores.size
         # assign test data to bins
@@ -235,21 +238,21 @@ class UMBSelect(object):
         # make decisions
         s = np.zeros(size, dtype=bool)
         for i in range(size):
-            if test_bins[i] > self.b:
+            if test_bins[i] > self.b[k_idx]:
                 s[i] = True
-            elif test_bins[i] == self.b:
-                s[i] = bool(np.random.binomial(1, self.theta))
+            elif test_bins[i] == self.b[k_idx]:
+                s[i] = bool(np.random.binomial(1, self.theta[k_idx]))
             else:
                 s[i] = False
         return s
 
-    def global_select(self,scores):
-        scores = scores.squeeze()
-        size = scores.size
-        # assign test data to bins
-        test_bins = self._bin_points(scores)
-        # make decisions
-        return self.bin_values[test_bins]>0.5
+    # def global_select(self,scores):
+    #     scores = scores.squeeze()
+    #     size = scores.size
+    #     # assign test data to bins
+    #     test_bins = self._bin_points(scores)
+    #     # make decisions
+    #     return self.bin_values[test_bins]>0.5
 
 
     def get_test_roc(self, X, scores, y):
@@ -400,7 +403,7 @@ if __name__ == "__main__":
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
     umb_select = UMBSelect(args.B, Z_indices, groups, Z_map)
-    umb_select.fit(X_cal_all_features, scores_cal, y_cal, m, k)
+    umb_select.fit(X_cal_all_features, scores_cal, y_cal, m)
 
 
     #test
@@ -411,13 +414,17 @@ if __name__ == "__main__":
     X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
-    total_test_selected = umb_select.select(scores_test_raw)
-    fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
-    accuracy,f1score = umb_select.get_accuracy(total_test_selected,y_test_raw)
-    group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
+
+    accuracy = np.empty(len(ks))
+    f1score = np.empty(len(ks))
+    for k_idx, k in enumerate(ks):
+        total_test_selected = umb_select.select(scores_test_raw,k_idx)
+        # fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+        accuracy[k_idx],f1score[k_idx] = umb_select.get_accuracy(total_test_selected,y_test_raw)
+    # group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
     # prob_true, prob_pred, ECE = umb_select.get_calibration_curve(scores_cal,y_cal)
     # ECE = umb_select.get_ECE(scores_cal,y_cal)
-    sharpness = umb_select.get_sharpness(scores_cal,y_cal)
+    # sharpness = umb_select.get_sharpness(scores_cal,y_cal)
     # group_accuracy = umb_select.get_group_accuracy(total_test_selected,X_test_all_features,y_test_raw)
 
     # simulating pools of candidates
@@ -427,7 +434,7 @@ if __name__ == "__main__":
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
-        test_selected = umb_select.select(scores_test)
+        test_selected = umb_select.select(scores_test,0)
         num_selected.append(calculate_expected_selected(test_selected, y_test, m))
         num_qualified.append(calculate_expected_qualified(test_selected, y_test, m))
 
@@ -435,8 +442,8 @@ if __name__ == "__main__":
     performance_metrics["num_qualified"] = np.mean(num_qualified)
     performance_metrics["num_selected"] = np.mean(num_selected)
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
-    performance_metrics["fpr"] = fpr
-    performance_metrics["tpr"] = tpr
+    # performance_metrics["fpr"] = fpr
+    # performance_metrics["tpr"] = tpr
     # performance_metrics["group_fpr"] = group_fpr
     # performance_metrics["group_tpr"] = group_tpr
     performance_metrics["accuracy"] = accuracy
@@ -444,9 +451,9 @@ if __name__ == "__main__":
     # performance_metrics["prob_true"] = prob_true
     # performance_metrics["prob_pred"] = prob_pred
     # performance_metrics["ECE"] = ECE
-    performance_metrics["sharpness"] = sharpness
+    # performance_metrics["sharpness"] = sharpness
     # performance_metrics["MSE"] = MSE
-    performance_metrics["group_accuracy"] = group_accuracy
+    # performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = umb_select.num_positives_in_bin
     performance_metrics["num_in_bin"] = umb_select.num_in_bin
     performance_metrics["bin_values"] = umb_select.bin_values

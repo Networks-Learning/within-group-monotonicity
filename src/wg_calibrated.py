@@ -7,7 +7,7 @@ import numpy as np
 from train_LR import NoisyLR
 # from umb_ss import UMBSelect
 from partition import BinPartition
-from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
+from utils import *
 from sklearn.metrics import mean_squared_error,accuracy_score
 
 class WGC(BinPartition):
@@ -150,10 +150,10 @@ class WGC(BinPartition):
         return self.get_optimal_partition(self.mid_point[r]) + [self.mid_point[r]+1]
 
 
-    def fit(self, X_est, y_score, y, m, k):
+    def fit(self, X_est, y_score, y, m):
 
         #fit the umb
-        super().fit(X_est, y_score, y, m, k)
+        super().fit(X_est, y_score, y, m)
 
         #recalibrate using algorithm 2
         self.dp, self.mid_point,self.alpha = self.recalibrate()
@@ -216,7 +216,7 @@ class WGC(BinPartition):
         #             assert self.recal_group_bin_values[i][j]*self.recal_group_num_in_bin[i][j] - self.recal_group_num_positives_in_bin[i][j]< 1e-2
 
         # find threshold bin and theta
-        self.recal_b, self.recal_theta = self.get_recal_threshold(m, k)
+        self.recal_b, self.recal_theta = self.get_recal_threshold(m)
         # recal_sum_scores = 0
         # recal_b = 0  # bin on the threshold
         # recal_theta = 1.
@@ -306,7 +306,7 @@ if __name__ == "__main__":
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
     wgc = WGC(args.B,Z_indices,groups,Z_map)
-    wgc.fit(X_cal_all_features,scores_cal, y_cal, m, k)
+    wgc.fit(X_cal_all_features,scores_cal, y_cal, m)
 
     # test
     with open(args.test_raw_path, "rb") as f:
@@ -316,13 +316,14 @@ if __name__ == "__main__":
     X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
-    total_test_selected = wgc.recal_select(scores_test_raw)
-    fpr, tpr = wgc.recal_get_test_roc(X_test_all_features, scores_test_raw, y_test_raw)
-    accuracy,f1score = wgc.get_accuracy(total_test_selected, y_test_raw)
-    group_accuracy = wgc.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
-    # prob_true, prob_pred,ECE = wgc.recal_get_calibration_curve(scores_cal, y_cal)
-    # ECE = wgc.recal_get_ECE(scores_cal, y_cal)
-    sharpness = wgc.recal_get_sharpness(scores_cal,y_cal)
+
+    accuracy = np.empty(len(ks))
+    f1score = np.empty(len(ks))
+    for k_idx, k in enumerate(ks):
+        total_test_selected = wgc.recal_select(scores_test_raw, k_idx)
+        # fpr, tpr = wgm.recal_get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
+        accuracy[k_idx], f1score[k_idx] = wgc.get_accuracy(total_test_selected, y_test_raw)
+
 
     #simulating pools of candidates
     num_selected = []
@@ -331,7 +332,7 @@ if __name__ == "__main__":
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
-        recal_test_selected = wgc.recal_select(scores_test)
+        recal_test_selected = wgc.recal_select(scores_test,0)
         num_selected.append(calculate_expected_selected(recal_test_selected, y_test, m))
         num_qualified.append(calculate_expected_qualified(recal_test_selected, y_test, m))
 
@@ -340,8 +341,8 @@ if __name__ == "__main__":
     performance_metrics["num_qualified"] = np.mean(num_qualified)
     performance_metrics["num_selected"] = np.mean(num_selected)
     performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
-    performance_metrics["fpr"] = fpr
-    performance_metrics["tpr"] = tpr
+    # performance_metrics["fpr"] = fpr
+    # performance_metrics["tpr"] = tpr
     # performance_metrics["group_fpr"] = group_fpr
     # performance_metrics["group_tpr"] = group_tpr
     performance_metrics["accuracy"] = accuracy
@@ -349,8 +350,8 @@ if __name__ == "__main__":
     # performance_metrics["prob_true"] = prob_true
     # performance_metrics["prob_pred"] = prob_pred
     # performance_metrics["ECE"] = ECE
-    performance_metrics["sharpness"] = sharpness
-    performance_metrics["group_accuracy"] = group_accuracy
+    # performance_metrics["sharpness"] = sharpness
+    # performance_metrics["group_accuracy"] = group_accuracy
     performance_metrics["num_positives_in_bin"] = wgc.recal_num_positives_in_bin
     performance_metrics["num_in_bin"] = wgc.recal_num_in_bin
     performance_metrics["bin_values"] = wgc.recal_bin_values

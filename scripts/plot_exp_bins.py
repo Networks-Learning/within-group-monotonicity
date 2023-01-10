@@ -19,10 +19,10 @@ if __name__ == "__main__":
     algorithm_markers = {}
 
     for umb_num_bin in umb_num_bins:
-        algorithm_labels["umb_" + str(umb_num_bin)] = "UMB"
-        algorithm_labels["wgm_" + str(umb_num_bin)] = "WGM"
-        algorithm_labels["wgc_" + str(umb_num_bin)] = "WGC"
-        algorithm_labels["pav_" + str(umb_num_bin)] = "PAV"
+        algorithm_labels["umb_" + str(umb_num_bin)] = r"$f$"
+        algorithm_labels["wgm_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^*}$"
+        algorithm_labels["wgc_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^{*}_{cal}}$"
+        algorithm_labels["pav_" + str(umb_num_bin)] = r"$f_{\mathcal{B}_{pav}}$"
         algorithm_colors["umb_" + str(umb_num_bin)] = "tab:green"
         algorithm_colors["wgm_" + str(umb_num_bin)] = "tab:blue"
         algorithm_colors["wgc_" + str(umb_num_bin)] = "tab:red"
@@ -40,9 +40,8 @@ if __name__ == "__main__":
         # plotting num bins of wgm vs umb number of bins for different umb bin numbers
         algorithms = []
         results = {}
-
-        algorithms.append("wgm")
         algorithms.append("umb")
+        algorithms.append("wgm")
         algorithms.append("pav")
         algorithms.append("wgc")
 
@@ -78,7 +77,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][algorithm][metric]["std"] = np.std(
                         results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                 # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
-        # fig_legend = plt.figure(figsize=(fig_width,0.7))
+        fig_legend = plt.figure(figsize=(fig_width,0.8))
         for idx,metric in enumerate(["n_bins", "num_selected"]):
             handles = []
             for algorithm in algorithms:
@@ -122,8 +121,8 @@ if __name__ == "__main__":
                 axs[idx].set_ylabel(metric_labels[metric])
                 axs[idx].set_xlabel(xlabels["n_bins"])
 
-        # fig_legend.legend(handles=handles,loc='center', ncol=4)
-        # fig_legend.savefig('./plots/legend.pdf')
+        fig_legend.legend(handles=handles,loc='center', ncol=4)
+        fig_legend.savefig('./plots/legend.pdf')
         # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
 
         # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)

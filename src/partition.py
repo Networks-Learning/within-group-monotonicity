@@ -5,7 +5,7 @@ import argparse
 import pickle
 import numpy as np
 from umb_ss import UMBSelect
-from utils import calculate_expected_selected, calculate_expected_qualified, transform_except_last_dim
+from utils import *
 from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss,f1_score
 
 
@@ -129,28 +129,31 @@ class BinPartition(UMBSelect):
                     assert self.recal_group_bin_values[i][j] * self.recal_group_num_in_bin[i][j] - \
                            self.recal_group_num_positives_in_bin[i][j] < 1e-2
 
-    def get_recal_threshold(self,m,k):
+    def get_recal_threshold(self,m):
         # find threshold bin and theta
         assert (self.recal_num_positives_in_bin is not None), "Not yet recalibrated"
-        recal_sum_scores = 0
-        recal_b = 0  # bin on the threshold
-        recal_theta = 1.
-        for i in reversed(range(self.recal_n_bins)):
-            recal_sum_scores += m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
-            if recal_sum_scores >= k:
-                recal_sum_scores -= m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
-                recal_b = i
-                recal_theta = (k - recal_sum_scores) / (
-                        m * (self.recal_num_positives_in_bin[i] / self.num_examples
-                             - self.epsilon))
-                break
+        recal_b = np.zeros(len(ks))
+        recal_theta = np.ones(len(ks))
+        for k_idx,k in enumerate(ks):
+            recal_sum_scores = 0
+            # recal_b = 0  # bin on the threshold
+            # recal_theta = 1.
+            for i in reversed(range(self.recal_n_bins)):
+                recal_sum_scores += m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
+                if recal_sum_scores >= k:
+                    recal_sum_scores -= m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
+                    recal_b[k_idx] = i
+                    recal_theta[k_idx] = (k - recal_sum_scores) / (
+                            m * (self.recal_num_positives_in_bin[i] / self.num_examples
+                                 - self.epsilon))
+                    break
         return recal_b, recal_theta
 
-    def fit(self, X_est, y_score, y, m, k):
-        super().fit(X_est, y_score, y, m, k)
+    def fit(self, X_est, y_score, y, m):
+        super().fit(X_est, y_score, y, m)
 
 
-    def recal_select(self, scores):
+    def recal_select(self, scores,k_idx):
         assert (self.recal_b is not None and self.recal_theta is not None),  "Not yet recalibrated"
         scores = scores.squeeze()
         size = scores.size
@@ -161,10 +164,10 @@ class BinPartition(UMBSelect):
         # make decisions
         s = np.zeros(size, dtype=bool)
         for i in range(size):
-            if test_bins[i] > self.recal_b:
+            if test_bins[i] > self.recal_b[k_idx]:
                 s[i] = True
-            elif test_bins[i] == self.recal_b:
-                s[i] = bool(np.random.binomial(1, self.recal_theta))
+            elif test_bins[i] == self.recal_b[k_idx]:
+                s[i] = bool(np.random.binomial(1, self.recal_theta[k_idx]))
             else:
                 s[i] = False
         return s
