@@ -78,7 +78,9 @@ class WGM(BinPartition):
                     if S[l][r][k] and dp[k][l-1]!=0 and dp[k][l-1]+1>dp[l][r]:
                         dp[l][r] = dp[k][l-1] + 1
                         mid_point[l][r] = k
-
+        # for l in range(self.n_bins):
+        #     for r in range(l,self.n_bins):
+        #         print(f"{l =} { r =} {dp[l][r]=}, {mid_point[l][r]=}")
         return dp, mid_point
 
 
@@ -145,6 +147,7 @@ class WGM(BinPartition):
         for i in range(self.n_bins):
             candidate_partition = self.get_optimal_partition(i,self.n_bins-1)
             if len(candidate_partition)>0 and candidate_partition[0] == 0 and len(candidate_partition)>recal_n_bins:
+                recal_n_bins = len(candidate_partition)
                 l = i
         self.optimal_partition = self.get_optimal_partition(l,self.n_bins-1)
 

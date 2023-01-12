@@ -71,8 +71,7 @@ if __name__ == "__main__":
             if algorithm.startswith("wgc"):
                 alpha = result["alpha"]
 
-            if algorithm.startswith("umb"):
-                discrimination_prob = np.sum(np.where(result["discriminated_against"], result["group_num_in_bin"],np.zeros(result["group_num_in_bin"].shape)))
+            discrimination_prob = np.sum(np.where(result["discriminated_against"], result["group_num_in_bin"],np.zeros(result["group_num_in_bin"].shape)))
 
 
             for bin in range(num_bins):
@@ -113,8 +112,7 @@ if __name__ == "__main__":
                 if algorithm.startswith("wgc"):
                     axs[row].text(0.05,0.85,s=r"$\epsilon = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row].transAxes)
 
-                if algorithm.startswith("umb"):
-                    axs[row].text(0.05,0.85,s=r"{}".format(discrimination_prob),fontsize=font_size,transform=axs[row].transAxes)
+                # axs[row].text(0.05,0.85,s=r"{}".format(discrimination_prob),fontsize=font_size,transform=axs[row].transAxes)
 
                 mean = mean_algorithm[:,i]
                 # std = std_algorithm[:,i]
@@ -135,7 +133,11 @@ if __name__ == "__main__":
                 if row==0:
                     # legend = axs[row].legend(handles = handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
                     # plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
-                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97), ncol=4)
+                    if Z_indices[0] in [6,15]:
+                        n_cols = 2
+                    else:
+                        n_cols = 4
+                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97), ncol=n_cols)
 
                 hatch = ['//' if dis else '' for dis in disc]
                 for bar, h in zip(bars, hatch):

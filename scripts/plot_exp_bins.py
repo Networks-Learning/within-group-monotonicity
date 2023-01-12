@@ -76,6 +76,11 @@ if __name__ == "__main__":
                                                                                                     np.zeros(results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
 
         for umb_num_bin in umb_num_bins:
+            for run in runs:
+                assert(results[umb_num_bin]["wgm"]["n_bin"]["values"][run]>=results[umb_num_bin]["pav"]["n_bin"]["values"][run])
+                assert (results[umb_num_bin]["wgm"]["n_bin"]["values"][run] >=
+                        results[umb_num_bin]["wgc"]["n_bin"]["values"][run])
+        for umb_num_bin in umb_num_bins:
             for algorithm in algorithms:
                 for metric in ["n_bins", "num_selected","group_num_in_bin"]:
                     assert len(results[umb_num_bin][algorithm][metric]["values"])==n_runs
