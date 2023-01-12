@@ -21,7 +21,7 @@ if __name__ == "__main__":
     for umb_num_bin in umb_num_bins:
         algorithm_labels["umb_" + str(umb_num_bin)] = r"$f$"
         algorithm_labels["wgm_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^*}$"
-        algorithm_labels["wgc_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^{*}_{cal}}$"
+        algorithm_labels["wgc_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^{*}_{\epsilon-cal}}$"
         algorithm_labels["pav_" + str(umb_num_bin)] = r"$f_{\mathcal{B}_{pav}}$"
         algorithm_colors["umb_" + str(umb_num_bin)] = "tab:green"
         algorithm_colors["wgm_" + str(umb_num_bin)] = "tab:blue"
@@ -33,8 +33,8 @@ if __name__ == "__main__":
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
     for z,Z_indices in enumerate(Z):
-        fig, axs = plt.subplots(1, 2)
-        fig.set_size_inches(fig_width,fig_height-1)
+        fig, axs = plt.subplots(1, 3)
+        fig.set_size_inches(fig_width,fig_height)
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
         # plotting num bins of wgm vs umb number of bins for different umb bin numbers
@@ -46,7 +46,7 @@ if __name__ == "__main__":
         algorithms.append("wgc")
 
 
-        metrics = ["n_bins", "num_selected"]#,"log_loss","accuracy"]  #"alpha","accuracy"
+        metrics = ["n_bins", "num_selected","discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
 
         the_n_cal = n_cals[0]
 
@@ -69,8 +69,15 @@ if __name__ == "__main__":
                     collect_results_quantitative_exp(result_path, umb_num_bin, algorithm, results, metrics)
 
         for umb_num_bin in umb_num_bins:
+            for run in runs:
+                for algorithm in algorithms:
+                    results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[umb_num_bin][algorithm]["discriminated_against"]["values"][run],\
+                                                                                                   results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run],\
+                                                                                                    np.zeros(results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
+
+        for umb_num_bin in umb_num_bins:
             for algorithm in algorithms:
-                for metric in metrics:
+                for metric in ["n_bins", "num_selected","group_num_in_bin"]:
                     assert len(results[umb_num_bin][algorithm][metric]["values"])==n_runs
                     results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
                         results[umb_num_bin][algorithm][metric]["values"])
@@ -78,13 +85,13 @@ if __name__ == "__main__":
                         results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                 # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
         # fig_legend = plt.figure(figsize=(fig_width,0.8))
-        for idx,metric in enumerate(["n_bins", "num_selected"]):
+        for idx,metric in enumerate(["n_bins", "num_selected","group_num_in_bin"]):
             handles = []
             for algorithm in algorithms:
                 if metric=="n_bins" and algorithm=="umb":
                     continue
-                # if metric=="num_selected" and algorithm=="wgc":
-                #     continue
+                if metric=="group_num_in_bin" and (algorithm=="wgm" or algorithm=="pav"):
+                    continue
 
                 # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
                 #     print("here")

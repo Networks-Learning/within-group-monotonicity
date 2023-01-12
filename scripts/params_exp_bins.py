@@ -29,7 +29,7 @@ group_markers = {0:4, 1: 5, 2: 6, 3: 7, 4: 8}
 group_colors = {0: "tab:blue", 1: "tab:red", 2: "tab:purple", 3: "tab:cyan", 4: "tab:orange", }
 lim_num_groups = 20
 umb_markers = {5: 4, 10: 5, 15: 6, 20: 7, 25: 8, 30:9}
-ks = [3,5,7,9,11]
+ks = [5,10,15]
 
 
 

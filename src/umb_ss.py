@@ -13,14 +13,14 @@ warnings.filterwarnings(action='ignore',
                         category=RuntimeWarning)  # setting ignore as a parameter and further adding category
 
 class UMBSelect(object):
-    def __init__(self, n_bins, Z_indices, groups, Z_map):
+    def __init__(self, n_bins, Z_indices, groups, Z_map,alpha):
         # Hyper-parameters
         self.n_bins = n_bins
         self.groups = groups
         self.Z_indices = Z_indices
         self.Z_map = Z_map
         self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[0]  # grouping based on values of the chosen feature, see Z_map
-        self.alpha = 0
+        self.alpha = alpha
 
         # Parameters to be learned
         self.bin_upper_edges = None
@@ -131,7 +131,7 @@ class UMBSelect(object):
         # All required (hyper-)parameters have been passed correctly
         # Uniform-mass binning/histogram binning code starts below
         self.num_examples = y_score.size
-        self.epsilon = 0
+        self.epsilon = np.sqrt(2 * np.log(2 / self.alpha) / self.num_examples)
 
         # delta-randomization
         # y_score = self._nudge(y_score)
@@ -192,9 +192,15 @@ class UMBSelect(object):
             assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-2), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
             assert (np.sum(self.group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
-                if i < self.n_bins - 1 and positive_group_rho[i][j]:
-                    self.discriminated_against[i][j] =  np.greater(self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[i + 1][j],
-                            self.group_num_positives_in_bin[i + 1][j] * self.group_num_in_bin[i][j])
+                if positive_group_rho[i][j]:
+                    for k in range(i + 1, self.n_bins):
+                        self.discriminated_against[i][j] = np.greater(
+                            self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[k][j],
+                            self.group_num_positives_in_bin[k][j] * self.group_num_in_bin[i][j])
+                        if self.discriminated_against[i][j]:
+                            break
+
+            for j in range(self.num_groups):
                 if self.group_num_in_bin[i][j] == 0:
                     assert (self.group_rho[i][j] ==0)
                 else:
@@ -206,6 +212,7 @@ class UMBSelect(object):
                     assert self.group_bin_values[i][j] * self.group_num_in_bin[i][j] - self.group_num_positives_in_bin[i][j] < 1e-2
 
         # find threshold bin and theta
+        assert(self.epsilon is not None)
         b = np.zeros(shape=len(ks))
         theta = np.ones(shape=len(ks))
         for k_idx,k in enumerate(ks):
@@ -369,9 +376,9 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    k = args.k
+    # k = args.k
     m = args.m
-    # alpha = args.alpha
+    alpha = args.alpha
 
     args = parser.parse_args()
     Z_indices = [int(index) for index in args.Z_indices.split('_')]
@@ -399,10 +406,10 @@ if __name__ == "__main__":
     with open(args.classifier_path, "rb") as f:
         classifier = pickle.load(f)
 
-    n = y_cal.size
+    # n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    umb_select = UMBSelect(args.B, Z_indices, groups, Z_map)
+    umb_select = UMBSelect(args.B, Z_indices, groups, Z_map,alpha)
     umb_select.fit(X_cal_all_features, scores_cal, y_cal, m)
 
 

@@ -11,8 +11,8 @@ from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc
 
 
 class BinPartition(UMBSelect):
-    def __init__(self, n_bins, Z_indices, groups, Z_map):
-        super().__init__(n_bins, Z_indices, groups, Z_map)
+    def __init__(self, n_bins, Z_indices, groups, Z_map,alpha):
+        super().__init__(n_bins, Z_indices, groups, Z_map,alpha)
 
         # Parameters to be learned
         self.dp = None
@@ -24,10 +24,10 @@ class BinPartition(UMBSelect):
         self.recal_num_in_bin = None
         self.recal_bin_values = None
         self.recal_bin_rho = None
-        self.num_examples = None
-        self.epsilon = None
-        self.b = None
-        self.theta = None
+        # self.num_examples = None
+        # self.epsilon = None
+        # self.b = None
+        # self.theta = None
         # self.num_groups = None
         self.recal_group_num_positives_in_bin = None
         self.recal_group_num_in_bin = None
@@ -93,11 +93,15 @@ class BinPartition(UMBSelect):
     def find_discriminations(self):
         positive_group_rho = np.greater(self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
         self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
-        for i in range(self.recal_n_bins - 1):
-            self.recal_discriminated_against[i] = np.where(positive_group_rho[i], np.greater(
-                self.recal_group_num_positives_in_bin[i] * self.recal_group_num_in_bin[i + 1],
-                self.recal_group_num_positives_in_bin[i + 1] * self.recal_group_num_in_bin[i]),np.zeros(self.num_groups))
-
+        for i in range(self.recal_n_bins):
+            for j in range(self.num_groups):
+                if positive_group_rho[i][j]:
+                    for k in range(i+1,self.recal_n_bins):
+                        self.recal_discriminated_against[i][j] = np.greater(
+                            self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[k][j],
+                            self.recal_group_num_positives_in_bin[k][j] * self.recal_group_num_in_bin[i][j])
+                        if self.recal_discriminated_against[i][j]:
+                            break
 
     def sanity_check(self):
         # positive_group_rho = np.greater(self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
@@ -131,7 +135,7 @@ class BinPartition(UMBSelect):
 
     def get_recal_threshold(self,m):
         # find threshold bin and theta
-        assert (self.recal_num_positives_in_bin is not None), "Not yet recalibrated"
+        assert (self.recal_num_positives_in_bin is not None and self.epsilon is not None), "Not yet recalibrated"
         recal_b = np.zeros(len(ks))
         recal_theta = np.ones(len(ks))
         for k_idx,k in enumerate(ks):

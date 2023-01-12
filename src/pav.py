@@ -11,8 +11,8 @@ from utils import *
 from sklearn.metrics import mean_squared_error,accuracy_score
 
 class PAV(BinPartition):
-    def __init__(self, n_bins, Z_indices, groups, Z_map):
-        super().__init__(n_bins, Z_indices, groups, Z_map)
+    def __init__(self, n_bins, Z_indices, groups, Z_map,alpha):
+        super().__init__(n_bins, Z_indices, groups, Z_map,alpha)
         # Parameters to be learned
         # self.dp = None
         # self.prev_point = None
@@ -249,7 +249,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_runs_test", type=int, help="the number of tests for estimating the expectation")
 
     args = parser.parse_args()
-    k = args.k
+    # k = args.k
     m = args.m
     alpha = args.alpha
 
@@ -285,7 +285,7 @@ if __name__ == "__main__":
     n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    pav = PAV(args.B,Z_indices,groups,Z_map)
+    pav = PAV(args.B,Z_indices,groups,Z_map,alpha)
     pav.fit(X_cal_all_features,scores_cal, y_cal, m)
 
     # test

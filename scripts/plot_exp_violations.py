@@ -49,7 +49,7 @@ if __name__ == "__main__":
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
 
         fig, axs = plt.subplots(len(algorithms), 1)
-        fig.set_size_inches(fig_width, fig_height * len(algorithms))
+        fig.set_size_inches(fig_width, (fig_height) * len(algorithms))
 
         # plot group bin values for one run, one calibration set, for each algorithms across bin values
 
@@ -71,6 +71,9 @@ if __name__ == "__main__":
             if algorithm.startswith("wgc"):
                 alpha = result["alpha"]
 
+            if algorithm.startswith("umb"):
+                discrimination_prob = np.sum(np.where(result["discriminated_against"], result["group_num_in_bin"],np.zeros(result["group_num_in_bin"].shape)))
+
 
             for bin in range(num_bins):
                 results[bin] = {}
@@ -83,6 +86,8 @@ if __name__ == "__main__":
                 for metric in metrics:
                     results[bin][metric]["values"] = result[metric][bin]
                 # collect_results_normal_exp(result_path, bin, algorithm, results, metrics)
+
+
 
             # for bin in range(num_bins[algorithm]):
             #     for metric in metrics:
@@ -106,7 +111,10 @@ if __name__ == "__main__":
 
             for i in range(num_groups):
                 if algorithm.startswith("wgc"):
-                    axs[row].text(0.05,0.85,s=r"$\alpha_{WGC} = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row].transAxes)
+                    axs[row].text(0.05,0.85,s=r"$\epsilon = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row].transAxes)
+
+                if algorithm.startswith("umb"):
+                    axs[row].text(0.05,0.85,s=r"{}".format(discrimination_prob),fontsize=font_size,transform=axs[row].transAxes)
 
                 mean = mean_algorithm[:,i]
                 # std = std_algorithm[:,i]
@@ -147,8 +155,8 @@ if __name__ == "__main__":
                 axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X),Z)$')
                 axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X))$')
             if algorithm.startswith("wgc"):
-                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X),Z)$')
-                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{cal}}(X))$')
+                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^{*}_{\epsilon-cal}}(X),Z)$')
+                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^{*}_{\epsilon-cal}}(X))$')
 
             if algorithm.startswith("pav"):
                 axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X),Z)$')
@@ -157,132 +165,132 @@ if __name__ == "__main__":
         plt.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig("./plots/exp_violations_{}_{}.pdf".format(Z_indices[0],'_'.join(algorithms)), format="pdf")
 
-    # plotting ROC
-    Z = [[6], [15]]
-    umb_num_bins = [15]
-    fig, axs = plt.subplots(1, len(Z)*len(umb_num_bins))
-    fig.set_size_inches(fig_width, fig_height)
-
-    for z, Z_indices in enumerate(Z):
-        Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
-        num_groups = Z_labels[Z_indices[0]]["num_groups"]
-
-        algorithms = []
-        results = {}
-
-        algorithms.append("wgc")
-        algorithms.append("pav")
-        algorithms.append("umb")
-        algorithms.append("wgm")
-
-        metrics = ["fpr","tpr"]
-
-        the_n_cal = n_cals[0]
-
-        for umb_num_bin in umb_num_bins:
-            results[umb_num_bin] = {}
-            for algorithm in algorithms:
-                results[umb_num_bin][algorithm] = {}
-                for metric in metrics:
-                    results[umb_num_bin][algorithm][metric] = {}
-                    results[umb_num_bin][algorithm][metric]["values"] = []
-
-        for umb_num_bin in umb_num_bins:
-            for algorithm in algorithms:
-                exp_identity_string = "_".join(
-                    [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(the_run)])
-                result_path = os.path.join(exp_dir,
-                                           exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
-                                                                                        umb_num_bin))
-                with open(result_path, 'rb') as f:
-                    result = pickle.load(f)
-                for metric in metrics:
-                    results[umb_num_bin][algorithm][metric]["values"] = result[metric]
-
-        for idx,umb_num_bin in enumerate(umb_num_bins):
-            for algorithm in algorithms:
-                axs[z].plot(results[umb_num_bin][algorithm]["fpr"]["values"],
-                                 results[umb_num_bin][algorithm]["tpr"]["values"], linewidth=line_width,
-                                 label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                 color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                            0]))]
-                            )
-                axs[z].set_xlabel(xlabels["fpr"])
-
-
-    axs[0].set_ylabel(metric_labels["tpr"])
-    axs[0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
-    plt.tight_layout(rect=[0, 0, 1, 1])
-    fig.savefig("./plots/exp_violations_ROC.pdf", format="pdf")
-
-
-    # plot ROC per group
-    # num_groups = 4
-    plot_group = False
-    if plot_group:
-        fig, axs = plt.subplots(4, len(Z))
-        fig.set_size_inches(fig_width, fig_height*4)
-
-        for z, Z_indices in enumerate(Z):
-            Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
-            num_groups = Z_labels[Z_indices[0]]["num_groups"]
-
-            # plotting ROC
-            row = 0
-            algorithms = []
-            results = {}
-
-            algorithms.append("umb")
-            algorithms.append("wgm")
-            algorithms.append("pav")
-            algorithms.append("wgc")
-
-            metrics = ["fpr","tpr","group_fpr", "group_tpr"]
-
-            the_n_cal = n_cals[0]
-
-            # for umb_num_bin in umb_num_bins:
-            #     results[umb_num_bin] = {}
-            for algorithm in algorithms:
-                results[algorithm] = {}
-                for metric in metrics:
-                    results[algorithm][metric] = {}
-                    results[algorithm][metric]["values"] = []
-
-            # for umb_num_bin in umb_num_bins:
-            for algorithm in algorithms:
-                exp_identity_string = "_".join(
-                    [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(the_run)])
-                result_path = os.path.join(exp_dir,
-                                           exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
-                                                                                            the_umb_num_bin))
-                with open(result_path, 'rb') as f:
-                    result = pickle.load(f)
-                for metric in metrics:
-                    results[algorithm][metric]["values"] = result[metric]
-
-            for row,algorithm in enumerate(algorithms):
-                axs[row][z].plot(results[algorithm]["fpr"]["values"],
-                            results[algorithm]["tpr"]["values"], linewidth=line_width,
-                            label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                            color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                            marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                       0]))])
-                for grp in range(num_groups):
-                    axs[row][z].plot(results[algorithm]["group_fpr"]["values"][grp,:],
-                                     results[algorithm]["group_tpr"]["values"][grp,:],
-                                     linewidth=line_width,
-                                     color=group_colors[grp],
-                                     label=Z_labels[Z_indices[0]][grp],
-                                     marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                                0]))])
-                    axs[row][z].set_xlabel(xlabels["fpr"])
-                axs[row][0].set_ylabel(metric_labels["tpr"])
-                axs[row][0].legend(loc='bottom right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
-
-        plt.tight_layout(rect=[0, 0, 1, 1])
-        fig.savefig("./plots/exp_violations_group_ROC.pdf", format="pdf")
+    # # plotting ROC
+    # Z = [[6], [15]]
+    # umb_num_bins = [15]
+    # fig, axs = plt.subplots(1, len(Z)*len(umb_num_bins))
+    # fig.set_size_inches(fig_width, fig_height)
+    #
+    # for z, Z_indices in enumerate(Z):
+    #     Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
+    #     num_groups = Z_labels[Z_indices[0]]["num_groups"]
+    #
+    #     algorithms = []
+    #     results = {}
+    #
+    #     algorithms.append("wgc")
+    #     algorithms.append("pav")
+    #     algorithms.append("umb")
+    #     algorithms.append("wgm")
+    #
+    #     metrics = ["fpr","tpr"]
+    #
+    #     the_n_cal = n_cals[0]
+    #
+    #     for umb_num_bin in umb_num_bins:
+    #         results[umb_num_bin] = {}
+    #         for algorithm in algorithms:
+    #             results[umb_num_bin][algorithm] = {}
+    #             for metric in metrics:
+    #                 results[umb_num_bin][algorithm][metric] = {}
+    #                 results[umb_num_bin][algorithm][metric]["values"] = []
+    #
+    #     for umb_num_bin in umb_num_bins:
+    #         for algorithm in algorithms:
+    #             exp_identity_string = "_".join(
+    #                 [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(the_run)])
+    #             result_path = os.path.join(exp_dir,
+    #                                        exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
+    #                                                                                     umb_num_bin))
+    #             with open(result_path, 'rb') as f:
+    #                 result = pickle.load(f)
+    #             for metric in metrics:
+    #                 results[umb_num_bin][algorithm][metric]["values"] = result[metric]
+    #
+    #     for idx,umb_num_bin in enumerate(umb_num_bins):
+    #         for algorithm in algorithms:
+    #             axs[z].plot(results[umb_num_bin][algorithm]["fpr"]["values"],
+    #                              results[umb_num_bin][algorithm]["tpr"]["values"], linewidth=line_width,
+    #                              label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+    #                              color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+    #                              marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+    #                                                                                         0]))]
+    #                         )
+    #             axs[z].set_xlabel(xlabels["fpr"])
+    #
+    #
+    # axs[0].set_ylabel(metric_labels["tpr"])
+    # axs[0].legend(loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+    # plt.tight_layout(rect=[0, 0, 1, 1])
+    # fig.savefig("./plots/exp_violations_ROC.pdf", format="pdf")
+    #
+    #
+    # # plot ROC per group
+    # # num_groups = 4
+    # plot_group = False
+    # if plot_group:
+    #     fig, axs = plt.subplots(4, len(Z))
+    #     fig.set_size_inches(fig_width, fig_height*4)
+    #
+    #     for z, Z_indices in enumerate(Z):
+    #         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
+    #         num_groups = Z_labels[Z_indices[0]]["num_groups"]
+    #
+    #         # plotting ROC
+    #         row = 0
+    #         algorithms = []
+    #         results = {}
+    #
+    #         algorithms.append("umb")
+    #         algorithms.append("wgm")
+    #         algorithms.append("pav")
+    #         algorithms.append("wgc")
+    #
+    #         metrics = ["fpr","tpr","group_fpr", "group_tpr"]
+    #
+    #         the_n_cal = n_cals[0]
+    #
+    #         # for umb_num_bin in umb_num_bins:
+    #         #     results[umb_num_bin] = {}
+    #         for algorithm in algorithms:
+    #             results[algorithm] = {}
+    #             for metric in metrics:
+    #                 results[algorithm][metric] = {}
+    #                 results[algorithm][metric]["values"] = []
+    #
+    #         # for umb_num_bin in umb_num_bins:
+    #         for algorithm in algorithms:
+    #             exp_identity_string = "_".join(
+    #                 [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(the_run)])
+    #             result_path = os.path.join(exp_dir,
+    #                                        exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
+    #                                                                                         the_umb_num_bin))
+    #             with open(result_path, 'rb') as f:
+    #                 result = pickle.load(f)
+    #             for metric in metrics:
+    #                 results[algorithm][metric]["values"] = result[metric]
+    #
+    #         for row,algorithm in enumerate(algorithms):
+    #             axs[row][z].plot(results[algorithm]["fpr"]["values"],
+    #                         results[algorithm]["tpr"]["values"], linewidth=line_width,
+    #                         label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+    #                         color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+    #                         marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+    #                                                                                    0]))])
+    #             for grp in range(num_groups):
+    #                 axs[row][z].plot(results[algorithm]["group_fpr"]["values"][grp,:],
+    #                                  results[algorithm]["group_tpr"]["values"][grp,:],
+    #                                  linewidth=line_width,
+    #                                  color=group_colors[grp],
+    #                                  label=Z_labels[Z_indices[0]][grp],
+    #                                  marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+    #                                                                                             0]))])
+    #                 axs[row][z].set_xlabel(xlabels["fpr"])
+    #             axs[row][0].set_ylabel(metric_labels["tpr"])
+    #             axs[row][0].legend(loc='bottom right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+    #
+    #     plt.tight_layout(rect=[0, 0, 1, 1])
+    #     fig.savefig("./plots/exp_violations_group_ROC.pdf", format="pdf")
 
 
         # for algorithm in algorithms:

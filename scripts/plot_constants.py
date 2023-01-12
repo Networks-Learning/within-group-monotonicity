@@ -1,14 +1,14 @@
 import pickle
-params = {'legend.fontsize': 28,#28,
+params = {'legend.fontsize': 24,#28,
           'xtick.labelsize': 24,
           'ytick.labelsize': 24,
           'lines.markersize': 15,
           'errorbar.capsize': 8.0,
-            'axes.labelsize' : 28,
+            'axes.labelsize' : 24,
             'text.usetex'  : True,
             'text.latex.preamble': r'\usepackage{amsmath}',
             'font.family': 'serif',
-          'axes.titlesize':26,
+          'axes.titlesize':24,
 
           }
 # 'figure.autolayout': True
@@ -19,7 +19,7 @@ font_size = 28
 capthick = 3.0
 dpi = 100
 fig_width = 14
-fig_height = 6
+fig_height = 5
 
 Z_labels = {
         # 2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
@@ -37,7 +37,7 @@ algorithm_colors = {}
 algorithm_markers = {}
 metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(\hat{Y} = Y)$', "num_selected": r'Shortlist Size',\
                  "alpha":r'$\alpha_{WGC}$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate", "log_loss":"Cross Entropy Loss"\
-                 ,"prob_pred":r"$\Pr(\hat{Y}=1|X)$","ECE":"ECE", "sharpness":"Sharpness Score", "f1_score":"F1 Score"}
+                 ,"prob_pred":r"$\Pr(\hat{Y}=1|X)$","ECE":"ECE", "sharpness":"Sharpness Score", "f1_score":"F1 Score","group_num_in_bin":"Discrimination prob"}
 xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate",\
            "prob_true":r"$\Pr(Y=1|X)$", }
 

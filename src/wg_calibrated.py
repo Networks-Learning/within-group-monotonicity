@@ -11,9 +11,9 @@ from utils import *
 from sklearn.metrics import mean_squared_error,accuracy_score
 
 class WGC(BinPartition):
-    def __init__(self, n_bins, Z_indices, groups, Z_map):
-        super().__init__(n_bins, Z_indices, groups, Z_map)
-        self.alpha = None
+    def __init__(self, n_bins, Z_indices, groups, Z_map,alpha):
+        super().__init__(n_bins, Z_indices, groups, Z_map,alpha)
+        self.eps = None
         # Parameters to be learned
         # self.dp = None
         # self.prev_point = None
@@ -87,7 +87,7 @@ class WGC(BinPartition):
     #     assert (np.sum(in_bin) == scores.size) ,f"{np.sum(in_bin), scores.size}"
     #     return recal_bin_assignment, recal_num_positives_in_bin, recal_num_in_bin, recal_group_num_positives_in_bin, recal_group_num_in_bin
 
-    def _find_potential_merges(self,alpha):
+    def _find_potential_merges(self,eps):
         S = np.ones(shape=(self.n_bins, self.n_bins))
         for l in range(self.n_bins):
             for r in range(l, self.n_bins):
@@ -98,7 +98,7 @@ class WGC(BinPartition):
                 # if l==0 and r==0:
                 #     print(f"{l,r,np.where(lr_group_rho,lr_group_positives/lr_group_total-lr_positives/lr_total,np.zeros(lr_group_rho.shape))}")
                 if np.where(lr_group_rho,
-                            (np.abs(lr_group_positives/lr_group_total - lr_positives/lr_total) > alpha),
+                            (np.abs(lr_group_positives/lr_group_total - lr_positives/lr_total)-self.epsilon > eps),
                             np.zeros(shape=lr_group_rho.shape)).any():  # can be adjacent
                     S[l][r] = 0
         # print(S)
@@ -107,7 +107,7 @@ class WGC(BinPartition):
     def recalibrate(self):
         low = 0
         high = 100
-        alpha = (low + high)//2
+        eps = (low + high)//2
         final_dp = np.zeros(shape=(self.n_bins))
         final_mid_point = np.repeat(-2, self.n_bins).reshape(self.n_bins)
         while low<=high:
@@ -132,12 +132,12 @@ class WGC(BinPartition):
             if mid_point[self.n_bins-1] != -2:
                 final_dp = dp
                 final_mid_point = mid_point
-                alpha = mid
+                eps = mid
                 high = mid - 1
             else:
                 low = mid + 1
 
-        return final_dp, final_mid_point,alpha/100
+        return final_dp, final_mid_point,eps/100
 
     def get_optimal_partition(self,r):
         assert (self.dp is not None and self.mid_point is not None), "not yet recalibrated"
@@ -156,7 +156,7 @@ class WGC(BinPartition):
         super().fit(X_est, y_score, y, m)
 
         #recalibrate using algorithm 2
-        self.dp, self.mid_point,self.alpha = self.recalibrate()
+        self.dp, self.mid_point,self.eps = self.recalibrate()
         # print(f"{self.alpha =}")
 
         #get optimal partition
@@ -269,7 +269,7 @@ if __name__ == "__main__":
     parser.add_argument("--n_runs_test", type=int, help="the number of tests for estimating the expectation")
 
     args = parser.parse_args()
-    k = args.k
+    # k = args.k
     m = args.m
     alpha = args.alpha
 
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    wgc = WGC(args.B,Z_indices,groups,Z_map)
+    wgc = WGC(args.B,Z_indices,groups,Z_map,alpha)
     wgc.fit(X_cal_all_features,scores_cal, y_cal, m)
 
     # test
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     performance_metrics["num_groups"] = wgc.num_groups
     performance_metrics["n_bins"] = wgc.recal_n_bins
     performance_metrics["discriminated_against"] = wgc.recal_discriminated_against
-    performance_metrics["alpha"] = wgc.alpha
+    performance_metrics["alpha"] = wgc.eps
 
     with open(args.result_path, 'wb') as f:
         pickle.dump(performance_metrics, f)
