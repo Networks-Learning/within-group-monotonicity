@@ -31,117 +31,121 @@ if __name__ == "__main__":
         algorithm_markers["wgm_" + str(umb_num_bin)] = 10
         algorithm_markers["wgc_" + str(umb_num_bin)] = 9
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
+    for k_idx, k in enumerate(ks):
+        for z,Z_indices in enumerate(Z):
+            fig, axs = plt.subplots(1, 2)
+            fig.set_size_inches(fig_width,fig_height)
+            Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
-    for z,Z_indices in enumerate(Z):
-        fig, axs = plt.subplots(1, 3)
-        fig.set_size_inches(fig_width,fig_height)
-        Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
-
-        # plotting num bins of wgm vs umb number of bins for different umb bin numbers
-        algorithms = []
-        results = {}
-        algorithms.append("umb")
-        algorithms.append("wgm")
-        algorithms.append("pav")
-        algorithms.append("wgc")
+            # plotting num bins of wgm vs umb number of bins for different umb bin numbers
+            algorithms = []
+            results = {}
+            algorithms.append("umb")
+            algorithms.append("wgm")
+            algorithms.append("pav")
+            algorithms.append("wgc")
 
 
-        metrics = ["n_bins", "num_selected","discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
+            metrics = ["n_bins","discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
 
-        the_n_cal = n_cals[0]
+            the_n_cal = n_cals[0]
 
-        for umb_num_bin in umb_num_bins:
-            results[umb_num_bin] = {}
-            for algorithm in algorithms:
-                results[umb_num_bin][algorithm] = {}
-                for metric in metrics:
-                    results[umb_num_bin][algorithm][metric] = {}
-                    results[umb_num_bin][algorithm][metric]["values"] = []
-
-        for umb_num_bin in umb_num_bins:
-            for run in runs:
+            for umb_num_bin in umb_num_bins:
+                results[umb_num_bin] = {}
                 for algorithm in algorithms:
-                    exp_identity_string = "_".join(
-                        [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
-                    result_path = os.path.join(exp_dir,
-                                               exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
-                                                                                                umb_num_bin))
-                    collect_results_quantitative_exp(result_path, umb_num_bin, algorithm, results, metrics)
+                    results[umb_num_bin][algorithm] = {}
+                    for metric in metrics:
+                        results[umb_num_bin][algorithm][metric] = {}
+                        results[umb_num_bin][algorithm][metric]["values"] = []
 
-        for umb_num_bin in umb_num_bins:
-            for run in runs:
+            for umb_num_bin in umb_num_bins:
+                for run in runs:
+                    for algorithm in algorithms:
+                        exp_identity_string = "_".join(
+                            [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
+                        result_path = os.path.join(exp_dir,
+                                                   exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
+                                                                                                    umb_num_bin))
+                        collect_results_quantitative_exp(result_path, umb_num_bin, algorithm, results, metrics)
+
+
+
+            for umb_num_bin in umb_num_bins:
+                for run in runs:
+                    for algorithm in algorithms:
+                        # assert(results[umb_num_bin][algorithm]["num_selected"]["values"][run].shape[0]==len(ks))
+                        # results[umb_num_bin][algorithm]["num_selected"]["values"][run] = results[umb_num_bin][algorithm]["num_selected"]["values"][run][k_idx]
+                        results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[umb_num_bin][algorithm]["discriminated_against"]["values"][run],\
+                                                                                                       results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run],\
+                                                                                                        np.zeros(results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
+
+            for umb_num_bin in umb_num_bins:
+                for run in runs:
+                    n_bins_wgm = results[umb_num_bin]["wgm"]["n_bins"]["values"][run]
+                    n_bins_pav = results[umb_num_bin]["pav"]["n_bins"]["values"][run]
+                    n_bins_wgc = results[umb_num_bin]["wgc"]["n_bins"]["values"][run]
+                    assert(n_bins_wgm>=n_bins_pav), f"{n_bins_wgm,n_bins_pav,n_bins_wgc}"
+            for umb_num_bin in umb_num_bins:
                 for algorithm in algorithms:
-                    results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[umb_num_bin][algorithm]["discriminated_against"]["values"][run],\
-                                                                                                   results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run],\
-                                                                                                    np.zeros(results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
+                    for metric in ["n_bins","group_num_in_bin"]:
+                        assert len(results[umb_num_bin][algorithm][metric]["values"])==n_runs
+                        results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
+                            results[umb_num_bin][algorithm][metric]["values"])
+                        results[umb_num_bin][algorithm][metric]["std"] = np.std(
+                            results[umb_num_bin][algorithm][metric]["values"],ddof=1)
+                    # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
+            # fig_legend = plt.figure(figsize=(fig_width,0.8))
+            for idx,metric in enumerate(["group_num_in_bin","n_bins"]):
+                handles = []
+                for algorithm in algorithms:
+                    if metric=="n_bins" and algorithm=="umb":
+                        continue
+                    if metric=="group_num_in_bin" and (algorithm=="wgm" or algorithm=="pav"):
+                        continue
 
-        for umb_num_bin in umb_num_bins:
-            for run in runs:
-                n_bins_wgm = results[umb_num_bin]["wgm"]["n_bins"]["values"][run]
-                n_bins_pav = results[umb_num_bin]["pav"]["n_bins"]["values"][run]
-                n_bins_wgc = results[umb_num_bin]["wgc"]["n_bins"]["values"][run]
-                assert(n_bins_wgm>=n_bins_pav), f"{n_bins_wgm,n_bins_pav,n_bins_wgc}"
-        for umb_num_bin in umb_num_bins:
-            for algorithm in algorithms:
-                for metric in ["n_bins", "num_selected","group_num_in_bin"]:
-                    assert len(results[umb_num_bin][algorithm][metric]["values"])==n_runs
-                    results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
-                        results[umb_num_bin][algorithm][metric]["values"])
-                    results[umb_num_bin][algorithm][metric]["std"] = np.std(
-                        results[umb_num_bin][algorithm][metric]["values"],ddof=1)
-                # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
-        # fig_legend = plt.figure(figsize=(fig_width,0.8))
-        for idx,metric in enumerate(["n_bins", "num_selected","group_num_in_bin"]):
-            handles = []
-            for algorithm in algorithms:
-                if metric=="n_bins" and algorithm=="umb":
-                    continue
-                if metric=="group_num_in_bin" and (algorithm=="wgm" or algorithm=="pav"):
-                    continue
+                    # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
+                    #     print("here")
+                    #     continue
 
-                # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
-                #     print("here")
-                #     continue
+                    mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
+                                               in umb_num_bins])
+                    std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
+                                              in umb_num_bins])
 
-                mean_algorithm = np.array([results[umb_num_bin][algorithm][metric]["mean"] for umb_num_bin
-                                           in umb_num_bins])
-                std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
-                                          in umb_num_bins])
+                    line = axs[idx].plot(umb_num_bins, mean_algorithm,
+                                            linewidth=line_width,
+                                            label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                                            color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
+                                            marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
+                                                                                                       0]))])  # , color=group_colors[i], marker=group_markers[i])
+                    handles.append(line[0])
+                    # if metric=="n_bins":
+                    axs[idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+                                             mean_algorithm + std_algorithm, alpha=transparency,
+                                             color=algorithm_colors[
+                                                 "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-                line = axs[idx].plot(umb_num_bins, mean_algorithm,
-                                        linewidth=line_width,
-                                        label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                        color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                                        marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                                                                                                   0]))])  # , color=group_colors[i], marker=group_markers[i])
-                handles.append(line[0])
-                # if metric=="n_bins":
-                axs[idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
-                                         mean_algorithm + std_algorithm, alpha=transparency,
-                                         color=algorithm_colors[
-                                             "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                    # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
+                    #                        std_algorithm,
+                    #                        color=algorithm_colors[
+                    #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-                # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
-                #                        std_algorithm,
-                #                        color=algorithm_colors[
-                #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+                    axs[idx].set_xticks(umb_num_bins)
 
-                axs[idx].set_xticks(umb_num_bins)
+                    # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
+                    # title.set_position([0.5,0.8])
+                    # axs[row][z].set_yticks([])
+                    axs[idx].set_ylabel(metric_labels[metric])
+                    axs[idx].set_xlabel(xlabels["n_bins"])
 
-                # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
-                # title.set_position([0.5,0.8])
-                # axs[row][z].set_yticks([])
-                axs[idx].set_ylabel(metric_labels[metric])
-                axs[idx].set_xlabel(xlabels["n_bins"])
+            # fig_legend.legend(handles=handles,loc='center', ncol=4)
+            # fig_legend.savefig('./plots/legend.pdf')
+            # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
 
-        # fig_legend.legend(handles=handles,loc='center', ncol=4)
-        # fig_legend.savefig('./plots/legend.pdf')
-        # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
+            # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
+            # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
 
-        # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
-        # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
+            # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-        # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
-
-        plt.tight_layout(rect=[0, 0, 1, 1])
-        fig.savefig("./plots/exp_bins_{}.pdf".format(Z_indices[0]), format="pdf")
+            plt.tight_layout(rect=[0, 0, 1, 1])
+            fig.savefig("./plots/exp_bins_{}_{}.pdf".format(Z_indices[0],str(k)), format="pdf")

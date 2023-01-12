@@ -3,9 +3,9 @@ exp_dir = "./exp_cal_curve"
 q_ratio = "0.2"
 test_ratio = "0.5"
 prepare_data = False
-submit = True
+submit = False
 split_size = 1000
-n_test = 100
+n_test = 1000
 k = 5
 # Z = [[2],[4],[10],[6],[14]]   #valid ones 2,4,6,10,14
 Z = [[6],[15]]#,[0],[14]]#,[1],[2],[4],[6],[14],[15]]
@@ -29,7 +29,7 @@ group_markers = {0:4, 1: 5, 2: 6, 3: 7, 4: 8}
 group_colors = {0: "tab:blue", 1: "tab:red", 2: "tab:purple", 3: "tab:cyan", 4: "tab:orange", }
 lim_num_groups = 20
 umb_markers = {5: 4, 10: 5, 15: 6, 20: 7, 25: 8, 30:9}
-ks = [5,10,15]
+ks = [50,100,150]
 
 
 

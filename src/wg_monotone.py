@@ -316,34 +316,36 @@ if __name__ == "__main__":
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
 
+    total_test_selected = np.empty(shape=(len(ks), y_test_raw.shape[0]))
     accuracy = np.empty(len(ks))
     f1score = np.empty(len(ks))
     for k_idx, k in enumerate(ks):
-        total_test_selected = wgm.recal_select(scores_test_raw,k_idx)
+        total_test_selected[k_idx] = wgm.recal_select(scores_test_raw,k_idx)
         # fpr, tpr = wgm.recal_get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
-        accuracy[k_idx],f1score[k_idx] = wgm.get_accuracy(total_test_selected, y_test_raw)
+        accuracy[k_idx],f1score[k_idx] = wgm.get_accuracy(total_test_selected[k_idx], y_test_raw)
     # group_accuracy = wgm.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
     # prob_true, prob_pred, ECE = wgm.recal_get_calibration_curve(scores_cal, y_cal)
     # ECE = wgm.recal_get_ECE(scores_cal,y_cal)
     # sharpness = wgm.recal_get_sharpness(scores_cal,y_cal)
     # group_accuracy = wgm.get_group_accuracy(total_test_selected, X_test_all_features, y_test_raw)
 
-    #simulating pools of candidates
-    num_selected = []
-    num_qualified = []
+    num_selected = np.empty(shape=(len(ks), args.n_runs_test))
+    num_qualified = np.empty(shape=(len(ks), args.n_runs_test))
     for i in range(args.n_runs_test):
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
-        recal_test_selected = wgm.recal_select(scores_test,0)
-        num_selected.append(calculate_expected_selected(recal_test_selected, y_test, m))
-        num_qualified.append(calculate_expected_qualified(recal_test_selected, y_test, m))
-
+        for k_idx, k in enumerate(ks):
+            test_selected = total_test_selected[k_idx][indexes]
+            num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
+            num_qualified[k_idx][i] = calculate_expected_qualified(test_selected, y_test, m)
 
     performance_metrics = {}
-    performance_metrics["num_qualified"] = np.mean(num_qualified)
-    performance_metrics["num_selected"] = np.mean(num_selected)
-    performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= ks[0] else False
+    performance_metrics["num_qualified"] = np.mean(num_qualified,axis=1)
+    performance_metrics["num_selected"] = np.mean(num_selected,axis=1)
+    assert (performance_metrics["num_qualified"].shape[0] == len(ks) and performance_metrics["num_selected"].shape[
+        0] == len(ks))
+    # performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= ks[0] else False
     performance_metrics["accuracy"] = accuracy
     performance_metrics["f1_score"] = f1score
     # performance_metrics["prob_true"] = prob_true
