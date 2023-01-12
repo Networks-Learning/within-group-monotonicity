@@ -343,7 +343,7 @@ if __name__ == "__main__":
     performance_metrics = {}
     performance_metrics["num_qualified"] = np.mean(num_qualified)
     performance_metrics["num_selected"] = np.mean(num_selected)
-    performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= k else False
+    performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= ks[0] else False
     performance_metrics["accuracy"] = accuracy
     performance_metrics["f1_score"] = f1score
     # performance_metrics["prob_true"] = prob_true
