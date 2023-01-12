@@ -33,7 +33,7 @@ if __name__ == "__main__":
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
     for k_idx, k in enumerate(ks):
         for z,Z_indices in enumerate(Z):
-            fig, axs = plt.subplots(1, 2)
+            fig, axs = plt.subplots(1, 3)
             fig.set_size_inches(fig_width,fig_height)
             Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
@@ -46,7 +46,7 @@ if __name__ == "__main__":
             algorithms.append("wgc")
 
 
-            metrics = ["n_bins","discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
+            metrics = ["n_bins", "num_selected","discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
 
             the_n_cal = n_cals[0]
 
@@ -73,8 +73,8 @@ if __name__ == "__main__":
             for umb_num_bin in umb_num_bins:
                 for run in runs:
                     for algorithm in algorithms:
-                        # assert(results[umb_num_bin][algorithm]["num_selected"]["values"][run].shape[0]==len(ks))
-                        # results[umb_num_bin][algorithm]["num_selected"]["values"][run] = results[umb_num_bin][algorithm]["num_selected"]["values"][run][k_idx]
+                        assert(results[umb_num_bin][algorithm]["num_selected"]["values"][run].shape[0]==len(ks))
+                        results[umb_num_bin][algorithm]["num_selected"]["values"][run] = results[umb_num_bin][algorithm]["num_selected"]["values"][run][k_idx]
                         results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[umb_num_bin][algorithm]["discriminated_against"]["values"][run],\
                                                                                                        results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run],\
                                                                                                         np.zeros(results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     assert(n_bins_wgm>=n_bins_pav), f"{n_bins_wgm,n_bins_pav,n_bins_wgc}"
             for umb_num_bin in umb_num_bins:
                 for algorithm in algorithms:
-                    for metric in ["n_bins","group_num_in_bin"]:
+                    for metric in ["n_bins", "num_selected","group_num_in_bin"]:
                         assert len(results[umb_num_bin][algorithm][metric]["values"])==n_runs
                         results[umb_num_bin][algorithm][metric]["mean"] = np.mean(
                             results[umb_num_bin][algorithm][metric]["values"])
@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 for algorithm in algorithms:
                     if metric=="n_bins" and algorithm=="umb":
                         continue
-                    if metric=="group_num_in_bin" and algorithm!="umb":
+                    if metric=="group_num_in_bin" and (algorithm=="wgm" or algorithm=="pav"):
                         continue
 
                     # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
