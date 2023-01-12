@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 for algorithm in algorithms:
                     if metric=="n_bins" and algorithm=="umb":
                         continue
-                    if metric=="group_num_in_bin" and (algorithm=="wgm" or algorithm=="pav"):
+                    if metric=="group_num_in_bin" and algorithm!="umb":
                         continue
 
                     # if (metric=="num_selected" or metric=="log_loss" or metric=="accuracy") and algorithm=="wgc":
