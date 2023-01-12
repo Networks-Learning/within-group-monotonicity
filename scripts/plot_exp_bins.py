@@ -77,9 +77,10 @@ if __name__ == "__main__":
 
         for umb_num_bin in umb_num_bins:
             for run in runs:
-                # assert(results[umb_num_bin]["wgm"]["n_bins"]["values"][run]>=results[umb_num_bin]["pav"]["n_bins"]["values"][run])
-                assert (results[umb_num_bin]["wgm"]["n_bins"]["values"][run] >=
-                        results[umb_num_bin]["wgc"]["n_bins"]["values"][run])
+                n_bins_wgm = results[umb_num_bin]["wgm"]["n_bins"]["values"][run]
+                n_bins_pav = results[umb_num_bin]["pav"]["n_bins"]["values"][run]
+                n_bins_wgc = results[umb_num_bin]["wgc"]["n_bins"]["values"][run]
+                assert(n_bins_wgm>=n_bins_pav and n_bins_wgm>=n_bins_wgc), f"{n_bins_wgm,n_bins_pav,n_bins_wgc}"
         for umb_num_bin in umb_num_bins:
             for algorithm in algorithms:
                 for metric in ["n_bins", "num_selected","group_num_in_bin"]:
