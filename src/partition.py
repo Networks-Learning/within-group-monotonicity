@@ -53,14 +53,14 @@ class BinPartition(UMBSelect):
         raise Exception ("Not Implemented")
 
 
-    def get_recal_upper_edges(self):
-        assert (self.recal_n_bins is not None and self.optimal_partition is not None), "not yet recalibrated"
-        recal_bin_upper_edges = []
-        for i in range(len(self.optimal_partition)):
-            recal_bin_upper_edges.append(self.bin_upper_edges[self.optimal_partition[i]])
-
-        assert len(recal_bin_upper_edges) == len(self.optimal_partition)
-        return np.array(recal_bin_upper_edges)
+    # def get_recal_upper_edges(self):
+    #     assert (self.recal_n_bins is not None and self.optimal_partition is not None), "not yet recalibrated"
+    #     recal_bin_upper_edges = []
+    #     for i in range(len(self.optimal_partition)):
+    #         recal_bin_upper_edges.append(self.bin_upper_edges[self.optimal_partition[i]-1])
+    #
+    #     assert len(recal_bin_upper_edges) == len(self.optimal_partition)
+    #     return np.array(recal_bin_upper_edges)
 
 
     def get_recal_bin_points(self, scores):

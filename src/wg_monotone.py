@@ -147,7 +147,7 @@ class WGM(BinPartition):
         for i in range(self.n_bins):
             if self.mid_point[i][self.n_bins-1]!=-2:
                 candidate_partition = self.get_optimal_partition(i,self.n_bins-1)
-                assert(candidate_partition[0]==0 and len(candidate_partition)>0), f"{candidate_partition}"
+                assert(len(candidate_partition)>0), f"{candidate_partition}"
                 if len(candidate_partition)>recal_n_bins:
                     recal_n_bins = len(candidate_partition)
                     l = i
