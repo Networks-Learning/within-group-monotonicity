@@ -23,7 +23,7 @@ runs = list(range(n_runs))
 classifier_type = "LR"
 lbd = "1e-6"
 lbds = ["1e-6"]
-umb_num_bins = [45,55,65,75]
+umb_num_bins = [45,75]
 
 ks = [5,10,15]
 

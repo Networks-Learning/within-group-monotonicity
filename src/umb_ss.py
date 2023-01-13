@@ -227,8 +227,10 @@ class UMBSelect(object):
                     b[k_idx] = i
                     theta[k_idx] = (k - sum_scores) / (m * (self.num_positives_in_bin[i] / self.num_examples
                                                      - self.epsilon))
+
                     break
         self.b = b
+        assert (theta > 0).all() and (theta<=1).all() and (b>=0).all() and (b<self.n_bins).all(), f"{self.b, self.theta, self.n_bins}"
         self.theta = theta
         # print(f"{self.b=}")
         # print(f"{self.theta=}")
