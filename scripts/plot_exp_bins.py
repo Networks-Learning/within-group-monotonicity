@@ -95,7 +95,7 @@ if __name__ == "__main__":
                             results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                     # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
             # fig_legend = plt.figure(figsize=(fig_width,0.8))
-            for idx,metric in enumerate(["group_num_in_bin","n_bins"]):
+            for idx,metric in enumerate(["n_bins","num_selected"]):
                 handles = []
                 for algorithm in algorithms:
                     if metric=="n_bins" and algorithm=="umb":
