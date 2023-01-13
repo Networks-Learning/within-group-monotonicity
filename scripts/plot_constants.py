@@ -52,6 +52,12 @@ def collect_results_normal_exp(result_path, exp_parameter, algorithm, results, m
     for metric in metrics:
         results[exp_parameter][algorithm][metric]["values"].append(result[metric][exp_parameter])
 
+def collect_results_group_exp(result_path, exp_parameter, results, metrics):
+    with open(result_path, 'rb') as f:
+        result = pickle.load(f)
+    for metric in metrics:
+        results[exp_parameter][metric]["values"].append(result[metric][exp_parameter])
+
 
 def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, results, metrics,k_idx=None):
     with open(result_path, 'rb') as f:
