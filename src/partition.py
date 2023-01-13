@@ -96,7 +96,7 @@ class BinPartition(UMBSelect):
         for i in range(self.recal_n_bins):
             for j in range(self.num_groups):
                 for k in range(i+1,self.recal_n_bins):
-                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.recal_num_positives_in_bin[i]*self.recal_num_in_bin[j]<self.recal_num_positives_in_bin[j]*self.recal_num_in_bin[i]:
+                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.recal_bin_values[i]<self.recal_bin_values[k]:
                         self.recal_discriminated_against[i][j] = np.greater(
                             self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[k][j],
                             self.recal_group_num_positives_in_bin[k][j] * self.recal_group_num_in_bin[i][j])

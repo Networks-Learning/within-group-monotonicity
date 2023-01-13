@@ -102,7 +102,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                               " --wgm_path {} --result_path {} --k {} --m {}  --B {} " \
                                               "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]),cal_data_path, test_raw_path, classifier_path, wgm_path,
                                                                         wgm_result_path, k, n_test,umb_num_bin, scaler_path,n_runs_test)
-                                exp_commands.append(wgm_command)
+                                # exp_commands.append(wgm_command)
                                 # print("training wgm starting from umb with {} bins".format(umb_num_bin))
                                 # if os.system(wgm_command)==256:
                                 #     return
@@ -117,7 +117,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                     "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
                                     classifier_path, wgc_path,
                                     wgc_result_path, k, n_test, umb_num_bin, scaler_path, n_runs_test)
-                                exp_commands.append(wgc_command)
+                                # exp_commands.append(wgc_command)
 
                                 pav_path = os.path.join(exp_dir, exp_identity_string + "_pav.pkl")
                                 pav_result_path = os.path.join(exp_dir,
@@ -130,7 +130,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                     classifier_path, pav_path,
                                     pav_result_path, k, n_test, umb_num_bin, scaler_path,
                                     n_runs_test)
-                                exp_commands.append(pav_command)
+                                # exp_commands.append(pav_command)
 
                             commands.append(exp_commands)
     return commands

@@ -24,10 +24,10 @@ fig_height = 5
 Z_labels = {
         # 2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
         2: {0:"Married or Separated", 1: "Never married", "feature":"Marital status (Z)", "num_groups":2},
-        4: {0: "With a disability", 1: "Without a disability", "feature": "Disability record (Z)","num_groups":2,"color":"orangered", "marker":"v"},
-        6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen", "feature":"Citizenship status (Z)", "num_groups":4, "color":"darkred","marker":"D"},
+        4: {0: "With a disability", 1: "Without a disability", "feature": "Disability record (Z)","num_groups":2,"color":"orchid", "marker":"v"},
+        6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen", "feature":"Citizenship status (Z)", "num_groups":4, "color":"deepskyblue","marker":"D"},
         10: {0:"Native", 1:"Foreign born", "feature":"Nativity (Z)","num_groups":2},
-        14: {0: "Male", 1:"Female", "feature":"Gender (Z)","num_groups":2,"color":"navy", "marker":"s"},
+        14: {0: "Male", 1:"Female", "feature":"Gender (Z)","num_groups":2,"color":"royalblue", "marker":"s"},
         15: {0: "White", 1:"Black or African American", 2:"American Indian or Alaska", 3:"Asian, Native Hawaiian or other", "feature":"Race code (Z)","num_groups":4, "color":"lightcoral","marker":"h"},
         1: {0:"No diploma", 1:"diploma", 2:"Associate or Bachelor degree", 3: "Masters or Doctorate degree", "feature":"Educational attainment (Z)","num_groups":4},
         0: {0:"0-25", 1:"26-50", 2:"51-75", 3:"76-99", "feature":"Age (Z)","num_groups":4, "color":"seagreen","marker":"^"}

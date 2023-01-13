@@ -194,7 +194,7 @@ class UMBSelect(object):
             assert (np.sum(self.group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
                 for k in range(i + 1, self.n_bins):
-                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.num_positives_in_bin[i]*self.num_in_bin[j]<self.num_positives_in_bin[j]*self.num_in_bin[i]:
+                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.bin_values[i]<self.bin_values[k]:
                         self.discriminated_against[i][j] = np.greater(
                             self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[k][j],
                             self.group_num_positives_in_bin[k][j] * self.group_num_in_bin[i][j])
@@ -373,7 +373,7 @@ class UMBSelect(object):
             for j in range(scores.shape[0]):
                 if discriminated[i]:
                     break
-                if test_bins[i]<test_bins[j]:
+                if self.bin_values[test_bins[i]]<self.bin_values[test_bins[j]]:
                     for grp_idx in range(self.num_groups):
                         if test_group_assignment[grp_idx][i] and test_group_assignment[grp_idx][j]: #in the same group
                             if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
