@@ -66,16 +66,17 @@ class WGM(BinPartition):
     def recalibrate(self):
         S = self._find_potential_merges()
         dp = np.zeros(shape = (self.n_bins,self.n_bins))
-        mid_point = np.repeat(-1,self.n_bins*self.n_bins).reshape(self.n_bins,self.n_bins)
+        mid_point = np.repeat(-2,self.n_bins*self.n_bins).reshape(self.n_bins,self.n_bins)
 
         for r in range(self.n_bins):
             dp[0][r] = 1
+            mid_point[0][r] = -1
 
         for l in range(1,self.n_bins):
             for r in range(l,self.n_bins):
                 for k in range(l):
                     # print(f"{l =} { r =} {k = } {np.sum(S[l][r])}")
-                    if S[l][r][k] and dp[k][l-1]!=0 and dp[k][l-1]+1>dp[l][r]:
+                    if S[l][r][k] and mid_point[k][l-1]!=-2 and dp[k][l-1]+1>dp[l][r]:
                         dp[l][r] = dp[k][l-1] + 1
                         mid_point[l][r] = k
         # for l in range(self.n_bins):
@@ -127,8 +128,7 @@ class WGM(BinPartition):
         if l == 0:
             return [0]
 
-        if self.mid_point[l][r] == -1:
-            return []
+        assert(self.mid_point[l][r] != -2), f"{self.mid_point[l][r]}"
 
         return self.get_optimal_partition(self.mid_point[l][r],l-1) + [l]
 
