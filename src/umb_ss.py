@@ -193,8 +193,8 @@ class UMBSelect(object):
             assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-2), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
             assert (np.sum(self.group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
-                if positive_group_rho[i][j]:
-                    for k in range(i + 1, self.n_bins):
+                for k in range(i + 1, self.n_bins):
+                    if positive_group_rho[i][j] and positive_group_rho[k][j]:
                         self.discriminated_against[i][j] = np.greater(
                             self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[k][j],
                             self.group_num_positives_in_bin[k][j] * self.group_num_in_bin[i][j])
@@ -359,6 +359,24 @@ class UMBSelect(object):
 
         return np.average(var)
 
+    def find_pool_discriminations(self,X_all_features,scores):
+        test_group_assignment = self.group_points(X_all_features).astype(bool)
+        discriminated = np.zeros(scores.shape)
+        scores = scores.squeeze()
+        test_bins = self._bin_points(scores)
+        for i in range(scores.shape[0]):
+            for j in range(scores.shape[0]):
+                if discriminated[i]:
+                    break
+                if test_bins[i]<test_bins[j]:
+                    for grp_idx in range(self.num_groups):
+                        if test_group_assignment[grp_idx][i] and test_group_assignment[grp_idx][j]: #in the same group
+                            if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
+                                    >self.group_num_positives_in_bin[test_bins[j]][grp_idx]*self.group_num_in_bin[test_bins[i]][grp_idx]:
+                                discriminated[i] = True
+                                break
+
+        return discriminated
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -438,11 +456,13 @@ if __name__ == "__main__":
     # simulating pools of candidates
     num_selected = np.empty(shape=(len(ks),args.n_runs_test))
     num_qualified = np.empty(shape=(len(ks),args.n_runs_test))
+    pool_discriminated = []
 
     for i in range(args.n_runs_test):
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
+        pool_discriminated.append(np.sum(umb_select.find_pool_discriminations(X_test_all_features[indexes],scores_test)))
         for k_idx, k in enumerate(ks):
             test_selected = total_test_selected[k_idx][indexes]
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
@@ -453,6 +473,7 @@ if __name__ == "__main__":
     # print(num_selected,np.mean(num_selected,axis=1))
     performance_metrics["num_qualified"] = np.mean(num_qualified,axis=1)
     performance_metrics["num_selected"] = np.mean(num_selected,axis=1)
+    performance_metrics["pool_discriminated"] = np.mean(pool_discriminated)
     assert(performance_metrics["num_qualified"].shape[0]==len(ks) and performance_metrics["num_selected"].shape[0]==len(ks))
     # performance_metrics["constraint_satisfied"] = True if performance_metrics["num_qualified"] >= ks[0] else False
     # performance_metrics["fpr"] = fpr

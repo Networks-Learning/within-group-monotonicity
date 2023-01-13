@@ -8,7 +8,7 @@ split_size = 1000
 n_test = 100
 k = 5
 # Z = [[2],[4],[10],[6],[14]]   #valid ones 2,4,6,10,14
-Z = [[15],[6],[0],[14]]#,[15],[0],[14]]
+Z = [[6],[15],[14],[0]]#,[15],[0],[14]]
 # Z = [[14],[15]]
 # Z = [[2],[6],[10],[14]]   #valid ones
 n_runs = 1
@@ -24,11 +24,6 @@ classifier_type = "LR"
 lbd = "1e-6"
 lbds = ["1e-6"]
 umb_num_bins =[15]# [5,10,15,20,25,30]#, 2, 3, 4, 5]
-umb_colors = {5: "tab:orange", 10: "tab:brown", 15: "tab:pink", 20: "tab:gray", 25: "tab:olive", 30:"tab:blue"}
-group_markers = {0:4, 1: 5, 2: 6, 3: 7, 4: 8}
-group_colors = {0: "tab:purple", 1: "tab:pink", 2: "tab:cyan", 3: "tab:olive" }
-lim_num_groups = 20
-umb_markers = {5: 4, 10: 5, 15: 6, 20: 7, 25: 8, 30:9}
 
 
 
