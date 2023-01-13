@@ -194,7 +194,7 @@ class UMBSelect(object):
             assert (np.sum(self.group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
                 for k in range(i + 1, self.n_bins):
-                    if positive_group_rho[i][j] and positive_group_rho[k][j]:
+                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.num_positives_in_bin[i]*self.num_in_bin[j]<self.num_positives_in_bin[j]*self.num_in_bin[i]:
                         self.discriminated_against[i][j] = np.greater(
                             self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[k][j],
                             self.group_num_positives_in_bin[k][j] * self.group_num_in_bin[i][j])
