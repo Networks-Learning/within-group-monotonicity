@@ -183,7 +183,7 @@ class WGM(BinPartition):
                                                np.zeros(shape=self.recal_group_num_in_bin.shape))
 
         self.find_discriminations()
-        assert np.sum(self.recal_discriminated_against) == 0
+        assert np.sum(self.recal_discriminated_against) == 0 ,f"{self.recal_discriminated_against}"
 
         self.sanity_check()
 

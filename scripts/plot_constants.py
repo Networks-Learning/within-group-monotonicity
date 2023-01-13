@@ -60,6 +60,5 @@ def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, resu
     for metric in metrics:
         if metric=="num_selected":
             results[exp_parameter][algorithm][metric]["values"].append(result[metric][k_idx])
-            print(result[metric][k_idx])
         else:
             results[exp_parameter][algorithm][metric]["values"].append(result[metric])

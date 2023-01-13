@@ -95,13 +95,13 @@ class BinPartition(UMBSelect):
         self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
         for i in range(self.recal_n_bins):
             for j in range(self.num_groups):
-                    for k in range(i+1,self.recal_n_bins):
-                        if positive_group_rho[i][j] and positive_group_rho[k][j]:
-                            self.recal_discriminated_against[i][j] = np.greater(
-                                self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[k][j],
-                                self.recal_group_num_positives_in_bin[k][j] * self.recal_group_num_in_bin[i][j])
-                            if self.recal_discriminated_against[i][j]:
-                                break
+                for k in range(i+1,self.recal_n_bins):
+                    if positive_group_rho[i][j] and positive_group_rho[k][j]:
+                        self.recal_discriminated_against[i][j] = np.greater(
+                            self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[k][j],
+                            self.recal_group_num_positives_in_bin[k][j] * self.recal_group_num_in_bin[i][j])
+                        if self.recal_discriminated_against[i][j]:
+                            break
 
     def sanity_check(self):
         # positive_group_rho = np.greater(self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
