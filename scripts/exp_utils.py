@@ -45,38 +45,6 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
 
 
 
-                            # if train_LR:
-                            #     commands.append(train_classifier_command)
-                                # print("training LR...")
-                                # if os.system(train_classifier_command)==256:
-                                #     return
-
-                            # css_result_path = os.path.join(exp_dir, exp_identity_string + "_css_result.pkl")
-                            # css_command = "python ./src/css.py --cal_data_path {} --test_raw_path {}" \
-                            #               " --classifier_path {} --result_path {} --k {} --m {} --alpha {} " \
-                            #               "--scaler_path {}".format(cal_data_path, test_raw_path, classifier_path,
-                            #                                         css_result_path, k, n_test, alpha, scaler_path)
-                            # ucss_result_path = os.path.join(exp_dir, exp_identity_string + "_ucss_result.pkl")
-                            # ucss_command = "python ./src/ucss.py --test_raw_path {} " \
-                            #                "--classifier_path {} --result_path {} --k {} --m {} " \
-                            #                "--n_runs_test {} --scaler_path {}".format(test_raw_path, classifier_path,
-                            #                                                           ucss_result_path, k, n_test, n_runs_test,
-                            #                                                           scaler_path)
-                            # iso_reg_ss_result_path = os.path.join(exp_dir, exp_identity_string + "_iso_reg_ss_result.pkl")
-                            # iso_reg_ss_command = "python ./src/iso_reg_ss.py --cal_data_path {} " \
-                            #                      "--test_raw_path {} --classifier_path {} --result_path {} --k {} --m {} " \
-                            #                      "--scaler_path {}".format(cal_data_path, test_raw_path, classifier_path,
-                            #                                                iso_reg_ss_result_path, k, n_test, scaler_path)
-                            #
-                            # platt_scal_ss_result_path = os.path.join(exp_dir, exp_identity_string +
-                            #                                             "_platt_scal_ss_result.pkl")
-                            # platt_scal_ss_command = "python ./src/platt_scal_ss.py --cal_data_path {} " \
-                            #                        "--test_raw_path {} --classifier_path {} --result_path {} --k {} --m {} " \
-                            #                        "--n_runs_test {} --scaler_path {}".format(cal_data_path, test_raw_path,
-                            #                                                               classifier_path,
-                            #                                                               platt_scal_ss_result_path, k, n_test,
-                            #                                                               n_runs_test, scaler_path)
-                            #
                             exp_commands = [data_generation_command, train_classifier_command]
                             # exp_commands = []
                             for umb_num_bin in umb_num_bins:
@@ -91,10 +59,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                                                                     umb_num_bin, scaler_path,n_runs_test)
                                 exp_commands.append(umb_prediction_command)
 
-                                # if train_umb:
-                                    # print("training umb with {} bins".format(umb_num_bin))
-                                    # if os.system(umb_prediction_command)==256:
-                                    #     return
+
 
                                 wgm_path = os.path.join(exp_dir, exp_identity_string + "_wgm.pkl")
                                 wgm_result_path = os.path.join(exp_dir, exp_identity_string + "_wgm_{}_result.pkl".format(umb_num_bin))
