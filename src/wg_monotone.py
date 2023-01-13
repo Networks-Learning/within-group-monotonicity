@@ -316,13 +316,13 @@ if __name__ == "__main__":
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
 
-    total_test_selected = np.empty(shape=(len(ks), y_test_raw.shape[0]))
+    # total_test_selected = np.empty(shape=(len(ks), y_test_raw.shape[0]))
     accuracy = np.empty(len(ks))
     f1score = np.empty(len(ks))
     for k_idx, k in enumerate(ks):
-        total_test_selected[k_idx] = wgm.recal_select(scores_test_raw,k_idx)
+        # total_test_selected[k_idx] = wgm.recal_select(scores_test_raw,k_idx)
         # fpr, tpr = wgm.recal_get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
-        accuracy[k_idx],f1score[k_idx] = wgm.get_accuracy(total_test_selected[k_idx], y_test_raw)
+        accuracy[k_idx],f1score[k_idx] = wgm.get_accuracy(scores_test_raw, y_test_raw)
     # group_accuracy = wgm.recal_get_group_accuracy(X_test_all_features, scores_test_raw, y_test_raw)
     # prob_true, prob_pred, ECE = wgm.recal_get_calibration_curve(scores_cal, y_cal)
     # ECE = wgm.recal_get_ECE(scores_cal,y_cal)
@@ -336,7 +336,7 @@ if __name__ == "__main__":
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
         for k_idx, k in enumerate(ks):
-            test_selected = total_test_selected[k_idx][indexes]
+            test_selected = wgm.recal_select(scores_test,k_idx)
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
             num_qualified[k_idx][i] = calculate_expected_qualified(test_selected, y_test, m)
 

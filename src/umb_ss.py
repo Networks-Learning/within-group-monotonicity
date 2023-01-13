@@ -290,12 +290,17 @@ class UMBSelect(object):
         # print(f"{group_accuracy = }")
         return shortlist_group_accuracy
 
-    def get_accuracy(self,selection, y):
+    def get_accuracy(self,scores, y):
+        scores = scores.squeeze()
+        # assign test data to bins
+        test_bins = self._bin_points(scores)
         # scores = scores.squeeze()
         # assign test data to bins
         # test_bins = self._bin_points(scores)
         # y_prob = self.bin_values[test_bins]
         # y_pred = y_prob>self.theta
+        selection = self.bin_values[test_bins]>0.5
+        assert selection.shape==y.shape
         return accuracy_score(y,selection),f1_score(y,selection)
 
     def get_group_accuracy(self,X, scores, y):
@@ -440,13 +445,13 @@ if __name__ == "__main__":
     X_test_all_features = transform_except_last_dim(X_test_all_features, scaler)
     X_test_raw = X_test_all_features[:, available_features]
     scores_test_raw = classifier.predict_proba(X_test_raw)[:, 1]
-    total_test_selected = np.empty(shape=(len(ks),y_test_raw.shape[0]))
+    # total_test_selected = np.empty(shape=(len(ks),y_test_raw.shape[0]))
     accuracy = np.empty(len(ks))
     f1score = np.empty(len(ks))
     for k_idx, k in enumerate(ks):
-        total_test_selected[k_idx] = umb_select.select(scores_test_raw,k_idx)
+        # total_test_selected[k_idx] = umb_select.select(scores_test_raw,k_idx)
         # fpr, tpr = umb_select.get_test_roc(X_test_all_features,scores_test_raw,y_test_raw)
-        accuracy[k_idx],f1score[k_idx] = umb_select.get_accuracy(total_test_selected[k_idx],y_test_raw)
+        accuracy[k_idx],f1score[k_idx] = umb_select.get_accuracy(scores_test_raw,y_test_raw)
     # group_accuracy = umb_select.get_group_accuracy(X_test_all_features,scores_test_raw,y_test_raw)
     # prob_true, prob_pred, ECE = umb_select.get_calibration_curve(scores_cal,y_cal)
     # ECE = umb_select.get_ECE(scores_cal,y_cal)
@@ -464,9 +469,9 @@ if __name__ == "__main__":
         scores_test = scores_test_raw[indexes]
         pool_discriminated.append(np.sum(umb_select.find_pool_discriminations(X_test_all_features[indexes],scores_test)))
         for k_idx, k in enumerate(ks):
-            test_selected = total_test_selected[k_idx][indexes]
+            test_selected = umb_select.select(scores_test,k_idx)
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
-
+            print(f"{i,k_idx,num_selected[k_idx][i]}")
             num_qualified[k_idx][i] = calculate_expected_qualified(test_selected, y_test, m)
 
     performance_metrics = {}
