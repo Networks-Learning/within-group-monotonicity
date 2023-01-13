@@ -57,7 +57,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                                          "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
                                                                                    classifier_path, umb_path, umb_result_path, k, n_test,
                                                                                     umb_num_bin, scaler_path,n_runs_test)
-                                exp_commands.append(umb_prediction_command)
+                                # exp_commands.append(umb_prediction_command)
 
 
 
@@ -82,7 +82,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                     "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
                                     classifier_path, wgc_path,
                                     wgc_result_path, k, n_test, umb_num_bin, scaler_path, n_runs_test)
-                                exp_commands.append(wgc_command)
+                                # exp_commands.append(wgc_command)
 
                                 pav_path = os.path.join(exp_dir, exp_identity_string + "_pav.pkl")
                                 pav_result_path = os.path.join(exp_dir,
@@ -95,7 +95,7 @@ def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_t
                                     classifier_path, pav_path,
                                     pav_result_path, k, n_test, umb_num_bin, scaler_path,
                                     n_runs_test)
-                                exp_commands.append(pav_command)
+                                # exp_commands.append(pav_command)
 
                             commands.append(exp_commands)
     return commands
