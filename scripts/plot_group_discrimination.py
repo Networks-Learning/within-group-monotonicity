@@ -43,13 +43,13 @@ if __name__ == "__main__":
     # algorithms.append("wgc")
 
 
-    metrics = ["discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
+    metrics = ["discriminated_against","group_num_in_bin","bin_values","group_num_positives_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
 
     the_n_cal = n_cals[0]
-    umb_num_bin =30
+    umb_num_bin =15
     for z, Z_indices in enumerate(Z):
-        fig, axs = plt.subplots(1, 2)
-        fig.set_size_inches(fig_width, fig_height + 1)
+        fig, axs = plt.subplots(1, 1)
+        fig.set_size_inches(fig_width/2, fig_height + 1)
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
         for group in range(num_groups):
             results[group] = {}
@@ -71,13 +71,18 @@ if __name__ == "__main__":
 
         for run in runs:
             for group in range(num_groups):
+                print(results[group]["discriminated_against"]["values"][run])
+                results[group]["group_num_positives_in_bin"]["values"][run] = np.sum(
+                    results[group]["group_num_positives_in_bin"]["values"][run]) / np.sum(results[group]["group_num_in_bin"]["values"][run])
+                results[group]["bin_values"]["values"][run] = np.sum(results[group]["bin_values"]["values"][run]*results[group]["group_num_in_bin"]["values"][run])/np.sum(results[group]["group_num_in_bin"]["values"][run])
                 results[group]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[group]["discriminated_against"]["values"][run],\
                                                                                                results[group]["group_num_in_bin"]["values"][run],\
                                                                                                 np.zeros(results[group]["group_num_in_bin"]["values"][run].shape)))/np.sum(results[group]["group_num_in_bin"]["values"][run])
 
 
+
         for group in range(num_groups):
-            for metric in ["group_num_in_bin"]:
+            for metric in ["group_num_in_bin","bin_values","group_num_positives_in_bin"]:
                 assert len(results[group][metric]["values"])==n_runs
                 results[group][metric]["mean"] = np.mean(
                     results[group][metric]["values"])
@@ -85,38 +90,45 @@ if __name__ == "__main__":
                     results[group][metric]["values"],ddof=1)
             # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
         # fig_legend = plt.figure(figsize=(fig_width,0.8))
-        for idx,metric in enumerate(["group_num_in_bin"]):
-            handles = []
-            mean_algorithm = np.array([results[group][metric]["mean"] for group in range(num_groups)])
-            std_algorithm = np.array([results[group][metric]["std"]/np.sqrt(n_runs) for group in range(num_groups)])
+        handles = []
+        mean_group_bin_value = np.array([results[group]["group_num_positives_in_bin"]["mean"] for group in range(num_groups)])
+        args_sored = np.argsort(mean_group_bin_value)
 
-            line = axs[idx].plot(range(num_groups), mean_algorithm,
+        mean_algorithm = np.array([results[group]["group_num_in_bin"]["mean"] for group in range(num_groups)])[args_sored]
+        std_algorithm = np.array([results[group]["group_num_in_bin"]["std"]/np.sqrt(n_runs) for group in range(num_groups)])[args_sored]
+        std_group_bin_value = np.array([results[group]["group_num_positives_in_bin"]["std"]/np.sqrt(n_runs) for group in range(num_groups)])[args_sored]
+        mean_group_bin_value = mean_group_bin_value[args_sored]
+
+        for group in range(num_groups):
+            line = axs.bar(group, mean_algorithm[group],width=0.1,
                                     linewidth=line_width,
-                                    label=Z_labels[Z_indices[0]]["feature"],
-                                    color=Z_labels[Z_indices[0]]["color"],
-                                    marker=Z_labels[Z_indices[0]]["marker"])
-            handles.append(line[0])
+                                    label=Z_labels[Z_indices[0]][args_sored[group]],
+                                    color=group_colors[args_sored[group]],
+                                    )#marker=Z_labels[Z_indices[0]]["marker"]
+            handles.append(line)
             # if metric=="n_bins":
-            axs[idx].fill_between(range(num_groups), mean_algorithm - std_algorithm,
-                                     mean_algorithm + std_algorithm, alpha=transparency,
-                                     color=Z_labels[Z_indices[0]]["color"])
+            axs.errorbar(group, mean_algorithm[group], yerr=std_algorithm[group],
+                    label=Z_labels[Z_indices[0]][args_sored[group]],
+                    color=group_colors[args_sored[group]],
+                    )  # marker=Z_labels[Z_indices[0]]["marker"]
 
-            # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
-            #                        std_algorithm,
-            #                        color=algorithm_colors[
-            #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
+        # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
+        #                        std_algorithm,
+        #                        color=algorithm_colors[
+        #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-            axs[idx].set_xticks(range(num_groups))
+        axs.set_xticks(range(num_groups))
+        axs.set_xticklabels([str(round(float(label), 2)) for label in mean_group_bin_value])
 
-            # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
-            # title.set_position([0.5,0.8])
-            # axs[row][z].set_yticks([])
-            axs[idx].set_ylabel(metric_labels[metric])
-            axs[idx].set_xlabel(xlabels["n_bins"])
+        # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
+        # title.set_position([0.5,0.8])
+        # axs[row][z].set_yticks([])
+        axs.set_ylabel(metric_labels["group_num_in_bin"])
+        axs.set_xlabel(xlabels["n_bins"])
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
-        fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.5, 0.85), ncol=5)
+        fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.5, 0.87), ncol=2)
 
         # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
         # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)

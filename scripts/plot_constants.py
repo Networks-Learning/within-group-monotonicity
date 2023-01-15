@@ -1,5 +1,5 @@
 import pickle
-params = {'legend.fontsize': 24,#24,
+params = {'legend.fontsize': 14,#24,
           'xtick.labelsize': 24,
           'ytick.labelsize': 24,
           'lines.markersize': 15,
@@ -56,7 +56,10 @@ def collect_results_group_exp(result_path, exp_parameter, results, metrics):
     with open(result_path, 'rb') as f:
         result = pickle.load(f)
     for metric in metrics:
-        results[exp_parameter][metric]["values"].append(result[metric][exp_parameter])
+        if metric=="bin_values":
+            results[exp_parameter][metric]["values"].append(result[metric])
+        else:
+            results[exp_parameter][metric]["values"].append(result[metric][:,exp_parameter])
 
 
 def collect_results_quantitative_exp(result_path, exp_parameter, algorithm, results, metrics,k_idx=None):
