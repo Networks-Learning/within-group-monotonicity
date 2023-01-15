@@ -71,9 +71,7 @@ if __name__ == "__main__":
 
         for run in runs:
             for group in range(num_groups):
-                print(results[group]["discriminated_against"]["values"][run])
-                results[group]["group_num_positives_in_bin"]["values"][run] = np.sum(
-                    results[group]["group_num_positives_in_bin"]["values"][run]) / np.sum(results[group]["group_num_in_bin"]["values"][run])
+                results[group]["group_num_positives_in_bin"]["values"][run] = np.sum(results[group]["group_num_in_bin"]["values"][run])/the_n_cal
                 results[group]["bin_values"]["values"][run] = np.sum(results[group]["bin_values"]["values"][run]*results[group]["group_num_in_bin"]["values"][run])/np.sum(results[group]["group_num_in_bin"]["values"][run])
                 results[group]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[group]["discriminated_against"]["values"][run],\
                                                                                                results[group]["group_num_in_bin"]["values"][run],\
