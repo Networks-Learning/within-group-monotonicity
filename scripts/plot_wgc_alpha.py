@@ -116,12 +116,12 @@ if __name__ == "__main__":
             # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
             # title.set_position([0.5,0.8])
             # axs[row][z].set_yticks([])
-            axs[idx].set_ylabel(metric_labels[metric])
+            axs[idx].set_ylabel(metric_labels[metric],fontsize=34)
             axs[idx].set_xlabel(xlabels["n_bins"])
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
     # fig_legend.savefig('./plots/legend.pdf')
-    fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.54, 0.87), ncol=2)
+    fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.54, 0.87), ncol=4)
 
     # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
