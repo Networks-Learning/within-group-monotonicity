@@ -93,8 +93,8 @@ if __name__ == "__main__":
         args_sored = np.argsort(mean_group_bin_value)
 
         mean_algorithm = np.array([results[group]["group_num_in_bin"]["mean"] for group in range(num_groups)])[args_sored]
-        std_algorithm = np.array([results[group]["group_num_in_bin"]["std"]/np.sqrt(n_runs) for group in range(num_groups)])[args_sored]
-        std_group_bin_value = np.array([results[group]["group_num_positives_in_bin"]["std"]/np.sqrt(n_runs) for group in range(num_groups)])[args_sored]
+        std_algorithm = np.array([results[group]["group_num_in_bin"]["std"] for group in range(num_groups)])[args_sored]
+        std_group_bin_value = np.array([results[group]["group_num_positives_in_bin"]["std"] for group in range(num_groups)])[args_sored]
         mean_group_bin_value = mean_group_bin_value[args_sored]
 
         for group in range(num_groups):
