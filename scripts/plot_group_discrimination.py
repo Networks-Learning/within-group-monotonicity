@@ -47,9 +47,11 @@ if __name__ == "__main__":
 
     the_n_cal = n_cals[0]
     umb_num_bin =15
+    Z=[[6],[15]]
+    fig, axs = plt.subplots(1, 2)
+    fig.set_size_inches(fig_width, fig_height + 1)
     for z, Z_indices in enumerate(Z):
-        fig, axs = plt.subplots(1, 1)
-        fig.set_size_inches(fig_width/2, fig_height + 1)
+
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
         for group in range(num_groups):
             results[group] = {}
@@ -98,14 +100,14 @@ if __name__ == "__main__":
         mean_group_bin_value = mean_group_bin_value[args_sored]
 
         for group in range(num_groups):
-            line = axs.bar(group, mean_algorithm[group],width=0.2,
+            line = axs[z].bar(group, mean_algorithm[group],width=0.2,
                                     linewidth=line_width,
                                     label=Z_labels[Z_indices[0]][args_sored[group]],
                                     color=group_colors[args_sored[group]],
                                     )#marker=Z_labels[Z_indices[0]]["marker"]
             handles.append(line)
             # if metric=="n_bins":
-            axs.errorbar(group, mean_algorithm[group], yerr=std_algorithm[group],
+            axs[z].errorbar(group, mean_algorithm[group], yerr=std_algorithm[group],
                     label=Z_labels[Z_indices[0]][args_sored[group]],
                     color='lightslategrey',
                     )  # marker=Z_labels[Z_indices[0]]["marker"]
@@ -115,15 +117,16 @@ if __name__ == "__main__":
         #                        color=algorithm_colors[
         #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-        axs.set_xticks(range(num_groups))
-        axs.set_xticklabels([str(round(float(label), 2)) for label in mean_group_bin_value])
+        axs[z].set_xticks(range(num_groups))
+        axs[z].set_xticklabels([str(round(float(label), 2)) for label in mean_group_bin_value])
 
         # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
         # title.set_position([0.5,0.8])
         # axs[row][z].set_yticks([])
-        axs.set_ylabel(metric_labels["group_num_in_bin"])
-        axs.set_xlabel(xlabels["group_rho"])
-        axs.legend(handles=handles,loc="upper right",fontsize=17)
+        if z==0:
+            axs[z].set_ylabel(metric_labels["group_num_in_bin"])
+        axs[z].set_xlabel(xlabels["group_rho"])
+        axs[z].legend(handles=handles,loc="upper right",fontsize=17)
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
@@ -134,5 +137,5 @@ if __name__ == "__main__":
 
         # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-        plt.tight_layout(rect=[0, 0, 1, 0.9])
-        fig.savefig("./plots/exp_group_discrimination_{}.pdf".format(Z_indices[0]), format="pdf")
+    plt.tight_layout(rect=[0, 0, 1, 0.9])
+    fig.savefig("./plots/exp_group_discrimination_{}.pdf".format(Z[0][0]), format="pdf")
