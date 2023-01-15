@@ -131,8 +131,8 @@ class UMBSelect(object):
         # All required (hyper-)parameters have been passed correctly
         # Uniform-mass binning/histogram binning code starts below
         self.num_examples = y_score.size
-        self.epsilon = np.sqrt(2 * np.log(2 / self.alpha) / self.num_examples)
-        # self.epsilon = 0
+        # self.epsilon = np.sqrt(2 * np.log(2 / self.alpha) / self.num_examples)
+        self.epsilon = 0
 
         # delta-randomization
         # y_score = self._nudge(y_score)
@@ -366,7 +366,7 @@ class UMBSelect(object):
 
         return np.average(var)
 
-    def find_pool_discriminations(self,X_all_features,scores):
+    def find_pool_discriminations(self,X_all_features,scores,y):
         test_group_assignment = self.group_points(X_all_features).astype(bool)
         discriminated = np.zeros(scores.shape)
         scores = scores.squeeze()
@@ -375,13 +375,13 @@ class UMBSelect(object):
             for j in range(scores.shape[0]):
                 if discriminated[i]:
                     break
-                if self.bin_values[test_bins[i]]<self.bin_values[test_bins[j]]:
+                if self.bin_values[test_bins[i]]<self.bin_values[test_bins[j]] and y[i]==1 and y[j]==0:
                     for grp_idx in range(self.num_groups):
                         if test_group_assignment[grp_idx][i] and test_group_assignment[grp_idx][j]: #in the same group
-                            if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
-                                    >self.group_num_positives_in_bin[test_bins[j]][grp_idx]*self.group_num_in_bin[test_bins[i]][grp_idx]:
-                                discriminated[i] = True
-                                break
+                            # if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
+                            #         >self.group_num_positives_in_bin[test_bins[j]][grp_idx]*self.group_num_in_bin[test_bins[i]][grp_idx]:
+                            discriminated[i] = True
+                            break
 
         return discriminated
 
@@ -469,7 +469,7 @@ if __name__ == "__main__":
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
-        pool_discriminated.append(np.sum(umb_select.find_pool_discriminations(X_test_all_features[indexes],scores_test)))
+        pool_discriminated.append(np.sum(umb_select.find_pool_discriminations(X_test_all_features[indexes],scores_test,y_test)))
         for k_idx, k in enumerate(ks):
             test_selected = umb_select.select(scores_test,k_idx)
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
