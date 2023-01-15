@@ -39,7 +39,7 @@ metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{
                  "alpha":r'$\alpha_{WGC}$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate", "log_loss":"Cross Entropy Loss"\
                  ,"prob_pred":r"$\Pr(\hat{Y}=1|X)$","ECE":"ECE", "sharpness":"Sharpness Score", "f1_score":"F1 Score","group_num_in_bin":"Discrimination prob","pool_discriminated":"Pool Discrimination prob"}
 xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate",\
-           "prob_true":r"$\Pr(Y=1|X)$", }
+           "prob_true":r"$\Pr(Y=1|X)$","group_rho":r"$\Pr(Z=z)$" }
 
 group_colors = {0: "tab:purple", 1: "tab:pink", 2: "tab:cyan", 3: "tab:olive" }
 umb_colors = {5: "tab:orange", 10: "tab:brown", 15: "tab:pink", 20: "tab:gray", 25: "tab:olive", 30:"tab:blue"}

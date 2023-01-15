@@ -11,7 +11,7 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    from params_exp_bins import *
+    from params_exp_violations import *
     from matplotlib.ticker import StrMethodFormatter
 
     algorithm_labels = {}
@@ -107,7 +107,7 @@ if __name__ == "__main__":
             # if metric=="n_bins":
             axs.errorbar(group, mean_algorithm[group], yerr=std_algorithm[group],
                     label=Z_labels[Z_indices[0]][args_sored[group]],
-                    color=group_colors[args_sored[group]],
+                    color='lightslategrey',
                     )  # marker=Z_labels[Z_indices[0]]["marker"]
 
         # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
@@ -122,11 +122,11 @@ if __name__ == "__main__":
         # title.set_position([0.5,0.8])
         # axs[row][z].set_yticks([])
         axs.set_ylabel(metric_labels["group_num_in_bin"])
-        axs.set_xlabel(xlabels["n_bins"])
+        axs.set_xlabel(xlabels["group_rho"])
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
-        fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.5, 0.87), ncol=2)
+        fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.52, 0.87), ncol=2)
 
         # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
         # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
