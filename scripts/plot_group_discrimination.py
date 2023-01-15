@@ -123,7 +123,7 @@ if __name__ == "__main__":
         # axs[row][z].set_yticks([])
         axs.set_ylabel(metric_labels["group_num_in_bin"])
         axs.set_xlabel(xlabels["group_rho"])
-        axs.legend(handles=handles)
+        axs.legend(handles=handles,loc="top right",fontsize=17)
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
