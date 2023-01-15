@@ -11,7 +11,7 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    from params_exp_bins import *
+    from params_exp_discrimination import *
     from matplotlib.ticker import StrMethodFormatter
 
     algorithm_labels = {}

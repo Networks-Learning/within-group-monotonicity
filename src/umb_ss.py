@@ -473,7 +473,7 @@ if __name__ == "__main__":
         for k_idx, k in enumerate(ks):
             test_selected = umb_select.select(scores_test,k_idx)
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
-            print(f"{i,k_idx,num_selected[k_idx][i]}")
+            # print(f"{i,k_idx,num_selected[k_idx][i]}")
             num_qualified[k_idx][i] = calculate_expected_qualified(test_selected, y_test, m)
 
     performance_metrics = {}
