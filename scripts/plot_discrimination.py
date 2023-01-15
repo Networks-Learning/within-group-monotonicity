@@ -121,7 +121,7 @@ if __name__ == "__main__":
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
     # fig_legend.savefig('./plots/legend.pdf')
-    fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.52, 0.87), ncol=2)
+    fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.52, 0.87), ncol=1)
 
     # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
