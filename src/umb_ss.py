@@ -131,8 +131,8 @@ class UMBSelect(object):
         # All required (hyper-)parameters have been passed correctly
         # Uniform-mass binning/histogram binning code starts below
         self.num_examples = y_score.size
-        # self.epsilon = np.sqrt(2 * np.log(2 / self.alpha) / self.num_examples)
-        self.epsilon = 0
+        self.epsilon = np.sqrt(2 * np.log(2 / self.alpha) / self.num_examples)
+        # self.epsilon = 0
 
         # delta-randomization
         # y_score = self._nudge(y_score)
