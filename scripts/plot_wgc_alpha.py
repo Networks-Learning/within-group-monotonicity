@@ -116,7 +116,9 @@ if __name__ == "__main__":
             # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
             # title.set_position([0.5,0.8])
             # axs[row][z].set_yticks([])
-            axs[idx].set_ylabel(metric_labels[metric],fontsize=34)
+            if metric=="alpha":
+                fsize=34
+            axs[idx].set_ylabel(metric_labels[metric],fontsize=fsize)
             axs[idx].set_xlabel(xlabels["n_bins"])
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
