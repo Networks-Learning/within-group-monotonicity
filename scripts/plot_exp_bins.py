@@ -35,7 +35,7 @@ if __name__ == "__main__":
     for k_idx, k in enumerate(ks):
         for z,Z_indices in enumerate(Z):
             fig, axs = plt.subplots(1, 2)
-            fig.set_size_inches(fig_width,fig_height)
+            fig.set_size_inches(fig_width,fig_height+0.5)
             Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
             # plotting num bins of wgm vs umb number of bins for different umb bin numbers
