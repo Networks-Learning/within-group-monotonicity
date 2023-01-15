@@ -116,6 +116,7 @@ if __name__ == "__main__":
             # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
             # title.set_position([0.5,0.8])
             # axs[row][z].set_yticks([])
+            fsize=28
             if metric=="alpha":
                 fsize=34
             axs[idx].set_ylabel(metric_labels[metric],fontsize=fsize)
