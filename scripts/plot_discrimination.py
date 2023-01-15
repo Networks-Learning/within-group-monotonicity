@@ -92,7 +92,7 @@ if __name__ == "__main__":
         for z,Z_indices in enumerate(Z):
             mean_algorithm = np.array([results[umb_num_bin][z][metric]["mean"] for umb_num_bin
                                        in umb_num_bins])
-            std_algorithm = np.array([results[umb_num_bin][z][metric]["std"] for umb_num_bin
+            std_algorithm = np.array([results[umb_num_bin][z][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
                                       in umb_num_bins])
 
             line = axs[idx].plot(umb_num_bins, mean_algorithm,
