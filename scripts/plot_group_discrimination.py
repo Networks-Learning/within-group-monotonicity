@@ -126,7 +126,7 @@ if __name__ == "__main__":
         if z==0:
             axs[z].set_ylabel(metric_labels["group_num_in_bin"])
         axs[z].set_xlabel(xlabels["group_rho"])
-        axs[z].legend(handles=handles,loc="upper right",fontsize=17)
+        axs[z].legend(handles=handles,fontsize=17)
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
