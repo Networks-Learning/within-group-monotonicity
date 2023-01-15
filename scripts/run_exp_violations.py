@@ -10,6 +10,8 @@ if __name__ == "__main__":
         os.mkdir(exp_dir)
     if not os.path.isdir("./data"):
         os.mkdir("./data")
+        if not os.path.isdir("./plots"):
+            os.mkdir("./plots")
     train_cal_raw_path = "./data/data_normal_train_cal_raw_q_ratio_{}_test_ratio_{}.pkl".format(q_ratio, test_ratio)
     test_raw_path = "./data/data_normal_test_raw_q_ratio_{}_test_ratio_{}.pkl".format(q_ratio, test_ratio)
     if prepare_data:
