@@ -98,7 +98,7 @@ if __name__ == "__main__":
         mean_group_bin_value = mean_group_bin_value[args_sored]
 
         for group in range(num_groups):
-            line = axs.bar(group, mean_algorithm[group],width=0.1,
+            line = axs.bar(group, mean_algorithm[group],width=0.2,
                                     linewidth=line_width,
                                     label=Z_labels[Z_indices[0]][args_sored[group]],
                                     color=group_colors[args_sored[group]],
@@ -123,15 +123,16 @@ if __name__ == "__main__":
         # axs[row][z].set_yticks([])
         axs.set_ylabel(metric_labels["group_num_in_bin"])
         axs.set_xlabel(xlabels["group_rho"])
+        axs.legend(handles=handles)
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
-        fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.52, 0.87), ncol=2)
+        # fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.52, 0.87), ncol=2)
 
         # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
         # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
 
         # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-        plt.tight_layout(rect=[0, 0, 1, 0.9])
+        plt.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig("./plots/exp_group_discrimination_{}.pdf".format(Z_indices[0]), format="pdf")
