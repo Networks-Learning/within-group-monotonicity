@@ -72,6 +72,7 @@ if __name__ == "__main__":
     for umb_num_bin in umb_num_bins:
         for run in runs:
             for z,Z_indices in enumerate(Z):
+                results[umb_num_bin][z]["pool_discriminated"]["values"][run]/=100
                 results[umb_num_bin][z]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[umb_num_bin][z]["discriminated_against"]["values"][run],\
                                                                                                results[umb_num_bin][z]["group_num_in_bin"]["values"][run],\
                                                                                                 np.zeros(results[umb_num_bin][z]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
@@ -94,8 +95,7 @@ if __name__ == "__main__":
             mean_algorithm = np.array([results[umb_num_bin][z][metric]["mean"] for umb_num_bin
                                        in umb_num_bins])
 
-            if metric=="pool_discriminated":
-                mean_algorithm = mean_algorithm/100
+
             std_algorithm = np.array([results[umb_num_bin][z][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
                                       in umb_num_bins])
 
