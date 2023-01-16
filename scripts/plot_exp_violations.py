@@ -157,8 +157,8 @@ if __name__ == "__main__":
                 axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X),Z)$')
                 axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^*}(X))$')
             if algorithm.startswith("wgc"):
-                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^{*}_{\epsilon-cal}}(X),Z)$')
-                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^{*}_{\epsilon-cal}}(X))$')
+                axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}^{*}_{cal}}(X),Z)$')
+                axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}^{*}_{cal}}(X))$')
 
             if algorithm.startswith("pav"):
                 axs[row].set_ylabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X),Z)$')

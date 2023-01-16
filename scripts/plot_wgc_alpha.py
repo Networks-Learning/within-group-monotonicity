@@ -119,7 +119,7 @@ if __name__ == "__main__":
             if metric=="alpha":
                 axs[idx].set_ylabel(metric_labels[metric],fontsize=36)
             if metric=="n_bins":
-                axs[idx].set_ylabel(r"$|\mathcal{B}^{*}_{\epsilon-cal}|$")
+                axs[idx].set_ylabel(r"$|\mathcal{B}^{*}_{cal}|$")
 
             axs[idx].set_xlabel(xlabels["n_bins"])
 
