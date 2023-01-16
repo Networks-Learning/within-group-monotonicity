@@ -11,7 +11,7 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    from params_exp_bins import *
+    from params_exp_violations import *
     from matplotlib.ticker import StrMethodFormatter
 
     algorithm_labels = {}
@@ -87,9 +87,10 @@ if __name__ == "__main__":
                     results[umb_num_bin][z][metric]["values"],ddof=1)
             # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
     # fig_legend = plt.figure(figsize=(fig_width,0.8))
+    fig_legend = plt.figure(figsize=(fig_width,0.55))
     for idx,metric in enumerate(["group_num_in_bin","pool_discriminated"]):
         fig, axs = plt.subplots(1, 1)
-        fig.set_size_inches(fig_width/2, fig_height + 1)
+        fig.set_size_inches(fig_width/2, fig_height + 0.5)
         handles = []
         for z,Z_indices in enumerate(Z):
 
@@ -105,6 +106,7 @@ if __name__ == "__main__":
                                     label=Z_labels[Z_indices[0]]["feature"],
                                     color=Z_labels[Z_indices[0]]["color"],
                                     marker=Z_labels[Z_indices[0]]["marker"])
+
             handles.append(line[0])
             # if metric=="n_bins":
             axs.fill_between(umb_num_bins, mean_algorithm - std_algorithm,
@@ -127,6 +129,9 @@ if __name__ == "__main__":
                 axs.set_ylabel(r"$p_{d,m}$", fontsize=34)
             axs.set_xlabel(xlabels["n_bins"])
 
+        fig_legend.legend(handles=handles,loc='center', ncol=4)
+        fig_legend.savefig('./plots/legend_Z.pdf')
+
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
     # fig_legend.savefig('./plots/legend.pdf')
     # fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.54, 0.87), ncol=4)
@@ -136,5 +141,5 @@ if __name__ == "__main__":
 
     # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-        plt.tight_layout(rect=[0, 0, 1, 0.9])
+        plt.tight_layout(rect=[0, 0, 1, 1])
         fig.savefig("./plots/exp_{}.pdf".format(metric), format="pdf")
