@@ -38,7 +38,7 @@ algorithm_markers = {}
 metric_labels = {"group_accuracy": r'$\Pr(Y=\hat{Y}|Z)$', "n_bins":r'$|\mathcal{B}|$',"accuracy":r'$\Pr(\hat{Y} = Y)$', "num_selected": r'Shortlist Size',\
                  "alpha":r'$\epsilon$', "tpr":"True Positive Rate", "group_tpr":"True Positive Rate", "log_loss":"Cross Entropy Loss"\
                  ,"prob_pred":r"$\Pr(\hat{Y}=1|X)$","ECE":"ECE", "sharpness":"Sharpness Score", "f1_score":"F1 Score","group_num_in_bin":"Discrimination prob","pool_discriminated":"Pool Discrimination prob"}
-xlabels = {"n_bins":r'$|\text{Range($f$)}|$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate",\
+xlabels = {"n_bins":r'$n$', "fpr":"False Positive Rate", "group_fpr":"False Positive Rate",\
            "prob_true":r"$\Pr(Y=1|X)$","group_rho":r"$\Pr(Z=z)$" }
 
 group_colors = {0: "tab:purple", 1: "tab:pink", 2: "tab:cyan", 3: "tab:olive" }
