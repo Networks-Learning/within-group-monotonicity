@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][z][metric]["values"],ddof=1)
             # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
     # fig_legend = plt.figure(figsize=(fig_width,0.8))
-    fig_legend = plt.figure(figsize=(fig_width,0.55))
+    # fig_legend = plt.figure(figsize=(fig_width,0.55))
     for idx,metric in enumerate(["group_num_in_bin","pool_discriminated"]):
         fig, axs = plt.subplots(1, 1)
         fig.set_size_inches(fig_width/2, fig_height + 0.5)
@@ -129,8 +129,8 @@ if __name__ == "__main__":
                 axs.set_ylabel(r"$p_{d,m}$", fontsize=34)
             axs.set_xlabel(xlabels["n_bins"])
 
-        fig_legend.legend(handles=handles,loc='center', ncol=4)
-        fig_legend.savefig('./plots/legend_Z.pdf')
+        # fig_legend.legend(handles=handles,loc='center', ncol=4)
+        # fig_legend.savefig('./plots/legend_Z.pdf')
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
     # fig_legend.savefig('./plots/legend.pdf')
