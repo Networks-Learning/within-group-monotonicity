@@ -11,7 +11,7 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    from params_exp_discrimination import *
+    from params_exp_bins import *
     from matplotlib.ticker import StrMethodFormatter
 
     algorithm_labels = {}
@@ -90,8 +90,12 @@ if __name__ == "__main__":
     for idx,metric in enumerate(["group_num_in_bin","pool_discriminated"]):
         handles = []
         for z,Z_indices in enumerate(Z):
+
             mean_algorithm = np.array([results[umb_num_bin][z][metric]["mean"] for umb_num_bin
                                        in umb_num_bins])
+
+            if metric=="pool_discriminated":
+                mean_algorithm = mean_algorithm/100
             std_algorithm = np.array([results[umb_num_bin][z][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
                                       in umb_num_bins])
 

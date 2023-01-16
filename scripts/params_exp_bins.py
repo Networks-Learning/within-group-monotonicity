@@ -1,5 +1,5 @@
 exp_token = "cz"
-exp_dir = "./exp_bins"
+exp_dir = "./exp_cal_curve"
 q_ratio = "0.2"
 test_ratio = "0.5"
 prepare_data = False
