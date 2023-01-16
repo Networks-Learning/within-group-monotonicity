@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # fig_legend = plt.figure(figsize=(fig_width,0.8))
     for idx,metric in enumerate(["group_num_in_bin","pool_discriminated"]):
         fig, axs = plt.subplots(1, 1)
-        fig.set_size_inches(fig_width, fig_height + 1)
+        fig.set_size_inches(fig_width/2, fig_height + 1)
         handles = []
         for z,Z_indices in enumerate(Z):
 
@@ -124,7 +124,7 @@ if __name__ == "__main__":
             if metric=="group_num_in_bin":
                 axs.set_ylabel(r"$p_d$", fontsize=34)
             if metric=="pool_discriminated":
-                axs.set_ylabel(r"$p_d$", fontsize=34)
+                axs.set_ylabel(r"$p_{d,m}$", fontsize=34)
             axs.set_xlabel(xlabels["n_bins"])
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
