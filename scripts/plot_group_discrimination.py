@@ -124,7 +124,7 @@ if __name__ == "__main__":
         # title.set_position([0.5,0.8])
         # axs[row][z].set_yticks([])
         if z==0:
-            axs[z].set_ylabel(metric_labels["group_num_in_bin"])
+            axs[z].set_ylabel(r"\varrho_z")
         axs[z].set_xlabel(xlabels["group_rho"])
         axs[z].legend(handles=handles,fontsize=17,title = Z_labels[Z_indices[0]]["feature"])
         # plt.setp(legend.get_title(), fontsize=params['legend.fontsize']))
