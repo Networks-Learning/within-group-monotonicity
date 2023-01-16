@@ -120,7 +120,7 @@ if __name__ == "__main__":
             # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
             # title.set_position([0.5,0.8])
             # axs[row][z].set_yticks([])
-            axs[idx].set_ylabel(metric_labels[metric])
+            axs[idx].set_ylabel(r"$p_d$",fontsize=34)
             axs[idx].set_xlabel(xlabels["n_bins"])
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
