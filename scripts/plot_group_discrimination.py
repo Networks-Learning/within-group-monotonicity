@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     the_n_cal = n_cals[0]
     umb_num_bin =15
-    Z=[[14],[4]]
+    Z=[[6],[15]]
     fig, axs = plt.subplots(1, 2)
     fig.set_size_inches(fig_width, fig_height + 1)
     for z, Z_indices in enumerate(Z):
@@ -125,9 +125,9 @@ if __name__ == "__main__":
         # axs[row][z].set_yticks([])
         if z==0:
             axs[z].set_ylabel(r"$\varrho_z$")
-        axs[z].set_xlabel(xlabels["group_rho"])
-        axs[z].legend(handles=handles,fontsize=17,title = Z_labels[Z_indices[0]]["feature"])
-        # plt.setp(legend.get_title(), fontsize=params['legend.fontsize']))
+        axs[z].set_xlabel(xlabels["group_rho"],fontsize=36)
+        legend = axs[z].legend(handles=handles,fontsize=17,title = Z_labels[Z_indices[0]]["feature"])
+        plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend.pdf')
