@@ -378,10 +378,10 @@ class UMBSelect(object):
                 if self.bin_values[test_bins[i]]<self.bin_values[test_bins[j]] and y[i]==1 and y[j]==0:
                     for grp_idx in range(self.num_groups):
                         if test_group_assignment[grp_idx][i] and test_group_assignment[grp_idx][j]: #in the same group
-                            # if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
-                            #         >self.group_num_positives_in_bin[test_bins[j]][grp_idx]*self.group_num_in_bin[test_bins[i]][grp_idx]:
-                            discriminated[i] = True
-                            break
+                            if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
+                                    >self.group_num_positives_in_bin[test_bins[j]][grp_idx]*self.group_num_in_bin[test_bins[i]][grp_idx]:
+                                discriminated[i] = True
+                                break
 
         return discriminated
 
