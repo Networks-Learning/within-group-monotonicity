@@ -88,7 +88,7 @@ if __name__ == "__main__":
             # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
     # fig_legend = plt.figure(figsize=(fig_width,0.8))
     for idx,metric in enumerate(["group_num_in_bin","pool_discriminated"]):
-        fig, axs = plt.subplots(1, 2)
+        fig, axs = plt.subplots(1, 1)
         fig.set_size_inches(fig_width, fig_height + 1)
         handles = []
         for z,Z_indices in enumerate(Z):
