@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     the_n_cal = n_cals[0]
     umb_num_bin =15
-    Z=[[14],[4]]
+    Z=[[6],[15]]
     fig, axs = plt.subplots(1, 2)
     fig.set_size_inches(fig_width, fig_height + 1)
     for z, Z_indices in enumerate(Z):
