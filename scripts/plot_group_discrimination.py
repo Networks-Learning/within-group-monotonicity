@@ -128,7 +128,7 @@ if __name__ == "__main__":
         axs[z].set_xlabel(xlabels["group_rho"])
         legend = axs[z].legend(handles=handles,fontsize=17,title = Z_labels[Z_indices[0]]["feature"])
         plt.setp(legend.get_title(), fontsize=18)
-        axs[z].set_ylim(0,0.33)
+        axs[z].set_ylim(0,0.35)
         axs[z].yaxis.set_major_locator(ticker.MultipleLocator(0.1))
 
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
