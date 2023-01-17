@@ -149,6 +149,7 @@ if __name__ == "__main__":
                 axs[row].set_yticks([])
                 # axs[alg][z].set_ylim((0,1))
 
+            axs[row].set_ylim([0, 1])
             axs[row].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
             if algorithm.startswith("umb"):
                 axs[row].set_ylabel(r'$\Pr(Y=1|f(X),Z)$')

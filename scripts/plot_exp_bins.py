@@ -11,8 +11,8 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    # from params_exp_violations import *
-    from params_exp_bins import *
+    from params_exp_violations import *
+    # from params_exp_bins import *
     from matplotlib.ticker import StrMethodFormatter
 
     algorithm_labels = {}
@@ -21,9 +21,9 @@ if __name__ == "__main__":
 
     for umb_num_bin in umb_num_bins:
         algorithm_labels["umb_" + str(umb_num_bin)] = r"$f$"
-        algorithm_labels["wgm_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^*}$"
-        algorithm_labels["wgc_" + str(umb_num_bin)] = r"$f_{\mathcal{B}^{*}_{\epsilon-cal}}$"
-        algorithm_labels["pav_" + str(umb_num_bin)] = r"$f_{\mathcal{B}_{pav}}$"
+        algorithm_labels["wgm_" + str(umb_num_bin)] = r"$\mathcal{B}^*$"
+        algorithm_labels["wgc_" + str(umb_num_bin)] = r"$\mathcal{B}^{*}_{cal}$"
+        algorithm_labels["pav_" + str(umb_num_bin)] = r"$\mathcal{B}_{pav}$"
         algorithm_colors["umb_" + str(umb_num_bin)] = "tab:green"
         algorithm_colors["wgm_" + str(umb_num_bin)] = "tab:blue"
         algorithm_colors["wgc_" + str(umb_num_bin)] = "tab:red"
@@ -94,7 +94,7 @@ if __name__ == "__main__":
                         results[umb_num_bin][algorithm][metric]["std"] = np.std(
                             results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                     # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
-            # fig_legend = plt.figure(figsize=(fig_width,0.8))
+            fig_legend = plt.figure(figsize=(fig_width,0.8))
             for idx,metric in enumerate(["n_bins","num_selected"]):
                 fig, axs = plt.subplots(1, 1)
                 fig.set_size_inches(fig_width / 2, fig_height + 0.5)
@@ -140,8 +140,8 @@ if __name__ == "__main__":
                     axs.set_ylabel(metric_labels[metric])
                     axs.set_xlabel(xlabels["n_bins"])
 
-            # fig_legend.legend(handles=handles,loc='center', ncol=4)
-            # fig_legend.savefig('./plots/legend.pdf')
+                fig_legend.legend(handles=handles,loc='center', ncol=4)
+                fig_legend.savefig('./plots/legend_{}.pdf'.format(metric))
             # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
 
             # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
