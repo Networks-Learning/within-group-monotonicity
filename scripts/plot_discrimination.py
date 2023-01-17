@@ -128,6 +128,9 @@ if __name__ == "__main__":
                 axs.set_ylabel(r"$p_{d | \mathcal{D}_{\text{pool}}}$", fontsize=34)
             axs.set_xlabel(xlabels["n_bins"])
 
+            axs[z].set_ylim(0, 0.28)
+            axs[z].yaxis.set_major_locator(ticker.MultipleLocator(0.05))
+
         # fig_legend.legend(handles=handles,loc='center', ncol=4)
         # fig_legend.savefig('./plots/legend_Z.pdf')
 
