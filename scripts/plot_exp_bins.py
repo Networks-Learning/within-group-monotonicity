@@ -142,11 +142,11 @@ if __name__ == "__main__":
                     # axs.set_ylim(-0.01, 0.28)
                     if Z_indices[0] in [6,15]:
                         if metric=="n_bins":
-                            axs.set_ylim(2.5, 16.5)
-                            locator = ticker.MultipleLocator(5)
-                            locator.tick_values(5, 15)
+                            axs.set_ylim(2.4, 18)
+                            locator = ticker.MultipleLocator(4)
+                            locator.tick_values(4, 15)
                         if metric=="num_selected":
-                            axs.set_ylim(5.4, 7.7)
+                            axs.set_ylim(5.51, 7.7)
                             locator = ticker.MultipleLocator(0.5)
                             locator.tick_values(6, 7.5)
                         axs.yaxis.set_major_locator(locator)
