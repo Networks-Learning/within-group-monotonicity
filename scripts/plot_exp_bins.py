@@ -34,8 +34,7 @@ if __name__ == "__main__":
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
     for k_idx, k in enumerate(ks):
         for z,Z_indices in enumerate(Z):
-            fig, axs = plt.subplots(1, 2)
-            fig.set_size_inches(fig_width,fig_height+0.5)
+
             Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
 
             # plotting num bins of wgm vs umb number of bins for different umb bin numbers
@@ -97,6 +96,8 @@ if __name__ == "__main__":
                     # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
             # fig_legend = plt.figure(figsize=(fig_width,0.8))
             for idx,metric in enumerate(["n_bins","num_selected"]):
+                fig, axs = plt.subplots(1, 1)
+                fig.set_size_inches(fig_width / 2, fig_height + 0.5)
                 handles = []
                 for algorithm in algorithms:
                     if metric=="n_bins" and algorithm=="umb":
@@ -113,7 +114,7 @@ if __name__ == "__main__":
                     std_algorithm = np.array([results[umb_num_bin][algorithm][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
                                               in umb_num_bins])
 
-                    line = axs[idx].plot(umb_num_bins, mean_algorithm,
+                    line = axs.plot(umb_num_bins, mean_algorithm,
                                             linewidth=line_width,
                                             label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
                                             color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
@@ -121,7 +122,7 @@ if __name__ == "__main__":
                                                                                                        0]))])  # , color=group_colors[i], marker=group_markers[i])
                     handles.append(line[0])
                     # if metric=="n_bins":
-                    axs[idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+                    axs.fill_between(umb_num_bins, mean_algorithm - std_algorithm,
                                              mean_algorithm + std_algorithm, alpha=transparency,
                                              color=algorithm_colors[
                                                  "{}_{}".format(algorithm, str(umb_num_bins[0]))])
@@ -131,13 +132,13 @@ if __name__ == "__main__":
                     #                        color=algorithm_colors[
                     #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-                    axs[idx].set_xticks(umb_num_bins)
+                    axs.set_xticks(umb_num_bins)
 
                     # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
                     # title.set_position([0.5,0.8])
                     # axs[row][z].set_yticks([])
-                    axs[idx].set_ylabel(metric_labels[metric])
-                    axs[idx].set_xlabel(xlabels["n_bins"])
+                    axs.set_ylabel(metric_labels[metric])
+                    axs.set_xlabel(xlabels["n_bins"])
 
             # fig_legend.legend(handles=handles,loc='center', ncol=4)
             # fig_legend.savefig('./plots/legend.pdf')
@@ -148,5 +149,5 @@ if __name__ == "__main__":
 
             # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-            plt.tight_layout(rect=[0, 0, 1, 1])
-            fig.savefig("./plots/exp_bins_{}_{}.pdf".format(Z_indices[0],str(k)), format="pdf")
+                plt.tight_layout(rect=[0, 0, 1, 1])
+                fig.savefig("./plots/exp_bins_{}_{}_{}.pdf".format(Z_indices[0],str(k),metric), format="pdf")
