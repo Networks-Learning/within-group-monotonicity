@@ -94,7 +94,7 @@ if __name__ == "__main__":
                         results[umb_num_bin][algorithm][metric]["std"] = np.std(
                             results[umb_num_bin][algorithm][metric]["values"],ddof=1)
                     # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
-            fig_legend = plt.figure(figsize=(fig_width,0.8))
+            # fig_legend = plt.figure(figsize=(fig_width,0.8))
             for idx,metric in enumerate(["n_bins","num_selected"]):
                 fig, axs = plt.subplots(1, 1)
                 fig.set_size_inches(fig_width / 2, fig_height + 0.5)
@@ -139,9 +139,20 @@ if __name__ == "__main__":
                     # axs[row][z].set_yticks([])
                     axs.set_ylabel(metric_labels[metric])
                     axs.set_xlabel(xlabels["n_bins"])
+                    # axs.set_ylim(-0.01, 0.28)
+                    if Z_indices[0] in [6,15]:
+                        if metric=="n_bins":
+                            axs.set_ylim(2.5, 16.5)
+                            locator = ticker.MultipleLocator(5)
+                            locator.tick_values(5, 15)
+                        if metric=="num_selected":
+                            axs.set_ylim(5.4, 7.7)
+                            locator = ticker.MultipleLocator(0.5)
+                            locator.tick_values(6, 7.5)
+                        axs.yaxis.set_major_locator(locator)
 
-                fig_legend.legend(handles=handles,loc='center', ncol=4)
-                fig_legend.savefig('./plots/legend_{}.pdf'.format(metric))
+                # fig_legend.legend(handles=handles,loc='center', ncol=4)
+                # fig_legend.savefig('./plots/legend_{}.pdf'.format(metric))
             # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
 
             # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
