@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][z][metric]["values"],ddof=1)
             # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
     # fig_legend = plt.figure(figsize=(fig_width,0.8))
-    for idx,metric in ["alpha"]:
+    for metric in ["alpha"]:
         handles = []
         for z,Z_indices in enumerate(Z):
             mean_algorithm = np.array([results[umb_num_bin][z][metric]["mean"] for umb_num_bin
