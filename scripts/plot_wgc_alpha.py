@@ -32,7 +32,7 @@ if __name__ == "__main__":
         algorithm_markers["wgc_" + str(umb_num_bin)] = 9
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
-    fig, axs = plt.subplots(1, 2)
+    fig, axs = plt.subplots(1, 1)
     fig.set_size_inches(fig_width,fig_height+1)
 
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     results[umb_num_bin][z][metric]["values"],ddof=1)
             # assert (np.array(results[umb_num_bins][algorithm][metric]["values"]) >= 0).all()
     # fig_legend = plt.figure(figsize=(fig_width,0.8))
-    for idx,metric in enumerate(metrics):
+    for idx,metric in ["alpha"]:
         handles = []
         for z,Z_indices in enumerate(Z):
             mean_algorithm = np.array([results[umb_num_bin][z][metric]["mean"] for umb_num_bin
@@ -95,14 +95,14 @@ if __name__ == "__main__":
             std_algorithm = np.array([results[umb_num_bin][z][metric]["std"]/np.sqrt(n_runs) for umb_num_bin
                                       in umb_num_bins])
 
-            line = axs[idx].plot(umb_num_bins, mean_algorithm,
+            line = axs.plot(umb_num_bins, mean_algorithm,
                                     linewidth=line_width,
                                     label=Z_labels[Z_indices[0]]["feature"],
                                     color=Z_labels[Z_indices[0]]["color"],
                                     marker=Z_labels[Z_indices[0]]["marker"])
             handles.append(line[0])
             # if metric=="n_bins":
-            axs[idx].fill_between(umb_num_bins, mean_algorithm - std_algorithm,
+            axs.fill_between(umb_num_bins, mean_algorithm - std_algorithm,
                                      mean_algorithm + std_algorithm, alpha=transparency,
                                      color=Z_labels[Z_indices[0]]["color"])
 
@@ -111,21 +111,21 @@ if __name__ == "__main__":
             #                        color=algorithm_colors[
             #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-            axs[idx].set_xticks(umb_num_bins)
+            axs.set_xticks(umb_num_bins)
 
             # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
             # title.set_position([0.5,0.8])
             # axs[row][z].set_yticks([])
             if metric=="alpha":
-                axs[idx].set_ylabel(metric_labels[metric],fontsize=36)
+                axs.set_ylabel(metric_labels[metric],fontsize=36)
             if metric=="n_bins":
-                axs[idx].set_ylabel(r"$|\mathcal{B}^{*}_{cal}|$")
+                axs.set_ylabel(r"$|\mathcal{B}^{*}_{cal}|$")
 
-            axs[idx].set_xlabel(xlabels["n_bins"])
+            axs.set_xlabel(xlabels["n_bins"])
 
     # fig_legend.legend(handles=handles,loc='center', ncol=4)
     # fig_legend.savefig('./plots/legend.pdf')
-    fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.54, 0.87), ncol=4)
+    fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.54, 0.87), ncol=2)
 
     # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
     # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)

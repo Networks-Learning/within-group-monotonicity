@@ -149,8 +149,13 @@ if __name__ == "__main__":
                 axs[row].set_yticks([])
                 # axs[alg][z].set_ylim((0,1))
 
-            axs[row].set_ylim([0, 1])
-            axs[row].yaxis.set_major_locator(ticker.MultipleLocator(0.25))
+            axs[row].set_ylim([0.0001, 0.99])
+            locator = ticker.MultipleLocator(0.25)
+            locator.tick_values(0.25, 0.77)
+            # axs.yaxis.set_major_locator(locator)
+
+
+            axs[row].yaxis.set_major_locator(locator)
             if algorithm.startswith("umb"):
                 axs[row].set_ylabel(r'$\Pr(Y=1|f(X),Z)$')
                 axs[row].set_xlabel(r'$\Pr(Y=1|f(X))$')
