@@ -132,5 +132,5 @@ if __name__ == "__main__":
 
     # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
-    plt.tight_layout(rect=[0, 0, 1, 0.9])
+    plt.tight_layout(rect=[0, 0, 1, 1])
     fig.savefig("./plots/epsilon.pdf", format="pdf")
