@@ -33,7 +33,7 @@ if __name__ == "__main__":
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
     fig, axs = plt.subplots(1, 1)
-    fig.set_size_inches(fig_width,fig_height+1)
+    fig.set_size_inches(fig_width/2,fig_height+1)
 
 
     # plotting num bins of wgm vs umb number of bins for different umb bin numbers
