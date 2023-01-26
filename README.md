@@ -6,11 +6,11 @@ On a machine with [conda](https://docs.conda.io/en/latest/) installed, run
 conda env create -f environment.yml
 source activate wgm
 ```
-The parameters required for every set of experiments are in params_*.py files. 
+The parameters required for every set of experiments are in ./scripts/params_*.py files. 
 Make sure you set prepare_data = True only the first time you run the experiments to download and prepare the data.
 Set it to False if you have the data already downloaded. 
 
-If you are using a machine with [Slurm](https://slurm.schedmd.com/documentation.html) workload manager set submit = True in params_*.py. 
+If you are using a machine with [Slurm](https://slurm.schedmd.com/documentation.html) workload manager set submit = True in ./scripts/params_*.py. 
 You can then increase the n_runs parameter which specifies the number of runs.
 Set submit = False if you run the experiments on your local machine and make sure the number of runs is small.
 
