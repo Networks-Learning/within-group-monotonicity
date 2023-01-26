@@ -33,13 +33,11 @@ class UMBSelect(object):
         self.epsilon = None
         self.b = None
         self.theta = None
-        # self.num_groups = None
         self.group_num_positives_in_bin = None
         self.group_num_in_bin = None
         self.group_rho = None
         self.group_bin_values = None
         self.discriminated_against = None
-        # self.sorted = None
         # Internal variables
         self.fitted = False
 

@@ -9,26 +9,6 @@ from sklearn.metrics import mean_squared_error,accuracy_score
 from utils import calculate_expected_qualified, calculate_expected_selected, transform_except_last_dim
 
 
-
-# class NoisyLR(LogisticRegression):
-#     def set_noise_ratio(self, noise_ratio=None):
-#         self.noise_ratio = noise_ratio
-#
-#     def predict_proba(self, X):
-#         proba = super().predict_proba(X)
-#         if self.noise_ratio is not None:
-#             for i in range(proba.shape[0]):
-#                 if int(X[i, -1]) == 1:
-#                     noise_or_not = np.random.binomial(1, self.noise_ratio["maj"])
-#                 else:
-#                     noise_or_not = np.random.binomial(1, self.noise_ratio["min"])
-#                 if noise_or_not:
-#                     noise = np.random.beta(1, 4)
-#                     proba[i, 0] = 1. - noise
-#                     proba[i, 1] = noise
-#         return proba
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--train_data_path", type=str, help="the input training data path")

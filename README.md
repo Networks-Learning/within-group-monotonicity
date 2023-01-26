@@ -25,26 +25,22 @@ python ./scripts/run_exp_bins.py
 ### Plot Figures
 
 #### To generate Figures 1, 5, 9
-Run
 ```angular2html
 python ./scripts/plot_exp_violations.py
 ```
 
 #### To generate Figures 2, 7
-Run
 ```angular2html
 python ./scripts/plot_discrimination.py
 python ./scripts/plot_exp_group_discrimination.py
 ```
 
 #### To generate Figures 3, 4, 8
-Run
 ```angular2html
 python ./scripts/plot_exp_bins.py
 ```
 
 #### To generate Figures 6
-Run
 ```angular2html
 python ./scripts/plot_wgc_eps.py
 ```

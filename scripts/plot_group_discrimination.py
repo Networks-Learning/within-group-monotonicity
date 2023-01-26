@@ -38,9 +38,6 @@ if __name__ == "__main__":
     # plotting num bins of wgm vs umb number of bins for different umb bin numbers
     algorithm = "umb"
     results = {}
-    # algorithms.append("wgm")
-    # algorithms.append("pav")
-    # algorithms.append("wgc")
 
 
     metrics = ["discriminated_against","group_num_in_bin","bin_values","group_num_positives_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"

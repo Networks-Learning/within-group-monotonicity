@@ -1,5 +1,5 @@
 """
-Run the experiments where we vary the amount of calibration data.
+Run the experiments
 """
 import os
 from exp_utils import generate_commands, submit_commands
