@@ -65,7 +65,7 @@ if __name__ == "__main__":
                 for run in runs:
                     for algorithm in algorithms:
                         exp_identity_string = "_".join(
-                            [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
+                            [Z_str, str(n_train), str(the_n_cal), lbd, str(run)])
                         result_path = os.path.join(exp_dir,
                                                    exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
                                                                                                     umb_num_bin))
@@ -115,22 +115,6 @@ if __name__ == "__main__":
                     axs[idx].set_xticks(umb_num_bins)
                     axs[idx].set_ylabel(metric_labels[metric])
                     axs[idx].set_xlabel(xlabels["n_bins"])
-
-                    # axs[z].errorbar(umb_num_bins, mean_pred,
-                    #                     std_pred,capthick=capthick,
-                    #                 label=algorithm_labels["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                    #                 color=algorithm_colors["{}_{}".format(algorithm, str(umb_num_bins[0]))],
-                    #                 marker=algorithm_markers["{}_{}".format(algorithm, str(umb_num_bins[
-                    #                                                                            0]))])
-
-                # axs[z].set_xlabel(xlabels["n_bins"])
-            # axs[z].set_xticks([round(float(label), 2) for label in results["umb"]["prob_true"]["mean"]])
-            # axs[z].set_xticklabels([str(round(float(label), 2)) for label in results["umb"]["prob_true"]["mean"]])
-            #     if metric!="alpha":
-            #         fig.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
-            # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
-            # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
-            # axs[0].set_ylabel(metric_labels[metrics[0]])
 
             plt.tight_layout(rect=[0, 0, 1, 1])
             fig.savefig("./plots/exp_cal_curve_{}_k_{}.pdf".format(Z_indices[0],str(k)), format="pdf")

@@ -24,19 +24,14 @@ if __name__ == "__main__":
     n = n_train + n_cal
     with open(args.train_cal_raw_path, 'rb') as f:
         X, y = pickle.load(f)
-        # print(X.shape)
 
     X, y = shuffle(X, y)
     X, y = X[:n], y[:n]
-    # print(X.shape,y.shape)
     scaler = StandardScaler()
     X_train, y_train = X[:n_train], y[:n_train]
     X_cal, y_cal = X[n_train:], y[n_train:]
     X_train = np.concatenate((scaler.fit_transform(X_train[:, :-1]), X_train[:, -1:]), axis=1)
-    # X_train = scaler.fit_transform(X_train)
     X_cal = transform_except_last_dim(X_cal, scaler)
-    # X_cal = scaler.transform(X_cal)
-    print(f"{np.sum(y_cal)/y_cal.shape[0]=}")
 
     with open(args.train_data_path, "wb") as f:
         pickle.dump([X_train, y_train], f)

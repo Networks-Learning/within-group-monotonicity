@@ -61,7 +61,7 @@ if __name__ == "__main__":
             for z,Z_indices in enumerate(Z):
                 Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
                 exp_identity_string = "_".join(
-                    [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
+                    [Z_str, str(n_train), str(the_n_cal), lbd, str(run)])
                 result_path = os.path.join(exp_dir,
                                            exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
                                                                                             umb_num_bin))
@@ -106,16 +106,9 @@ if __name__ == "__main__":
                                      mean_algorithm + std_algorithm, alpha=transparency,
                                      color=Z_labels[Z_indices[0]]["color"])
 
-            # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
-            #                        std_algorithm,
-            #                        color=algorithm_colors[
-            #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
             axs.set_xticks(umb_num_bins)
 
-            # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
-            # title.set_position([0.5,0.8])
-            # axs[row][z].set_yticks([])
             if metric=="alpha":
                 axs.set_ylabel(metric_labels[metric],fontsize=36)
             if metric=="n_bins":
@@ -123,14 +116,6 @@ if __name__ == "__main__":
 
             axs.set_xlabel(xlabels["n_bins"])
 
-    # fig_legend.legend(handles=handles,loc='center', ncol=4)
-    # fig_legend.savefig('./plots/legend.pdf')
-    # fig.legend(handles=handles,loc='lower center', bbox_to_anchor=(0.54, 0.87), ncol=2)
-
-    # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
-    # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
-
-    # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
 
     plt.tight_layout(rect=[0, 0, 1, 1])
     fig.savefig("./plots/epsilon.pdf", format="pdf")

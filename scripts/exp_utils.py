@@ -8,147 +8,135 @@ from sklearn.utils import shuffle
 
 
 def generate_commands(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_test, k, classifier_type,
-                      umb_num_bins, train_cal_raw_path, test_raw_path, noise_ratios=[-1]):
+                      umb_num_bins, train_cal_raw_path, test_raw_path):
     """
     generate a list of commands from the experiment setup
     """
     commands = []
     for Z_indices in Z:
         for n_train in n_trains:
-            for noise_ratio in noise_ratios:
-                for n_cal in n_cals:
-                    for lbd in lbds:
-                        for run in runs:
-                            exp_identity_string = "_".join(["_".join([str(index) for index in Z_indices]), str(n_train), str(noise_ratio), str(n_cal), lbd, str(run)])
-                            print("adding Experiment: " + exp_identity_string)
-                            train_data_path = os.path.join(exp_dir, exp_identity_string + "_train_data.pkl")
-                            cal_data_path = os.path.join(exp_dir, exp_identity_string + "_cal_data.pkl")
-                            scaler_path = os.path.join(exp_dir, exp_identity_string + "_scaler.pkl")
-                            data_generation_command = "python ./scripts/generate_data.py --n_train {} --n_cal {} " \
-                                                      "--train_cal_raw_path {} --train_data_path {} --cal_data_path {} " \
-                                                      "--scaler_path {}".format(n_train, n_cal, train_cal_raw_path,
-                                                                             train_data_path, cal_data_path, scaler_path)
+            for n_cal in n_cals:
+                for lbd in lbds:
+                    for run in runs:
+                        exp_identity_string = "_".join(["_".join([str(index) for index in Z_indices]), str(n_train), str(n_cal), lbd, str(run)])
+                        print("adding Experiment: " + exp_identity_string)
+                        train_data_path = os.path.join(exp_dir, exp_identity_string + "_train_data.pkl")
+                        cal_data_path = os.path.join(exp_dir, exp_identity_string + "_cal_data.pkl")
+                        scaler_path = os.path.join(exp_dir, exp_identity_string + "_scaler.pkl")
+                        data_generation_command = "python ./scripts/generate_data.py --n_train {} --n_cal {} " \
+                                                  "--train_cal_raw_path {} --train_data_path {} --cal_data_path {} " \
+                                                  "--scaler_path {}".format(n_train, n_cal, train_cal_raw_path,
+                                                                         train_data_path, cal_data_path, scaler_path)
 
-                            # if generate_data:
-                                # print("generating data...")
-                                # if os.system(data_generation_command)==256:
-                                #     return
-                                # commands.append(data_generation_command)
-                            classifier_path = os.path.join(exp_dir, exp_identity_string + "_classifier.pkl")
-                            if classifier_type == "LR":
-                                train_classifier_command = "python ./src/train_LR.py --Z_indices {} --train_data_path {} --cal_data_path {} --lbd {} " \
-                                                           "--noise_ratio_maj {} --noise_ratio_min {} " \
-                                                           "--classifier_path {}".format("_".join([str(index) for index in Z_indices]), train_data_path, cal_data_path, lbd, noise_ratio,
-                                                                                         noise_ratio, classifier_path)
-                            else:
-                                raise ValueError("Classifier {} not supported".format(classifier_type))
+
+                        classifier_path = os.path.join(exp_dir, exp_identity_string + "_classifier.pkl")
+                        if classifier_type == "LR":
+                            train_classifier_command = "python ./src/train_LR.py --Z_indices {} --train_data_path {} --cal_data_path {} --lbd {} " \
+                                                       "--classifier_path {}".format("_".join([str(index) for index in Z_indices]), train_data_path, cal_data_path, lbd,
+                                                                                     classifier_path)
+                        else:
+                            raise ValueError("Classifier {} not supported".format(classifier_type))
 
 
 
-                            exp_commands = [data_generation_command, train_classifier_command]
-                            # exp_commands = []
-                            for umb_num_bin in umb_num_bins:
-                                umb_result_path = os.path.join(exp_dir, exp_identity_string +
-                                                               "_umb_{}_result.pkl".format(umb_num_bin))
-                                umb_path = os.path.join(exp_dir, exp_identity_string + "_umb.pkl")
-                                umb_prediction_command = "python ./src/umb_ss.py --Z_indices {} --cal_data_path {} " \
-                                                         "--test_raw_path {} --classifier_path {} --umb_path {} --result_path {} --k {}" \
-                                                         " --m {} --B {} " \
-                                                         "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
-                                                                                   classifier_path, umb_path, umb_result_path, k, n_test,
-                                                                                    umb_num_bin, scaler_path,n_runs_test)
-                                exp_commands.append(umb_prediction_command)
+                        exp_commands = [data_generation_command, train_classifier_command]
+                        for umb_num_bin in umb_num_bins:
+                            umb_result_path = os.path.join(exp_dir, exp_identity_string +
+                                                           "_umb_{}_result.pkl".format(umb_num_bin))
+                            umb_path = os.path.join(exp_dir, exp_identity_string + "_umb.pkl")
+                            umb_prediction_command = "python ./src/umb.py --Z_indices {} --cal_data_path {} " \
+                                                     "--test_raw_path {} --classifier_path {} --umb_path {} --result_path {} --k {}" \
+                                                     " --m {} --B {} " \
+                                                     "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
+                                                                               classifier_path, umb_path, umb_result_path, k, n_test,
+                                                                                umb_num_bin, scaler_path,n_runs_test)
+                            exp_commands.append(umb_prediction_command)
 
 
 
-                                wgm_path = os.path.join(exp_dir, exp_identity_string + "_wgm.pkl")
-                                wgm_result_path = os.path.join(exp_dir, exp_identity_string + "_wgm_{}_result.pkl".format(umb_num_bin))
-                                wgm_command = "python ./src/wg_monotone.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
-                                              " --wgm_path {} --result_path {} --k {} --m {}  --B {} " \
-                                              "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]),cal_data_path, test_raw_path, classifier_path, wgm_path,
-                                                                        wgm_result_path, k, n_test,umb_num_bin, scaler_path,n_runs_test)
-                                exp_commands.append(wgm_command)
-                                # print("training wgm starting from umb with {} bins".format(umb_num_bin))
-                                # if os.system(wgm_command)==256:
-                                #     return
+                            wgm_path = os.path.join(exp_dir, exp_identity_string + "_wgm.pkl")
+                            wgm_result_path = os.path.join(exp_dir, exp_identity_string + "_wgm_{}_result.pkl".format(umb_num_bin))
+                            wgm_command = "python ./src/wg_monotone.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
+                                          " --wgm_path {} --result_path {} --k {} --m {}  --B {} " \
+                                          "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]),cal_data_path, test_raw_path, classifier_path, wgm_path,
+                                                                    wgm_result_path, k, n_test,umb_num_bin, scaler_path,n_runs_test)
+                            exp_commands.append(wgm_command)
 
-                                wgc_path = os.path.join(exp_dir, exp_identity_string + "_wgc.pkl")
-                                wgc_result_path = os.path.join(exp_dir,
-                                                               exp_identity_string + "_wgc_{}_result.pkl".format(
-                                                                   umb_num_bin))
-                                wgc_command = "python ./src/wg_calibrated.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
-                                              " --wgc_path {} --result_path {} --k {} --m {}  --B {} " \
-                                              "--scaler_path {} --n_runs_test {}".format(
-                                    "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
-                                    classifier_path, wgc_path,
-                                    wgc_result_path, k, n_test, umb_num_bin, scaler_path, n_runs_test)
-                                exp_commands.append(wgc_command)
 
-                                pav_path = os.path.join(exp_dir, exp_identity_string + "_pav.pkl")
-                                pav_result_path = os.path.join(exp_dir,
-                                                               exp_identity_string + "_pav_{}_result.pkl".format(
-                                                                   umb_num_bin))
-                                pav_command = "python ./src/pav.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
-                                              " --pav_path {} --result_path {} --k {} --m {}  --B {} " \
-                                              "--scaler_path {} --n_runs_test {}".format(
-                                    "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
-                                    classifier_path, pav_path,
-                                    pav_result_path, k, n_test, umb_num_bin, scaler_path,
-                                    n_runs_test)
-                                exp_commands.append(pav_command)
+                            wgc_path = os.path.join(exp_dir, exp_identity_string + "_wgc.pkl")
+                            wgc_result_path = os.path.join(exp_dir,
+                                                           exp_identity_string + "_wgc_{}_result.pkl".format(
+                                                               umb_num_bin))
+                            wgc_command = "python ./src/wg_calibrated.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
+                                          " --wgc_path {} --result_path {} --k {} --m {}  --B {} " \
+                                          "--scaler_path {} --n_runs_test {}".format(
+                                "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
+                                classifier_path, wgc_path,
+                                wgc_result_path, k, n_test, umb_num_bin, scaler_path, n_runs_test)
+                            exp_commands.append(wgc_command)
 
-                            commands.append(exp_commands)
+                            pav_path = os.path.join(exp_dir, exp_identity_string + "_pav.pkl")
+                            pav_result_path = os.path.join(exp_dir,
+                                                           exp_identity_string + "_pav_{}_result.pkl".format(
+                                                               umb_num_bin))
+                            pav_command = "python ./src/pav.py --Z_indices {} --cal_data_path {} --test_raw_path {} --classifier_path {}" \
+                                          " --pav_path {} --result_path {} --k {} --m {}  --B {} " \
+                                          "--scaler_path {} --n_runs_test {}".format(
+                                "_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
+                                classifier_path, pav_path,
+                                pav_result_path, k, n_test, umb_num_bin, scaler_path,
+                                n_runs_test)
+                            exp_commands.append(pav_command)
+
+                        commands.append(exp_commands)
     return commands
 
 
 
 def generate_commands_discrimination(exp_dir, Z, n_trains, n_cals, n_test, lbds, runs, n_runs_test, k, classifier_type,
-                      umb_num_bins, train_cal_raw_path, test_raw_path, noise_ratios=[-1]):
+                      umb_num_bins, train_cal_raw_path, test_raw_path):
     """
     generate a list of commands from the experiment setup
     """
     commands = []
     for Z_indices in Z:
         for n_train in n_trains:
-            for noise_ratio in noise_ratios:
-                for n_cal in n_cals:
-                    for lbd in lbds:
-                        for run in runs:
-                            exp_identity_string = "_".join(["_".join([str(index) for index in Z_indices]), str(n_train), str(noise_ratio), str(n_cal), lbd, str(run)])
-                            print("adding Experiment: " + exp_identity_string)
-                            train_data_path = os.path.join(exp_dir, exp_identity_string + "_train_data.pkl")
-                            cal_data_path = os.path.join(exp_dir, exp_identity_string + "_cal_data.pkl")
-                            scaler_path = os.path.join(exp_dir, exp_identity_string + "_scaler.pkl")
-                            data_generation_command = "python ./scripts/generate_data.py --n_train {} --n_cal {} " \
-                                                      "--train_cal_raw_path {} --train_data_path {} --cal_data_path {} " \
-                                                      "--scaler_path {}".format(n_train, n_cal, train_cal_raw_path,
-                                                                             train_data_path, cal_data_path, scaler_path)
+            for n_cal in n_cals:
+                for lbd in lbds:
+                    for run in runs:
+                        exp_identity_string = "_".join(["_".join([str(index) for index in Z_indices]), str(n_train), str(n_cal), lbd, str(run)])
+                        print("adding Experiment: " + exp_identity_string)
+                        train_data_path = os.path.join(exp_dir, exp_identity_string + "_train_data.pkl")
+                        cal_data_path = os.path.join(exp_dir, exp_identity_string + "_cal_data.pkl")
+                        scaler_path = os.path.join(exp_dir, exp_identity_string + "_scaler.pkl")
+                        data_generation_command = "python ./scripts/generate_data.py --n_train {} --n_cal {} " \
+                                                  "--train_cal_raw_path {} --train_data_path {} --cal_data_path {} " \
+                                                  "--scaler_path {}".format(n_train, n_cal, train_cal_raw_path,
+                                                                         train_data_path, cal_data_path, scaler_path)
 
-                            classifier_path = os.path.join(exp_dir, exp_identity_string + "_classifier.pkl")
-                            if classifier_type == "LR":
-                                train_classifier_command = "python ./src/train_LR.py --Z_indices {} --train_data_path {} --cal_data_path {} --lbd {} " \
-                                                           "--noise_ratio_maj {} --noise_ratio_min {} " \
-                                                           "--classifier_path {}".format("_".join([str(index) for index in Z_indices]), train_data_path, cal_data_path, lbd, noise_ratio,
-                                                                                         noise_ratio, classifier_path)
-                            else:
-                                raise ValueError("Classifier {} not supported".format(classifier_type))
+                        classifier_path = os.path.join(exp_dir, exp_identity_string + "_classifier.pkl")
+                        if classifier_type == "LR":
+                            train_classifier_command = "python ./src/train_LR.py --Z_indices {} --train_data_path {} --cal_data_path {} --lbd {} " \
+                                                       "--classifier_path {}".format("_".join([str(index) for index in Z_indices]), train_data_path, cal_data_path, lbd,
+                                                                                     classifier_path)
+                        else:
+                            raise ValueError("Classifier {} not supported".format(classifier_type))
 
 
-                            exp_commands = [data_generation_command, train_classifier_command]
-                            # exp_commands = []
-                            for umb_num_bin in umb_num_bins:
-                                umb_result_path = os.path.join(exp_dir, exp_identity_string +
-                                                               "_umb_{}_result.pkl".format(umb_num_bin))
-                                umb_path = os.path.join(exp_dir, exp_identity_string + "_umb.pkl")
-                                umb_prediction_command = "python ./src/umb_ss.py --Z_indices {} --cal_data_path {} " \
-                                                         "--test_raw_path {} --classifier_path {} --umb_path {} --result_path {} --k {}" \
-                                                         " --m {} --B {} " \
-                                                         "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
-                                                                                   classifier_path, umb_path, umb_result_path, k, n_test,
-                                                                                    umb_num_bin, scaler_path,n_runs_test)
-                                exp_commands.append(umb_prediction_command)
+                        exp_commands = [data_generation_command, train_classifier_command]
+                        for umb_num_bin in umb_num_bins:
+                            umb_result_path = os.path.join(exp_dir, exp_identity_string +
+                                                           "_umb_{}_result.pkl".format(umb_num_bin))
+                            umb_path = os.path.join(exp_dir, exp_identity_string + "_umb.pkl")
+                            umb_prediction_command = "python ./src/umb.py --Z_indices {} --cal_data_path {} " \
+                                                     "--test_raw_path {} --classifier_path {} --umb_path {} --result_path {} --k {}" \
+                                                     " --m {} --B {} " \
+                                                     "--scaler_path {} --n_runs_test {}".format("_".join([str(index) for index in Z_indices]), cal_data_path, test_raw_path,
+                                                                               classifier_path, umb_path, umb_result_path, k, n_test,
+                                                                                umb_num_bin, scaler_path,n_runs_test)
+                            exp_commands.append(umb_prediction_command)
 
-                            commands.append(exp_commands)
+                        commands.append(exp_commands)
     return commands
 
 
@@ -185,60 +173,6 @@ def submit_commands(exp_token, exp_dir, split_size, commands, submit):
         if submit:
             os.system(submission_command)
     return
-
-
-def satisfy_ratio(X, y, q_ratio):
-    index_q = []
-    index_uq = []
-    for (i, label) in enumerate(y):
-        if label:
-            index_q.append(i)
-        else:
-            index_uq.append(i)
-    X_q = X[index_q, :]
-    y_q = y[index_q]
-    X_uq = X[index_uq, :]
-    y_uq = y[index_uq]
-    n_q = y_q.size
-    n_uq = y_uq.size
-    if (n_q * 1.) / (n_q + n_uq) > q_ratio:
-        n_q = int(n_uq * q_ratio / (1 - q_ratio))
-        X_q, y_q = shuffle(X_q, y_q)
-        X_q, y_q = X_q[:n_q], y_q[:n_q]
-    else:
-        n_uq = int(n_q * (1 - q_ratio) / q_ratio)
-        X_uq, y_uq = shuffle(X_uq, y_uq)
-        X_uq, y_uq = X_uq[:n_uq], y_uq[:n_uq]
-    X, y = np.concatenate((X_q, X_uq), axis=0), np.concatenate((y_q, y_uq))
-    X, y = shuffle(X, y)
-    return X, y
-
-
-def satisfy_rho(X, y):
-    index_q = []
-    index_uq = []
-    for (i, label) in enumerate(y):
-        if label:
-            index_q.append(i)
-        else:
-            index_uq.append(i)
-    X_q = X[index_q, :]
-    y_q = y[index_q]
-    X_uq = X[index_uq, :]
-    y_uq = y[index_uq]
-    n_q = y_q.size
-    n_uq = y_uq.size
-    if (n_q * 1.) / (n_q + n_uq) > q_ratio:
-        n_q = int(n_uq * q_ratio / (1 - q_ratio))
-        X_q, y_q = shuffle(X_q, y_q)
-        X_q, y_q = X_q[:n_q], y_q[:n_q]
-    else:
-        n_uq = int(n_q * (1 - q_ratio) / q_ratio)
-        X_uq, y_uq = shuffle(X_uq, y_uq)
-        X_uq, y_uq = X_uq[:n_uq], y_uq[:n_uq]
-    X, y = np.concatenate((X_q, X_uq), axis=0), np.concatenate((y_q, y_uq))
-    X, y = shuffle(X, y)
-    return X, y
 
 
 def transform_except_last_dim(data, scaler):

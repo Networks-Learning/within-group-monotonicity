@@ -1,10 +1,10 @@
 """
-Recalibrates a given calibrated classifier so that it is within-group monotone.
+Implementation of the partitioining framework described in Section 3 of the paper.
 """
 import argparse
 import pickle
 import numpy as np
-from umb_ss import UMBSelect
+from umb import UMBSelect
 from utils import *
 from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss,f1_score
 
@@ -24,11 +24,6 @@ class BinPartition(UMBSelect):
         self.recal_num_in_bin = None
         self.recal_bin_values = None
         self.recal_bin_rho = None
-        # self.num_examples = None
-        # self.epsilon = None
-        # self.b = None
-        # self.theta = None
-        # self.num_groups = None
         self.recal_group_num_positives_in_bin = None
         self.recal_group_num_in_bin = None
         self.recal_group_rho = None
@@ -51,17 +46,6 @@ class BinPartition(UMBSelect):
 
     def recalibrate(self):
         raise Exception ("Not Implemented")
-
-
-    # def get_recal_upper_edges(self):
-    #     assert (self.recal_n_bins is not None and self.optimal_partition is not None), "not yet recalibrated"
-    #     recal_bin_upper_edges = []
-    #     for i in range(len(self.optimal_partition)):
-    #         recal_bin_upper_edges.append(self.bin_upper_edges[self.optimal_partition[i]-1])
-    #
-    #     assert len(recal_bin_upper_edges) == len(self.optimal_partition)
-    #     return np.array(recal_bin_upper_edges)
-
 
     def get_recal_bin_points(self, scores):
         assert self.recal_n_bins is not None and self.optimal_partition is not None
@@ -104,8 +88,6 @@ class BinPartition(UMBSelect):
                             break
 
     def sanity_check(self):
-        # positive_group_rho = np.greater(self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
-        # self.recal_discriminated_against = np.zeros(shape=self.recal_group_num_in_bin.shape)
 
         for i in range(self.recal_n_bins):
             assert (np.sum(self.recal_group_rho[i] * self.recal_group_bin_values[i]) - self.recal_bin_values[i] < 1e-2)
@@ -116,10 +98,6 @@ class BinPartition(UMBSelect):
             for j in range(self.num_groups):
                 if i < self.recal_n_bins - 1:
                     assert (self.recal_bin_values[i] <= self.recal_bin_values[i + 1])
-                    # if positive_group_rho[i][j]:
-                    #     self.recal_discriminated_against[i][j] = np.greater(
-                    #         self.recal_group_num_positives_in_bin[i][j] * self.recal_group_num_in_bin[i + 1][j],
-                    #         self.recal_group_num_positives_in_bin[i + 1][j] * self.recal_group_num_in_bin[i][j])
 
                 if self.recal_group_num_in_bin[i][j] == 0:
                     assert self.recal_group_rho[i][j] == 0
@@ -140,8 +118,6 @@ class BinPartition(UMBSelect):
         recal_theta = np.ones(len(ks))
         for k_idx,k in enumerate(ks):
             recal_sum_scores = 0
-            # recal_b = 0  # bin on the threshold
-            # recal_theta = 1.
             for i in reversed(range(self.recal_n_bins)):
                 recal_sum_scores += m * (self.recal_num_positives_in_bin[i] / self.num_examples - self.epsilon)
                 if recal_sum_scores >= k:
@@ -192,24 +168,8 @@ class BinPartition(UMBSelect):
         test_bins,_,_,_,_ = self.get_recal_bin_points(scores)
         y_prob = self.recal_bin_values[test_bins]
         fpr, tpr, _ = roc_curve(y,y_prob)
+        return fpr, tpr
 
-        test_group_assignment = self.group_points(X).astype(bool)
-
-        # group_fpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
-        # group_tpr = np.zeros(shape = (self.num_groups,self.recal_n_bins+1))
-        # #
-        # for j in range(self.num_groups):
-        #     group_fpr[j], group_tpr[j], thresholds = roc_curve(y[test_group_assignment[j]],y_prob[test_group_assignment[j]],drop_intermediate=False)
-            # print(f"{thresholds,self.recal_bin_values}")
-        return fpr, tpr#, group_fpr, group_tpr
-
-    # def recal_get_accuracy(self,selection,y):
-    #     # assert (self.recal_bin_values is not None and self.recal_n_bins is not None), "Not yet recalibrated"
-    #     # scores = scores.squeeze()
-    #     # test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
-    #     # y_prob = self.recal_bin_values[test_bins]
-    #     # y_pred = y_prob>0.5
-    #     return accuracy_score(y,selection),f1_score(y,selection)
 
     def recal_get_group_accuracy(self,X, scores, y):
         scores = scores.squeeze()
@@ -254,11 +214,6 @@ class BinPartition(UMBSelect):
         return np.average(np.abs(prob_true - prob_pred))
 
     def recal_get_sharpness(self, scores,y):
-        # sorted_indexes = np.argsort(scores)
-        # scores = scores[sorted_indexes]
-        # split scores into groups of approx equal size
-        # groups = np.array_split(sorted_indexes, self.recal_n_bins)
-        # split_size = int(scores.shape[0]/self.recal_n_bins)
         scores = scores.squeeze()
         # assign test data to bins
         test_bins, _, _, _, _ = self.get_recal_bin_points(scores)
@@ -267,5 +222,4 @@ class BinPartition(UMBSelect):
         for i in range(self.recal_n_bins):
             in_bin_i = (test_bins==i)
             var[i] = np.var(y[in_bin_i])
-
         return np.average(var)

@@ -1,5 +1,5 @@
 import pickle
-params = {'legend.fontsize': 27,#24,
+params = {'legend.fontsize': 27,
           'xtick.labelsize': 24,
           'ytick.labelsize': 24,
           'lines.markersize': 15,
@@ -11,7 +11,6 @@ params = {'legend.fontsize': 27,#24,
           'axes.titlesize':24,
 
           }
-# 'figure.autolayout': True
 
 line_width = 3.0
 transparency = 0.1
@@ -22,7 +21,6 @@ fig_width = 14
 fig_height = 5
 
 Z_labels = {
-        # 2: {0:"Married",1:"Widowed",2:"Divorced",3:"Separated",4:"Never married"},
         2: {0:"Married or Separated", 1: "Never married", "feature":"Marital status (Z)", "num_groups":2},
         4: {0: "With a disability", 1: "Without a disability", "feature": "Disability record (Z)","num_groups":2,"color":"orchid", "marker":"v"},
         6: {0:"Born in the US", 1:"Born in Unincorporated US", 2:"Born abroad", 3:"Not a US citizen", "feature":"Citizenship status (Z)", "num_groups":4, "color":"deepskyblue","marker":"D"},

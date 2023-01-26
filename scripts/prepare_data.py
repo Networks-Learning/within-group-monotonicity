@@ -1,5 +1,5 @@
 """
-Prepare data to satisfy the ratio between qualified and unqualified
+Prepare data
 """
 import argparse
 import pickle
@@ -7,7 +7,6 @@ from sklearn.utils import shuffle
 import numpy as np
 
 from folktables import ACSDataSource, ACSEmployment
-from exp_utils import satisfy_ratio
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -31,7 +30,6 @@ if __name__ == "__main__":
     print(type(y))
     print(y[0])
 
-    # X, y = satisfy_ratio(X, y, args.q_ratio)
     test_raw_size = int(y.size * args.test_ratio)
     print(y.shape)
     print(type(y))

@@ -46,7 +46,7 @@ if __name__ == "__main__":
             algorithms.append("wgc")
 
 
-            metrics = ["n_bins", "num_selected","discriminated_against","group_num_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
+            metrics = ["n_bins", "num_selected","discriminated_against","group_num_in_bin"]
 
             the_n_cal = n_cals[0]
 
@@ -62,22 +62,13 @@ if __name__ == "__main__":
                 for run in runs:
                     for algorithm in algorithms:
                         exp_identity_string = "_".join(
-                            [Z_str, str(n_train), str(noise_ratio), str(the_n_cal), lbd, str(run)])
+                            [Z_str, str(n_train), str(the_n_cal), lbd, str(run)])
                         result_path = os.path.join(exp_dir,
                                                    exp_identity_string + "_{}_{}_result.pkl".format(algorithm,
                                                                                                     umb_num_bin))
                         collect_results_quantitative_exp(result_path, umb_num_bin, algorithm, results, metrics,k_idx)
 
 
-
-            # for umb_num_bin in umb_num_bins:
-            #     for run in runs:
-            #         for algorithm in algorithms:
-            #             assert(results[umb_num_bin][algorithm]["num_selected"]["values"][run].shape[0]==len(ks))
-            #             results[umb_num_bin][algorithm]["num_selected"]["values"][run] = results[umb_num_bin][algorithm]["num_selected"]["values"][run][k_idx]
-                        # results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run] = np.sum(np.where(results[umb_num_bin][algorithm]["discriminated_against"]["values"][run],\
-                        #                                                                                results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run],\
-                        #                                                                                 np.zeros(results[umb_num_bin][algorithm]["group_num_in_bin"]["values"][run].shape)))/the_n_cal
 
             for umb_num_bin in umb_num_bins:
                 for run in runs:
@@ -127,38 +118,22 @@ if __name__ == "__main__":
                                              color=algorithm_colors[
                                                  "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
-                    # axs[z * 2 + idx].errorbar(umb_num_bins, mean_algorithm,
-                    #                        std_algorithm,
-                    #                        color=algorithm_colors[
-                    #                            "{}_{}".format(algorithm, str(umb_num_bins[0]))])
 
                     axs.set_xticks(umb_num_bins)
 
-                    # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
-                    # title.set_position([0.5,0.8])
-                    # axs[row][z].set_yticks([])
                     axs.set_ylabel(metric_labels[metric])
                     axs.set_xlabel(xlabels["n_bins"])
                     # axs.set_ylim(-0.01, 0.28)
-                    if Z_indices[0] in [6,15]:
-                        if metric=="n_bins":
-                            axs.set_ylim(2.4, 18)
-                            locator = ticker.MultipleLocator(4)
-                            locator.tick_values(4, 15)
-                        if metric=="num_selected":
-                            axs.set_ylim(5.51, 7.7)
-                            locator = ticker.MultipleLocator(0.5)
-                            locator.tick_values(6, 7.5)
-                        axs.yaxis.set_major_locator(locator)
-
-                # fig_legend.legend(handles=handles,loc='center', ncol=4)
-                # fig_legend.savefig('./plots/legend_{}.pdf'.format(metric))
-            # plt.legend(handles=handles,loc='upper center', bbox_to_anchor=(0.52, 1.02), ncol=4)
-
-            # plt.figtext(x=0.21, y=0.82, s=Z_labels[Z[0][0]]["feature"], fontsize=font_size)
-            # plt.figtext(x=0.73, y=0.82, s=Z_labels[Z[1][0]]["feature"], fontsize=font_size)
-
-            # axs[0].legend( loc='center right', bbox_to_anchor=(-0.12, 0.5), ncol=1)
+                    # if Z_indices[0] in [6,15]:
+                    #     if metric=="n_bins":
+                    #         axs.set_ylim(2.4, 18)
+                    #         locator = ticker.MultipleLocator(4)
+                    #         locator.tick_values(4, 15)
+                    #     if metric=="num_selected":
+                    #         axs.set_ylim(5.51, 7.7)
+                    #         locator = ticker.MultipleLocator(0.5)
+                    #         locator.tick_values(6, 7.5)
+                    #     axs.yaxis.set_major_locator(locator)
 
                 plt.tight_layout(rect=[0, 0, 1, 1])
                 fig.savefig("./plots/exp_bins_{}_{}_{}.pdf".format(Z_indices[0],str(k),metric), format="pdf")
