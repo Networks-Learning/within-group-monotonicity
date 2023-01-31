@@ -4,6 +4,7 @@ Run the experiments
 import os
 from exp_utils import generate_commands, submit_commands
 from params_exp_bins import *
+from os.path import exists
 if __name__ == "__main__":
 
     if not os.path.isdir(exp_dir):
@@ -12,7 +13,7 @@ if __name__ == "__main__":
         os.mkdir("./data")
     train_cal_raw_path = "./data/data_normal_train_cal_raw.pkl"
     test_raw_path = "./data/data_normal_test_raw.pkl"
-    if prepare_data:
+    if not exists(train_cal_raw_path) or not exists(test_raw_path):
         print("preparing data...")
         prepare_data_command = "python ./scripts/prepare_data.py --train_cal_raw_path {} --test_raw_path {} ".format(train_cal_raw_path, test_raw_path)
         os.system(prepare_data_command)

@@ -1,5 +1,5 @@
 exp_token = "cz"
-exp_dir = "./exp_violations"
+exp_dir = "./exp_bins"
 test_ratio = "0.5"
 prepare_data = False
 submit = False

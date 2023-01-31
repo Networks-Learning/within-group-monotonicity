@@ -1,7 +1,7 @@
 exp_token = "cz"
 exp_dir = "./exp_bins"
 test_ratio = "0.5"
-prepare_data = False
+# prepare_data = False
 submit = False
 split_size = 1000
 n_test = 100
