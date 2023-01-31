@@ -11,7 +11,7 @@ plt.rc('font', family='serif')
 
 
 if __name__ == "__main__":
-    from params_exp_bins import *
+    from params_exp_discrimination import *
     from matplotlib.ticker import StrMethodFormatter
 
     algorithm_labels = {}
@@ -43,11 +43,11 @@ if __name__ == "__main__":
     metrics = ["discriminated_against","group_num_in_bin","bin_values","group_num_positives_in_bin"]#,"log_loss","accuracy"]  #"alpha","accuracy"
 
     the_n_cal = n_cals[0]
-    umb_num_bin =15
-    Z=[[6],[15]]
-    fig, axs = plt.subplots(1, 2)
-    fig.set_size_inches(fig_width, fig_height +0.5)
+    umb_num_bin = umb_num_bins[0]
+
     for z, Z_indices in enumerate(Z):
+        fig, axs = plt.subplots(1, 1)
+        fig.set_size_inches(fig_width / 2, fig_height + 0.5)
 
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
         for group in range(num_groups):
@@ -97,32 +97,31 @@ if __name__ == "__main__":
         mean_group_bin_value = mean_group_bin_value[args_sored]
 
         for group in range(num_groups):
-            line = axs[z].bar(group, mean_algorithm[group],width=0.2,
+            line = axs.bar(group, mean_algorithm[group],width=0.2,
                                     linewidth=line_width,
                                     label=Z_labels[Z_indices[0]][args_sored[group]],
                                     color=group_colors[args_sored[group]],
                                     )#marker=Z_labels[Z_indices[0]]["marker"]
             handles.append(line)
             # if metric=="n_bins":
-            axs[z].errorbar(group, mean_algorithm[group], yerr=std_algorithm[group],
+            axs.errorbar(group, mean_algorithm[group], yerr=std_algorithm[group],
                     label=Z_labels[Z_indices[0]][args_sored[group]],
                     color='lightslategrey',
                     )  # marker=Z_labels[Z_indices[0]]["marker"]
 
-        axs[z].set_xticks(range(num_groups))
-        axs[z].set_xticklabels([str(round(float(label), 2)) for label in mean_group_bin_value])
+        axs.set_xticks(range(num_groups))
+        axs.set_xticklabels([str(round(float(label), 2)) for label in mean_group_bin_value])
 
         # title = axs[0][z*2].set_title(Z_labels[Z_indices[0]]["feature"],y=1,x=1)
         # title.set_position([0.5,0.8])
         # axs[row][z].set_yticks([])
-        if z==0:
-            axs[z].set_ylabel(r"$p_{d|z}$",fontsize=34)
-        axs[z].set_xlabel(xlabels["group_rho"])
-        legend = axs[z].legend(handles=handles,fontsize=17,title = Z_labels[Z_indices[0]]["feature"])
+        axs.set_ylabel(r"$p_{d|z}$",fontsize=34)
+        axs.set_xlabel(xlabels["group_rho"])
+        legend = axs.legend(handles=handles,fontsize=17,title = Z_labels[Z_indices[0]]["feature"])
         plt.setp(legend.get_title(), fontsize=18)
-        axs[z].set_ylim(0,0.35)
-        axs[z].yaxis.set_major_locator(ticker.MultipleLocator(0.1))
+        # axs.set_ylim(0,0.35)
+        axs.yaxis.set_major_locator(ticker.MultipleLocator(0.1))
 
 
-    plt.tight_layout(rect=[0, 0, 1, 1])
-    fig.savefig("./plots/exp_group_discrimination_{}.pdf".format(Z[0][0]), format="pdf")
+        plt.tight_layout(rect=[0, 0, 1, 1])
+        fig.savefig("./plots/exp_group_discrimination_{}.pdf".format(Z[z][0]), format="pdf")

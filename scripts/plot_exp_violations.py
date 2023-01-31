@@ -34,7 +34,7 @@ if __name__ == "__main__":
 
     the_run = 0
     the_n_cal = n_cals[0]  # for one calibration set
-    the_umb_num_bin = 15
+    the_umb_num_bin = umb_num_bins[0]
 
     algorithms = []
     algorithms.append("umb_" + str(the_umb_num_bin))
