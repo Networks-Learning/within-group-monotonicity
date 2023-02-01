@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -6,9 +7,9 @@ from sklearn import preprocessing as p
 import numpy as np
 import os
 from plot_constants import *
+
 plt.rcParams.update(params)
 plt.rc('font', family='serif')
-
 
 if __name__ == "__main__":
     from params_exp_violations import *
@@ -31,7 +32,6 @@ if __name__ == "__main__":
         algorithm_markers["wgc_" + str(umb_num_bin)] = 9
         algorithm_markers["pav_" + str(umb_num_bin)] = 11
 
-
     the_run = 0
     the_n_cal = n_cals[0]  # for one calibration set
     the_umb_num_bin = umb_num_bins[0]
@@ -42,9 +42,7 @@ if __name__ == "__main__":
     algorithms.append("pav_" + str(the_umb_num_bin))
     algorithms.append("wgc_" + str(the_umb_num_bin))
 
-
-
-    for z,Z_indices in enumerate(Z):
+    for z, Z_indices in enumerate(Z):
         Z_str = "_".join([str(index) for index in Z_indices])  # for one set of groups
         num_groups = Z_labels[Z_indices[0]]["num_groups"]
 
@@ -56,11 +54,10 @@ if __name__ == "__main__":
         results = {}
         num_bins = {}
 
-
-        metrics = ["group_bin_values", "bin_values", "bin_rho","discriminated_against"]
+        metrics = ["group_bin_values", "bin_values", "bin_rho", "discriminated_against"]
 
         handles = []
-        for row,algorithm in enumerate(algorithms):
+        for row, algorithm in enumerate(algorithms):
             exp_identity_string = "_".join([Z_str, str(n_train), str(the_n_cal), lbd, str(the_run)])
             result_path = os.path.join(exp_dir, exp_identity_string + "_{}_result.pkl".format(algorithm))
 
@@ -71,8 +68,8 @@ if __name__ == "__main__":
             if algorithm.startswith("wgc"):
                 alpha = result["alpha"]
 
-            discrimination_prob = np.sum(np.where(result["discriminated_against"], result["group_num_in_bin"],np.zeros(result["group_num_in_bin"].shape)))
-
+            discrimination_prob = np.sum(np.where(result["discriminated_against"], result["group_num_in_bin"],
+                                                  np.zeros(result["group_num_in_bin"].shape)))
 
             for bin in range(num_bins):
                 results[bin] = {}
@@ -86,48 +83,50 @@ if __name__ == "__main__":
                     results[bin][metric]["values"] = result[metric][bin]
 
             mean_algorithm = np.array([results[bin]["group_bin_values"]["values"] for bin
-                                                    in range(num_bins)])
+                                       in range(num_bins)])
 
             bin_value_algorithm = np.array([results[bin]["bin_values"]["values"] for bin
-                                        in range(num_bins)])
+                                            in range(num_bins)])
 
             disc_algorithm = np.array([results[bin]["discriminated_against"]["values"] for bin
-                                            in range(num_bins)])
-            rho_algorithm = np.array([results[bin]["bin_rho"]["values"] for bin
                                        in range(num_bins)])
+            rho_algorithm = np.array([results[bin]["bin_rho"]["values"] for bin
+                                      in range(num_bins)])
 
             import matplotlib.colors as mcolors
 
             for i in range(num_groups):
                 if algorithm.startswith("wgc"):
-                    axs[row].text(0.05,0.85,s=r"$\epsilon = $" + r" {}".format(alpha),fontsize=font_size,transform=axs[row].transAxes)
+                    axs[row].text(0.05, 0.85, s=r"$\epsilon = $" + r" {}".format(alpha), fontsize=font_size,
+                                  transform=axs[row].transAxes)
 
                 # axs[row].text(0.05,0.85,s=r"{}".format(discrimination_prob),fontsize=font_size,transform=axs[row].transAxes)
 
-                mean = mean_algorithm[:,i]
+                mean = mean_algorithm[:, i]
                 # std = std_algorithm[:,i]
                 # alpha = alpha_algorithm[:,i]
-                disc = disc_algorithm[:,i]
+                disc = disc_algorithm[:, i]
                 # rgba_colors = np.zeros(shape=(alpha.shape[0],4))
                 # rgba_colors[:,:3] = mcolors.to_rgb(group_colors[i])
                 # rgba_colors[:,3] = [1 if dis else 0.7 for dis in disc]
 
                 legend_bars = axs[row].bar(np.arange(num_bins) - ((i - 1) * 0.2), mean, align='edge',
-                                linewidth=disc, width=0.1, color=group_colors[i],
-                                label=Z_labels[Z_indices[0]][i])
+                                           linewidth=disc, width=0.1, color=group_colors[i],
+                                           label=Z_labels[Z_indices[0]][i])
                 handles.append(legend_bars)
 
-                bars = axs[row].bar(np.arange(num_bins)-((i-1)*0.2), mean,align='edge',
-                            linewidth=disc,width=0.1,edgecolor='black',color=group_colors[i])
+                bars = axs[row].bar(np.arange(num_bins) - ((i - 1) * 0.2), mean, align='edge',
+                                    linewidth=disc, width=0.1, edgecolor='black', color=group_colors[i])
 
-                if row==0:
+                if row == 0:
                     # legend = axs[row].legend(handles = handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),ncol=2, title = Z_labels[Z_indices[0]]["feature"])
                     # plt.setp(legend.get_title(), fontsize=params['legend.fontsize'])
-                    if Z_indices[0] in [6,15]:
+                    if Z_indices[0] in [6, 15]:
                         n_cols = 2
                     else:
                         n_cols = 4
-                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97), ncol=n_cols)
+                    legend = axs[row].legend(handles=handles, loc='lower center', bbox_to_anchor=(0.5, 0.97),
+                                             ncol=n_cols)
 
                 hatch = ['//' if dis else '' for dis in disc]
                 for bar, h in zip(bars, hatch):
@@ -143,7 +142,6 @@ if __name__ == "__main__":
             locator = ticker.MultipleLocator(0.25)
             locator.tick_values(0.25, 0.77)
             # axs.yaxis.set_major_locator(locator)
-
 
             axs[row].yaxis.set_major_locator(locator)
             if algorithm.startswith("umb"):
@@ -161,5 +159,4 @@ if __name__ == "__main__":
                 axs[row].set_xlabel(r'$\Pr(Y=1|f_{\mathcal{B}_{pav}}(X))$')
 
         plt.tight_layout(rect=[0, 0, 1, 1])
-        fig.savefig("./plots/exp_violations_{}_{}.pdf".format(Z_indices[0],'_'.join(algorithms)), format="pdf")
-
+        fig.savefig("./plots/exp_violations_{}_{}.pdf".format(Z_indices[0], '_'.join(algorithms)), format="pdf")

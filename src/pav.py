@@ -7,36 +7,39 @@ import numpy as np
 # from umb_ss import UMBSelect
 from partition import BinPartition
 from utils import *
-from sklearn.metrics import mean_squared_error,accuracy_score
+from sklearn.metrics import mean_squared_error, accuracy_score
+
 
 class PAV(BinPartition):
-    def __init__(self, n_bins, Z_indices, groups, Z_map,alpha):
-        super().__init__(n_bins, Z_indices, groups, Z_map,alpha)
+    def __init__(self, n_bins, Z_indices, groups, Z_map, alpha):
+        super().__init__(n_bins, Z_indices, groups, Z_map, alpha)
 
     def _find_potential_merges(self):
-        S = np.ones(shape=(self.n_bins,self.n_bins,self.n_bins))
-        for l in range(1,self.n_bins):
-            for r in range(l,self.n_bins):
-                lr_positives, lr_total, lr_group_positives, lr_group_total, lr_group_rho = self._get_merged_statistics(l,r)
+        S = np.ones(shape=(self.n_bins, self.n_bins, self.n_bins))
+        for l in range(1, self.n_bins):
+            for r in range(l, self.n_bins):
+                lr_positives, lr_total, lr_group_positives, lr_group_total, lr_group_rho = self._get_merged_statistics(
+                    l, r)
                 for k in range(l):
-                    kl_positives, kl_total, kl_group_positives, kl_group_total, kl_group_rho = self._get_merged_statistics(k, l-1)
-                    if np.where(np.logical_and(lr_group_rho,kl_group_rho), np.greater(kl_group_positives*lr_group_total,lr_group_positives * kl_group_total),\
-                                np.zeros(shape=kl_group_rho.shape)).any():  #can be adjacent
+                    kl_positives, kl_total, kl_group_positives, kl_group_total, kl_group_rho = self._get_merged_statistics(
+                        k, l - 1)
+                    if np.where(np.logical_and(lr_group_rho, kl_group_rho),
+                                np.greater(kl_group_positives * lr_group_total, lr_group_positives * kl_group_total), \
+                                np.zeros(shape=kl_group_rho.shape)).any():  # can be adjacent
                         S[l][r][k] = 0
         return S
 
-
     def recalibrate(self):
         S = self._find_potential_merges()
-        mid_point = np.repeat(-2,self.n_bins).reshape(self.n_bins)
+        mid_point = np.repeat(-2, self.n_bins).reshape(self.n_bins)
         mid_point[0] = -1
 
-        for r in range(1,self.n_bins):
-            l = r-1
-            while l>=0:
-                assert mid_point[l] != -2, f"{l,r}"
-                if not S[l+1,r,mid_point[l]+1]:
-                    if mid_point[l]!=-1:
+        for r in range(1, self.n_bins):
+            l = r - 1
+            while l >= 0:
+                assert mid_point[l] != -2, f"{l, r}"
+                if not S[l + 1, r, mid_point[l] + 1]:
+                    if mid_point[l] != -1:
                         l = mid_point[l]
                     else:
                         mid_point[r] = -1
@@ -47,44 +50,46 @@ class PAV(BinPartition):
 
         return mid_point
 
-
-    def get_optimal_partition(self,r):
+    def get_optimal_partition(self, r):
         assert (self.mid_point is not None), "not yet recalibrated"
-        if r==-1:
+        if r == -1:
             return []
 
-        assert(self.mid_point[r]!=-2)
-        return self.get_optimal_partition(self.mid_point[r]) + [self.mid_point[r]+1]
-
+        assert (self.mid_point[r] != -2)
+        return self.get_optimal_partition(self.mid_point[r]) + [self.mid_point[r] + 1]
 
     def fit(self, X_est, y_score, y, m):
 
-        #fit the umb
+        # fit the umb
         super().fit(X_est, y_score, y, m)
 
-        #recalibrate using algorithm 2
+        # recalibrate using algorithm 2
         self.mid_point = self.recalibrate()
 
-        #get optimal partition
-        self.optimal_partition = self.get_optimal_partition(self.mid_point[self.n_bins-1])
+        # get optimal partition
+        self.optimal_partition = self.get_optimal_partition(self.mid_point[self.n_bins - 1])
 
         self.recal_n_bins = len(self.optimal_partition)
 
-        #get new upper edges
-        recal_bin_assignment, self.recal_num_positives_in_bin, self.recal_num_in_bin, self.recal_group_num_positives_in_bin,\
+        # get new upper edges
+        recal_bin_assignment, self.recal_num_positives_in_bin, self.recal_num_in_bin, self.recal_group_num_positives_in_bin, \
         self.recal_group_num_in_bin = self.get_recal_bin_points(y_score)
 
         group_assignment = self.group_points(X_est)
-        assert np.sum([recal_bin_assignment==i for i in range(self.recal_n_bins)])==X_est.shape[0], f"{np.sum([recal_bin_assignment==i for i in range(self.recal_n_bins)]), X_est.shape[0]}"
+        assert np.sum([recal_bin_assignment == i for i in range(self.recal_n_bins)]) == X_est.shape[
+            0], f"{np.sum([recal_bin_assignment == i for i in range(self.recal_n_bins)]), X_est.shape[0]}"
         assert np.sum(group_assignment) == X_est.shape[0]
 
         self.recal_bin_rho = self.recal_num_in_bin / self.num_examples
         self.recal_bin_values = self.recal_num_positives_in_bin / self.recal_num_in_bin
 
-
-        positive_group_rho = np.greater(self.recal_group_num_in_bin,np.zeros(shape=self.recal_group_num_in_bin.shape))
-        self.recal_group_rho = np.where(positive_group_rho,(self.recal_group_num_in_bin) / (self.recal_num_in_bin)[:,np.newaxis],np.zeros(shape=self.recal_group_num_in_bin.shape))
-        self.recal_group_bin_values = np.where(positive_group_rho, self.recal_group_num_positives_in_bin / self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
+        positive_group_rho = np.greater(self.recal_group_num_in_bin, np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_group_rho = np.where(positive_group_rho,
+                                        (self.recal_group_num_in_bin) / (self.recal_num_in_bin)[:, np.newaxis],
+                                        np.zeros(shape=self.recal_group_num_in_bin.shape))
+        self.recal_group_bin_values = np.where(positive_group_rho,
+                                               self.recal_group_num_positives_in_bin / self.recal_group_num_in_bin,
+                                               np.zeros(shape=self.recal_group_num_in_bin.shape))
 
         self.find_discriminations()
         assert np.sum(self.recal_discriminated_against) == 0
@@ -93,7 +98,6 @@ class PAV(BinPartition):
 
         # find threshold bin and theta
         self.recal_b, self.recal_theta = self.get_recal_threshold(m)
-
 
 
 if __name__ == "__main__":
@@ -118,35 +122,37 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     Z_indices = [int(index) for index in args.Z_indices.split('_')]
-    def list_maker(val,n):
-        return [val]*n
+
+
+    def list_maker(val, n):
+        return [val] * n
+
+
     Z_map = {
-        15: [0] + [1] + list_maker(2,3) + list_maker(3,4),
-        1: list_maker(0,16)+list_maker(1,4)+list_maker(2,2)+list_maker(3,3),
-        0: list_maker(0,25) + list_maker(1,25) + list_maker(2,25) + list_maker(3,25),
-        14: [0,1],
-        4: [0,1],
-        6: [0,1,2,2,3],
-        2: [0,0,0,0,1]
+        15: [0] + [1] + list_maker(2, 3) + list_maker(3, 4),
+        1: list_maker(0, 16) + list_maker(1, 4) + list_maker(2, 2) + list_maker(3, 3),
+        0: list_maker(0, 25) + list_maker(1, 25) + list_maker(2, 25) + list_maker(3, 25),
+        14: [0, 1],
+        4: [0, 1],
+        6: [0, 1, 2, 2, 3],
+        2: [0, 0, 0, 0, 1]
     }
 
     with open(args.cal_data_path, 'rb') as f:
         X_cal_all_features, y_cal = pickle.load(f)
         available_features = np.setdiff1d(np.arange(X_cal_all_features.shape[1]), Z_indices)
-        X_cal = X_cal_all_features[:,available_features]
+        X_cal = X_cal_all_features[:, available_features]
 
     groups = np.unique(X_cal_all_features[:, Z_indices])
-
 
     with open(args.classifier_path, "rb") as f:
         classifier = pickle.load(f)
 
-
     n = y_cal.size
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    pav = PAV(args.B,Z_indices,groups,Z_map,alpha)
-    pav.fit(X_cal_all_features,scores_cal, y_cal, m)
+    pav = PAV(args.B, Z_indices, groups, Z_map, alpha)
+    pav.fit(X_cal_all_features, scores_cal, y_cal, m)
 
     # test
     with open(args.test_raw_path, "rb") as f:
@@ -170,13 +176,13 @@ if __name__ == "__main__":
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
         for k_idx, k in enumerate(ks):
-            test_selected = pav.recal_select(scores_test,k_idx)
+            test_selected = pav.recal_select(scores_test, k_idx)
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
             num_qualified[k_idx][i] = calculate_expected_qualified(test_selected, y_test, m)
 
     performance_metrics = {}
-    performance_metrics["num_qualified"] = np.mean(num_qualified,axis=1)
-    performance_metrics["num_selected"] = np.mean(num_selected,axis=1)
+    performance_metrics["num_qualified"] = np.mean(num_qualified, axis=1)
+    performance_metrics["num_selected"] = np.mean(num_selected, axis=1)
     assert (performance_metrics["num_qualified"].shape[0] == len(ks) and performance_metrics["num_selected"].shape[
         0] == len(ks))
 

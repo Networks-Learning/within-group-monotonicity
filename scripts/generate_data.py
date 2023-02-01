@@ -17,7 +17,6 @@ if __name__ == "__main__":
     parser.add_argument("--cal_data_path", type=str, help="the path for saving the calibration data")
     parser.add_argument("--scaler_path", type=str, help="the path for saving the scaler")
 
-
     args = parser.parse_args()
     n_train = args.n_train
     n_cal = args.n_cal

@@ -5,21 +5,24 @@ import argparse
 import pickle
 import numpy as np
 from utils import *
-from sklearn.metrics import mean_squared_error,accuracy_score,roc_curve, roc_auc_score,log_loss,f1_score,precision_score
-
+from sklearn.metrics import mean_squared_error, accuracy_score, roc_curve, roc_auc_score, log_loss, f1_score, \
+    precision_score
 
 import warnings
+
 warnings.filterwarnings(action='ignore',
                         category=RuntimeWarning)  # setting ignore as a parameter and further adding category
 
+
 class UMBSelect(object):
-    def __init__(self, n_bins, Z_indices, groups, Z_map,alpha):
+    def __init__(self, n_bins, Z_indices, groups, Z_map, alpha):
         # Hyper-parameters
         self.n_bins = n_bins
         self.groups = groups
         self.Z_indices = Z_indices
         self.Z_map = Z_map
-        self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[0]  # grouping based on values of the chosen feature, see Z_map
+        self.num_groups = np.unique(Z_map[Z_indices[0]]).shape[
+            0]  # grouping based on values of the chosen feature, see Z_map
         self.alpha = alpha
 
         # Parameters to be learned
@@ -41,7 +44,6 @@ class UMBSelect(object):
         # Internal variables
         self.fitted = False
 
-
     def _get_uniform_mass_bins(self, scores, y):
         assert (scores.size >= 2 * self.n_bins), "Fewer points than 2 * number of bins"
 
@@ -53,30 +55,31 @@ class UMBSelect(object):
         bin_lower_edges = list()
         bin_upper_edges += [max(groups[0])]
         bin_lower_edges += [-np.inf]
-        for cur_group in range(1,self.n_bins - 1):
+        for cur_group in range(1, self.n_bins - 1):
             bin_upper_edges += [max(groups[cur_group])]
-            bin_lower_edges += [max(groups[cur_group-1])]
+            bin_lower_edges += [max(groups[cur_group - 1])]
         bin_upper_edges += [np.inf]
         bin_lower_edges += [max(groups[self.n_bins - 2])]
         scores = scores.squeeze()
         assert (np.size(scores.shape) < 2), "scores should be a 1D vector or singleton"
         num_positives_in_bin = np.empty(self.n_bins)
         num_in_bin = np.empty(self.n_bins)
-        in_bin = np.empty(shape=(self.n_bins,scores.size))
+        in_bin = np.empty(shape=(self.n_bins, scores.size))
         for i in range(self.n_bins):
-            lower_edge = np.repeat(bin_lower_edges[i],scores.size)
-            upper_edge = np.repeat(bin_upper_edges[i],scores.size)
-            in_bin[i] = (np.logical_and(scores > lower_edge,scores <= upper_edge))
+            lower_edge = np.repeat(bin_lower_edges[i], scores.size)
+            upper_edge = np.repeat(bin_upper_edges[i], scores.size)
+            in_bin[i] = (np.logical_and(scores > lower_edge, scores <= upper_edge))
             num_in_bin[i] = np.sum(in_bin[i])
             num_positives_in_bin[i] = np.sum(np.logical_and(in_bin[i], y))
 
-        assert(np.sum(in_bin)==scores.size), f"{np.sum(in_bin), scores.size}"
-        sorted = np.argsort(num_positives_in_bin/num_in_bin)
-        assert(len(bin_upper_edges)==len(sorted))
+        assert (np.sum(in_bin) == scores.size), f"{np.sum(in_bin), scores.size}"
+        sorted = np.argsort(num_positives_in_bin / num_in_bin)
+        assert (len(bin_upper_edges) == len(sorted))
         num_positives_in_bin = num_positives_in_bin[sorted]
         num_in_bin = num_in_bin[sorted]
-        for i in range(self.n_bins-1):
-            assert(num_positives_in_bin[i]*num_in_bin[i+1]<=num_positives_in_bin[i+1]*num_in_bin[i])   #monotonicity
+        for i in range(self.n_bins - 1):
+            assert (num_positives_in_bin[i] * num_in_bin[i + 1] <= num_positives_in_bin[i + 1] * num_in_bin[
+                i])  # monotonicity
         bin_upper_edges = np.array(bin_upper_edges)
         bin_upper_edges = bin_upper_edges[sorted]
 
@@ -95,10 +98,10 @@ class UMBSelect(object):
         for i in range(self.n_bins):
             lower_edge = np.repeat(self.bin_lower_edges[i], scores.size)
             upper_edge = np.repeat(self.bin_upper_edges[i], scores.size)
-            in_bin[i] = (np.logical_and(scores > lower_edge,scores <= upper_edge))
+            in_bin[i] = (np.logical_and(scores > lower_edge, scores <= upper_edge))
             bin_assignment[in_bin[i].astype(bool)] = i
-        assert(np.sum(in_bin) == scores.size), f"{np.sum(in_bin), scores.size}"
-        assert(bin_assignment>=0).all()
+        assert (np.sum(in_bin) == scores.size), f"{np.sum(in_bin), scores.size}"
+        assert (bin_assignment >= 0).all()
         assert (bin_assignment < self.n_bins).all(), f"{bin_assignment}"
         return bin_assignment.astype(int)
 
@@ -108,7 +111,8 @@ class UMBSelect(object):
         for i, group in enumerate(self.groups):
             group = np.repeat(group, X_est.shape[0]).reshape(X_est.shape[0], 1)
             group_index[self.Z_map[self.Z_indices[0]][i]] = np.logical_or(group_index[self.Z_map[self.Z_indices[0]][i]],
-                                                                np.equal(X_est[:, self.Z_indices], group).squeeze())
+                                                                          np.equal(X_est[:, self.Z_indices],
+                                                                                   group).squeeze())
 
         return group_index
 
@@ -127,54 +131,62 @@ class UMBSelect(object):
         self.epsilon = 0
 
         # compute uniform-mass-bins using calibration data
-        self.bin_upper_edges, self.bin_lower_edges= self._get_uniform_mass_bins(y_score,y)
+        self.bin_upper_edges, self.bin_lower_edges = self._get_uniform_mass_bins(y_score, y)
 
         # assign calibration data to bins
         bin_assignment = self._bin_points(y_score)
         group_assignment = self.group_points(X_est)
-        assert(np.sum(group_assignment)==X_est.shape[0]), f"{np.sum(group_assignment),X_est.shape[0]}"
+        assert (np.sum(group_assignment) == X_est.shape[0]), f"{np.sum(group_assignment), X_est.shape[0]}"
 
         # compute statistics of each bin
         self.num_in_bin = np.empty(self.n_bins)
         self.num_positives_in_bin = np.empty(self.n_bins)
-        self.group_num_positives_in_bin = np.empty(shape=(self.n_bins,self.num_groups))
+        self.group_num_positives_in_bin = np.empty(shape=(self.n_bins, self.num_groups))
         self.group_num_in_bin = np.empty(shape=(self.n_bins, self.num_groups))
 
         for i in range(self.n_bins):
             bin_idx = (bin_assignment == i)
-            self.num_positives_in_bin[i] = np.sum(np.logical_and(bin_idx, y)) #+ self.num_groups
+            self.num_positives_in_bin[i] = np.sum(np.logical_and(bin_idx, y))  # + self.num_groups
             self.num_in_bin[i] = np.sum(bin_idx)
             for j in range(self.num_groups):
-                self.group_num_positives_in_bin[i][j] = np.sum(np.logical_and(np.logical_and(bin_idx, y),group_assignment[j])) #+ 1
-                self.group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[j])) #+ np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i])
+                self.group_num_positives_in_bin[i][j] = np.sum(
+                    np.logical_and(np.logical_and(bin_idx, y), group_assignment[j]))  # + 1
+                self.group_num_in_bin[i][j] = np.sum(np.logical_and(bin_idx, group_assignment[
+                    j]))  # + np.ceil(self.num_in_bin[i]/self.num_positives_in_bin[i])
 
-            assert(self.num_positives_in_bin[i]==np.sum(self.group_num_positives_in_bin[i])),  f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
-            assert(self.num_in_bin[i]==np.sum(self.group_num_in_bin[i])), f"{self.num_in_bin[i],np.sum(self.group_num_in_bin[i])}"
-            assert(self.num_in_bin[i]>0).all()
-
-
+            assert (self.num_positives_in_bin[i] == np.sum(self.group_num_positives_in_bin[
+                                                               i])), f"{self.num_positives_in_bin[i]},{np.sum(self.group_num_positives_in_bin[i]) + self.num_groups}"
+            assert (self.num_in_bin[i] == np.sum(
+                self.group_num_in_bin[i])), f"{self.num_in_bin[i], np.sum(self.group_num_in_bin[i])}"
+            assert (self.num_in_bin[i] > 0).all()
 
         self.bin_rho = self.num_in_bin / self.num_examples
         self.bin_values = self.num_positives_in_bin / self.num_in_bin
 
         # self.sorted = np.argsort(self.bin_values)
 
-        for i in range(self.n_bins-1):
-            assert (self.num_positives_in_bin[i] * self.num_in_bin[i+1]<= self.num_positives_in_bin[i+1] * self.num_in_bin[i]), \
-                f"{self.num_positives_in_bin[i], self.num_in_bin[i+1], self.num_positives_in_bin[i+1], self.num_in_bin[i]}"
+        for i in range(self.n_bins - 1):
+            assert (self.num_positives_in_bin[i] * self.num_in_bin[i + 1] <= self.num_positives_in_bin[i + 1] *
+                    self.num_in_bin[i]), \
+                f"{self.num_positives_in_bin[i], self.num_in_bin[i + 1], self.num_positives_in_bin[i + 1], self.num_in_bin[i]}"
 
-        positive_group_rho = np.greater(self.group_num_in_bin,np.zeros(shape=self.group_num_in_bin.shape))
-        assert positive_group_rho.shape==self.group_num_in_bin.shape
-        self.group_rho = np.where(positive_group_rho,(self.group_num_in_bin) / (self.num_in_bin )[:,np.newaxis],np.zeros(shape=self.group_num_in_bin.shape))
-        self.group_bin_values = np.where(positive_group_rho,(self.group_num_positives_in_bin) / (self.group_num_in_bin),np.zeros(shape=self.group_num_in_bin.shape))
+        positive_group_rho = np.greater(self.group_num_in_bin, np.zeros(shape=self.group_num_in_bin.shape))
+        assert positive_group_rho.shape == self.group_num_in_bin.shape
+        self.group_rho = np.where(positive_group_rho, (self.group_num_in_bin) / (self.num_in_bin)[:, np.newaxis],
+                                  np.zeros(shape=self.group_num_in_bin.shape))
+        self.group_bin_values = np.where(positive_group_rho,
+                                         (self.group_num_positives_in_bin) / (self.group_num_in_bin),
+                                         np.zeros(shape=self.group_num_in_bin.shape))
         self.discriminated_against = np.zeros(shape=self.group_num_in_bin.shape)
-        #sanity check
+        # sanity check
         for i in range(self.n_bins):
-            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[i] < 1e-2), f"{self.num_in_bin ,self.group_rho[i],self.group_bin_values[i] , self.bin_values[i]}"
+            assert (np.sum(self.group_rho[i] * self.group_bin_values[i]) - self.bin_values[
+                i] < 1e-2), f"{self.num_in_bin, self.group_rho[i], self.group_bin_values[i], self.bin_values[i]}"
             assert (np.sum(self.group_rho[i]) - 1.0 < 1e-2)
             for j in range(self.num_groups):
                 for k in range(i + 1, self.n_bins):
-                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.bin_values[i]<self.bin_values[k]:
+                    if positive_group_rho[i][j] and positive_group_rho[k][j] and self.bin_values[i] < self.bin_values[
+                        k]:
                         self.discriminated_against[i][j] = np.greater(
                             self.group_num_positives_in_bin[i][j] * self.group_num_in_bin[k][j],
                             self.group_num_positives_in_bin[k][j] * self.group_num_in_bin[i][j])
@@ -183,20 +195,21 @@ class UMBSelect(object):
 
             for j in range(self.num_groups):
                 if self.group_num_in_bin[i][j] == 0:
-                    assert (self.group_rho[i][j] ==0)
+                    assert (self.group_rho[i][j] == 0)
                 else:
                     assert self.group_rho[i][j] * self.num_in_bin[i] - self.group_num_in_bin[i][j] < 1e-2
 
                 if self.group_num_positives_in_bin[i][j] == 0:
                     assert self.group_bin_values[i][j] == 0
                 else:
-                    assert self.group_bin_values[i][j] * self.group_num_in_bin[i][j] - self.group_num_positives_in_bin[i][j] < 1e-2
+                    assert self.group_bin_values[i][j] * self.group_num_in_bin[i][j] - \
+                           self.group_num_positives_in_bin[i][j] < 1e-2
 
         # find threshold bin and theta
-        assert(self.epsilon is not None)
+        assert (self.epsilon is not None)
         b = np.zeros(shape=len(ks))
         theta = np.ones(shape=len(ks))
-        for k_idx,k in enumerate(ks):
+        for k_idx, k in enumerate(ks):
             sum_scores = 0
             # b = 0  # bin on the threshold
             # theta = 1.
@@ -206,13 +219,13 @@ class UMBSelect(object):
                     sum_scores -= m * (self.num_positives_in_bin[i] / self.num_examples - self.epsilon)
                     b[k_idx] = i
                     theta[k_idx] = (k - sum_scores) / (m * (self.num_positives_in_bin[i] / self.num_examples
-                                                     - self.epsilon))
+                                                            - self.epsilon))
 
                     break
         self.b = b
-        assert (theta > 0).all() and (theta<=1).all() and (b>=0).all() and (b<self.n_bins).all(), f"{self.b, self.theta, self.n_bins}"
+        assert (theta > 0).all() and (theta <= 1).all() and (b >= 0).all() and (
+                b < self.n_bins).all(), f"{self.b, self.theta, self.n_bins}"
         self.theta = theta
-
 
         # histogram binning done
         self.fitted = True
@@ -233,45 +246,44 @@ class UMBSelect(object):
                 s[i] = False
         return s
 
-
-
     def get_test_roc(self, X, scores, y):
         scores = scores.squeeze()
         # assign test data to bins
         test_bins = self._bin_points(scores)
         y_prob = self.bin_values[test_bins]
-        fpr, tpr, _ = roc_curve(y,y_prob)
+        fpr, tpr, _ = roc_curve(y, y_prob)
         return fpr, tpr
 
-    def get_shortlist_group_accuracy(self,selection, X, y):
+    def get_shortlist_group_accuracy(self, selection, X, y):
         test_group_assignment = self.group_points(X).astype(bool)
         shortlist_group_accuracy = np.zeros(self.num_groups)
         for j in range(self.num_groups):
-            shortlist_group_accuracy[j] = accuracy_score(selection[test_group_assignment[j]],y[test_group_assignment[j]])
+            shortlist_group_accuracy[j] = accuracy_score(selection[test_group_assignment[j]],
+                                                         y[test_group_assignment[j]])
         return shortlist_group_accuracy
 
-    def get_accuracy(self,scores, y):
+    def get_accuracy(self, scores, y):
         scores = scores.squeeze()
         # assign test data to bins
         test_bins = self._bin_points(scores)
-        selection = self.bin_values[test_bins]>0.5
-        assert selection.shape==y.shape
-        return accuracy_score(y,selection),f1_score(y,selection)
+        selection = self.bin_values[test_bins] > 0.5
+        assert selection.shape == y.shape
+        return accuracy_score(y, selection), f1_score(y, selection)
 
-    def get_group_accuracy(self,X, scores, y):
+    def get_group_accuracy(self, X, scores, y):
         scores = scores.squeeze()
         # assign test data to bins
         test_group_assignment = self.group_points(X).astype(bool)
         group_accuracy = np.zeros(self.num_groups)
         test_bins = self._bin_points(scores)
         y_prob = self.bin_values[test_bins]
-        y_pred = y_prob>0.5
+        y_pred = y_prob > 0.5
         for grp in range(self.num_groups):
-            group_accuracy[grp] = accuracy_score(y[test_group_assignment[grp]],y_pred[test_group_assignment[grp]])
+            group_accuracy[grp] = accuracy_score(y[test_group_assignment[grp]], y_pred[test_group_assignment[grp]])
 
         return group_accuracy
 
-    def get_calibration_curve(self,scores,y):
+    def get_calibration_curve(self, scores, y):
 
         sorted_indexes = np.argsort(scores)
         y = y[sorted_indexes]
@@ -286,34 +298,33 @@ class UMBSelect(object):
         prob_true = np.zeros(split_size)
         ECE = np.zeros(split_size)
 
-        for i,group in enumerate(groups):
+        for i, group in enumerate(groups):
             prob_true[i] = np.sum(y[group])
             prob_pred[i] = np.sum(self.bin_values[test_bins[group]])
-            ECE[i]= abs(prob_true[i]-prob_pred[i])
-        return prob_true, prob_pred, np.sum(ECE)/scores.shape[0]
+            ECE[i] = abs(prob_true[i] - prob_pred[i])
+        return prob_true, prob_pred, np.sum(ECE) / scores.shape[0]
 
-
-    def get_ECE(self,scores,y):
+    def get_ECE(self, scores, y):
         from sklearn.calibration import calibration_curve
         scores = scores.squeeze()
         test_bins = self._bin_points(scores)
         y_pred = self.bin_values[test_bins]
-        prob_true, prob_pred = calibration_curve(y,y_pred,n_bins=self.n_bins,strategy='quantile')
+        prob_true, prob_pred = calibration_curve(y, y_pred, n_bins=self.n_bins, strategy='quantile')
         return np.average(np.abs(prob_true - prob_pred))
 
-    def get_sharpness(self,scores,y):
+    def get_sharpness(self, scores, y):
         scores = scores.squeeze()
         # assign test data to bins
         test_bins = self._bin_points(scores)
         var = np.zeros(self.n_bins)
 
         for i in range(self.n_bins):
-            in_bin_i = (test_bins==i)
+            in_bin_i = (test_bins == i)
             var[i] = np.var(y[in_bin_i])
 
         return np.average(var)
 
-    def find_pool_discriminations(self,X_all_features,scores,y):
+    def find_pool_discriminations(self, X_all_features, scores, y):
         test_group_assignment = self.group_points(X_all_features).astype(bool)
         discriminated = np.zeros(scores.shape)
         scores = scores.squeeze()
@@ -322,15 +333,18 @@ class UMBSelect(object):
             for j in range(scores.shape[0]):
                 if discriminated[i]:
                     break
-                if self.bin_values[test_bins[i]]<self.bin_values[test_bins[j]]:
+                if self.bin_values[test_bins[i]] < self.bin_values[test_bins[j]]:
                     for grp_idx in range(self.num_groups):
-                        if test_group_assignment[grp_idx][i] and test_group_assignment[grp_idx][j]: #in the same group
-                            if self.group_num_positives_in_bin[test_bins[i]][grp_idx]*self.group_num_in_bin[test_bins[j]][grp_idx]\
-                                    >self.group_num_positives_in_bin[test_bins[j]][grp_idx]*self.group_num_in_bin[test_bins[i]][grp_idx]:
+                        if test_group_assignment[grp_idx][i] and test_group_assignment[grp_idx][j]:  # in the same group
+                            if self.group_num_positives_in_bin[test_bins[i]][grp_idx] * \
+                                    self.group_num_in_bin[test_bins[j]][grp_idx] \
+                                    > self.group_num_positives_in_bin[test_bins[j]][grp_idx] * \
+                                    self.group_num_in_bin[test_bins[i]][grp_idx]:
                                 discriminated[i] = True
                                 break
 
         return discriminated
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -347,7 +361,6 @@ if __name__ == "__main__":
     parser.add_argument("--scaler_path", type=str, help="the path for the scaler")
     parser.add_argument("--n_runs_test", type=int, help="the number of tests for estimating the expectation")
 
-
     args = parser.parse_args()
     # k = args.k
     m = args.m
@@ -355,23 +368,26 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     Z_indices = [int(index) for index in args.Z_indices.split('_')]
-    def list_maker(val,n):
-        return [val]*n
-    Z_map = {
-        15: [0] + [1] + list_maker(2,3) + list_maker(3,4),
-        1: list_maker(0,16)+list_maker(1,4)+list_maker(2,2)+list_maker(3,3),
-        0: list_maker(0,25) + list_maker(1,25) + list_maker(2,25) + list_maker(3,25),
-        14: [0,1],
-        4: [0,1],
-        6: [0,1,2,2,3],
-        2: [0,0,0,0,1]
-    }
 
+
+    def list_maker(val, n):
+        return [val] * n
+
+
+    Z_map = {
+        15: [0] + [1] + list_maker(2, 3) + list_maker(3, 4),
+        1: list_maker(0, 16) + list_maker(1, 4) + list_maker(2, 2) + list_maker(3, 3),
+        0: list_maker(0, 25) + list_maker(1, 25) + list_maker(2, 25) + list_maker(3, 25),
+        14: [0, 1],
+        4: [0, 1],
+        6: [0, 1, 2, 2, 3],
+        2: [0, 0, 0, 0, 1]
+    }
 
     with open(args.cal_data_path, 'rb') as f:
         X_cal_all_features, y_cal = pickle.load(f)
         available_features = np.setdiff1d(np.arange(X_cal_all_features.shape[1]), Z_indices)
-        X_cal = X_cal_all_features[:,available_features]
+        X_cal = X_cal_all_features[:, available_features]
 
     groups = np.unique(X_cal_all_features[:, Z_indices])
 
@@ -380,11 +396,10 @@ if __name__ == "__main__":
 
     scores_cal = classifier.predict_proba(X_cal)[:, 1]
 
-    umb_select = UMBSelect(args.B, Z_indices, groups, Z_map,alpha)
+    umb_select = UMBSelect(args.B, Z_indices, groups, Z_map, alpha)
     umb_select.fit(X_cal_all_features, scores_cal, y_cal, m)
 
-
-    #test
+    # test
     with open(args.test_raw_path, "rb") as f:
         X_test_all_features, y_test_raw = pickle.load(f)
     with open(args.scaler_path, 'rb') as f:
@@ -395,29 +410,30 @@ if __name__ == "__main__":
     accuracy = np.empty(len(ks))
     f1score = np.empty(len(ks))
     for k_idx, k in enumerate(ks):
-        accuracy[k_idx],f1score[k_idx] = umb_select.get_accuracy(scores_test_raw,y_test_raw)
-
+        accuracy[k_idx], f1score[k_idx] = umb_select.get_accuracy(scores_test_raw, y_test_raw)
 
     # simulating pools of candidates
-    num_selected = np.empty(shape=(len(ks),args.n_runs_test))
-    num_qualified = np.empty(shape=(len(ks),args.n_runs_test))
+    num_selected = np.empty(shape=(len(ks), args.n_runs_test))
+    num_qualified = np.empty(shape=(len(ks), args.n_runs_test))
     pool_discriminated = []
 
     for i in range(args.n_runs_test):
         indexes = np.random.choice(list(range(y_test_raw.size)), int(m))
         y_test = y_test_raw[indexes]
         scores_test = scores_test_raw[indexes]
-        pool_discriminated.append(np.sum(umb_select.find_pool_discriminations(X_test_all_features[indexes],scores_test,y_test)))
+        pool_discriminated.append(
+            np.sum(umb_select.find_pool_discriminations(X_test_all_features[indexes], scores_test, y_test)))
         for k_idx, k in enumerate(ks):
-            test_selected = umb_select.select(scores_test,k_idx)
+            test_selected = umb_select.select(scores_test, k_idx)
             num_selected[k_idx][i] = calculate_expected_selected(test_selected, y_test, m)
             num_qualified[k_idx][i] = calculate_expected_qualified(test_selected, y_test, m)
 
     performance_metrics = {}
-    performance_metrics["num_qualified"] = np.mean(num_qualified,axis=1)
-    performance_metrics["num_selected"] = np.mean(num_selected,axis=1)
+    performance_metrics["num_qualified"] = np.mean(num_qualified, axis=1)
+    performance_metrics["num_selected"] = np.mean(num_selected, axis=1)
     performance_metrics["pool_discriminated"] = np.mean(pool_discriminated)
-    assert(performance_metrics["num_qualified"].shape[0]==len(ks) and performance_metrics["num_selected"].shape[0]==len(ks))
+    assert (performance_metrics["num_qualified"].shape[0] == len(ks) and performance_metrics["num_selected"].shape[
+        0] == len(ks))
     performance_metrics["accuracy"] = accuracy
     performance_metrics["f1_score"] = f1score
     performance_metrics["num_positives_in_bin"] = umb_select.num_positives_in_bin
