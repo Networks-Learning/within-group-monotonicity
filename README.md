@@ -1,5 +1,5 @@
 # On the Within-Group Discrimination of Screening Classifiers
-This is a repository containing code and data for the paper:
+This is a repository containing code for the paper:
 
 > N. Okati, S. Tsirtsis, and M. Gomez Rodriguez. _On the Within-Group Discrimination of Screening Classifiers.
 
