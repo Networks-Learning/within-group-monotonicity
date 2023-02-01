@@ -13,7 +13,6 @@ if __name__ == "__main__":
     parser.add_argument("--train_cal_raw_path", type=str, help="the path for saving the raw data for "
                                                                "sampling train and calibration data")
     parser.add_argument("--test_raw_path", type=str, help="the path for saving the raw data for sampling test data")
-    parser.add_argument("--q_ratio", type=float, default=0.2, help="percentage of qualified applicants")
     parser.add_argument("--test_ratio", type=float, default=0.5, help="percentage data as test data")
     args = parser.parse_args()
     data_source = ACSDataSource(survey_year='2018', horizon='1-Year', survey='person')
