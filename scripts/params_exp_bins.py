@@ -1,13 +1,13 @@
 exp_token = "cz"
 exp_dir = "./exp_bins"
 test_ratio = "0.5"
-# s = False
-submit = True
+prepare_data = True
+submit = False
 split_size = 1000
 n_test = 100
 k = 5
 Z = [[6],[15],[14],[4]]
-n_runs = 100 # we used 100 in our paper and ran on a machine with 48 CPUs
+n_runs = 1 # we used 100 in our paper and ran on a machine with 48 CPUs
 n_runs_test = 100
 n_train = 100000
 n_trains = [100000]
