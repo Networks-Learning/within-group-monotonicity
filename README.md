@@ -1,28 +1,32 @@
 # On the Within-Group Discrimination of Screening Classifiers
+This is a repository containing code and data for the paper:
 
-### Create Environment
-On a machine with [conda](https://docs.conda.io/en/latest/) installed, run
+> N. Okati, S. Tsirtsis, and M. Gomez Rodriguez. _On the Within-Group Discrimination of Screening Classifiers.
+
+The paper is available [here](TBD).
+### Pre-requisites
+To install all the requirements, on a machine with [conda](https://docs.conda.io/en/latest/) installed, run
 ```angular2html
 conda env create -f environment.yml
 source activate wgm
 ```
+
+### Preparation
 The parameters required for every set of experiments are in ./scripts/params_*.py files. 
-Make sure you set prepare_data = True only the first time you run the experiments to download and prepare the data.
-Set it to False if you have the data already downloaded. 
+The current settings are those used in our experiments.
+The first time that you run the experiments the data will be downloaded and saved in the data folder. 
 
 If you are using a machine with [Slurm](https://slurm.schedmd.com/documentation.html) workload manager set submit = True in ./scripts/params_*.py. 
-You can then increase the n_runs parameter which specifies the number of runs.
+You can then increase the n_runs parameter which specifies the number of runs. We used 100 in our experiments.
 Set submit = False if you run the experiments on your local machine and make sure the number of runs is small.
 
-### Run Experiments
+### Execution
 
 ```angular2html
-python ./scripts/run_exp_violations.py
-python ./scripts/run_exp_discrimination.py
 python ./scripts/run_exp_bins.py
 ```
 
-### Plot Figures
+### Generate Figures
 
 #### To generate Figures 1, 5, 9
 ```angular2html
@@ -44,3 +48,6 @@ python ./scripts/plot_exp_bins.py
 ```angular2html
 python ./scripts/plot_wgc_eps.py
 ```
+
+### Citation
+TBD
