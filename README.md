@@ -3,7 +3,7 @@ This is a repository containing code for the paper:
 
 > N. Okati, S. Tsirtsis, and M. Gomez Rodriguez. **_On the Within-Group Discrimination of Screening Classifiers._**
 
-The paper is available [here](TBD).
+The paper is available [here](https://arxiv.org/abs/2302.00025).
 ### Pre-requisites
 To install all the requirements, on a machine with [conda](https://docs.conda.io/en/latest/) installed, run
 ```angular2html
@@ -49,5 +49,14 @@ python ./scripts/plot_exp_bins.py
 python ./scripts/plot_wgc_eps.py
 ```
 
-### Citation
-TBD
+## Citation
+If you use parts of the code in this repository for your own research, please consider citing:
+
+```
+@article{okati2023on,
+        title={On the Within-Group Discrimination of Screening Classifiers},
+        author={Okati, Nastaran and Tsirtsis, Stratis and Gomez-Rodriguez, Manuel},
+        journal={arXiv preprint arXiv:2302.00025},
+        year={2023}
+}
+```
