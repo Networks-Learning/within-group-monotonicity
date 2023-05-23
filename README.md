@@ -1,4 +1,4 @@
-# On the Within-Group Discrimination of Screening Classifiers
+# On the Within-Group Fairness of Screening Classifiers
 This is a repository containing code for the paper:
 
 > N. Okati, S. Tsirtsis, and M. Gomez Rodriguez. **_On the Within-Group Discrimination of Screening Classifiers._**
