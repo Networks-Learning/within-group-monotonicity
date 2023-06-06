@@ -53,7 +53,7 @@ python ./scripts/plot_wgc_eps.py
 If you use parts of the code in this repository for your own research, please consider citing:
 
 ```
-@article{okati2023on,
+@inproceedings{okati2023on,
         title={On the Within-Group Discrimination of Screening Classifiers},
         author={Okati, Nastaran and Tsirtsis, Stratis and Gomez-Rodriguez, Manuel},
         booktitle={Proceedings of the 40th International Conference on Machine Learning},
