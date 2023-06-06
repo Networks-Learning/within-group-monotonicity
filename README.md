@@ -1,7 +1,7 @@
 # On the Within-Group Fairness of Screening Classifiers
 This is a repository containing code for the paper:
 
-> N. Okati, S. Tsirtsis, and M. Gomez Rodriguez. **_On the Within-Group Discrimination of Screening Classifiers._**
+> N. Okati, S. Tsirtsis, and M. Gomez Rodriguez. **_On the Within-Group Discrimination of Screening Classifiers._**, ICML 2023.
 
 The paper is available [here](https://arxiv.org/abs/2302.00025).
 ### Pre-requisites
@@ -56,7 +56,7 @@ If you use parts of the code in this repository for your own research, please co
 @article{okati2023on,
         title={On the Within-Group Discrimination of Screening Classifiers},
         author={Okati, Nastaran and Tsirtsis, Stratis and Gomez-Rodriguez, Manuel},
-        journal={arXiv preprint arXiv:2302.00025},
+        booktitle={Proceedings of the 40th International Conference on Machine Learning},
         year={2023}
 }
 ```
